@@ -1,0 +1,130 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  @font-face{font-family:Anton;src:url(node_modules/@fontsource/anton/files/anton-latin-400-normal.woff2)}
+  @font-face{font-family:Inter;font-weight:800;src:url(node_modules/@fontsource/inter/files/inter-latin-800-normal.woff2)}
+  html,body{margin:0;background:#111}
+  svg{display:block}
+  .cap{font-family:Anton, Impact, sans-serif;letter-spacing:1px}
+  .ui{font-family:Inter, Arial, sans-serif;font-weight:800}
+</style></head>
+<body>
+<svg id="s" width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#e9e2d4"/><stop offset="1" stop-color="#d9d0bf"/>
+  </linearGradient>
+  <linearGradient id="door" x1="0" x2="1">
+    <stop offset="0" stop-color="#b9bec4"/><stop offset=".5" stop-color="#d7dbe0"/><stop offset="1" stop-color="#aeb3b9"/>
+  </linearGradient>
+  <radialGradient id="alarm" cx=".5" cy=".18" r=".8">
+    <stop offset="0" stop-color="#ff2a1a" stop-opacity=".55"/>
+    <stop offset=".45" stop-color="#8a0d06" stop-opacity=".35"/>
+    <stop offset="1" stop-color="#05070c" stop-opacity=".78"/>
+  </radialGradient>
+  <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <pattern id="wain" width="120" height="400" patternUnits="userSpaceOnUse">
+    <rect width="120" height="400" fill="#cfc4ae"/><rect x="8" y="20" width="104" height="360" rx="6" fill="none" stroke="#bdb197" stroke-width="5"/>
+  </pattern>
+</defs>
+
+<!-- CENÁRIO: corredor do 14º andar -->
+<rect width="1080" height="1920" fill="url(#wall)"/>
+<rect y="1000" width="1080" height="420" fill="url(#wain)"/>
+<rect y="990" width="1080" height="16" fill="#a99b80"/>
+<rect y="1420" width="1080" height="500" fill="#5b4a3c"/>
+<rect y="1420" width="1080" height="18" fill="#3f3229"/>
+<g opacity=".18" stroke="#2b2119" stroke-width="3">
+  <line x1="0" y1="1560" x2="1080" y2="1560"/><line x1="0" y1="1720" x2="1080" y2="1720"/>
+</g>
+
+<!-- arandela -->
+<g transform="translate(150 560)"><rect x="-22" y="0" width="44" height="70" rx="10" fill="#f3e3a6" stroke="#b39a5a" stroke-width="5"/></g>
+<g transform="translate(930 560)"><rect x="-22" y="0" width="44" height="70" rx="10" fill="#f3e3a6" stroke="#b39a5a" stroke-width="5"/></g>
+
+<!-- ELEVADOR -->
+<g transform="translate(300 560)">
+  <rect x="-30" y="-30" width="540" height="890" fill="#8e949b"/>
+  <rect x="0" y="0" width="480" height="860" fill="#6f757c"/>
+  <rect x="0" y="0" width="238" height="860" fill="url(#door)"/>
+  <rect x="242" y="0" width="238" height="860" fill="url(#door)"/>
+  <rect x="236" y="0" width="8" height="860" fill="#3c4046"/>
+  <rect x="90" y="-120" width="300" height="70" rx="6" fill="#1b1d21"/>
+  <text x="240" y="-68" text-anchor="middle" class="ui" font-size="30" fill="#e8eaec">14º ANDAR</text>
+</g>
+<!-- display do andar -->
+<g transform="translate(540 330)" filter="url(#glow)">
+  <rect x="-110" y="-55" width="220" height="110" rx="10" fill="#0d0e10"/>
+  <text x="-40" y="34" text-anchor="middle" class="ui" font-size="70" fill="#ff3b2b">▲</text>
+  <text x="40" y="36" text-anchor="middle" class="ui" font-size="90" fill="#ff3b2b">13</text>
+</g>
+<!-- botoeira -->
+<g transform="translate(860 980)">
+  <rect x="-35" y="-80" width="70" height="160" rx="10" fill="#9aa0a7" stroke="#6b7178" stroke-width="5"/>
+  <circle cy="-35" r="20" fill="#d9dcdf" stroke="#5f656b" stroke-width="4"/>
+  <circle cy="35" r="20" fill="#d9dcdf" stroke="#5f656b" stroke-width="4"/>
+</g>
+<!-- extintor -->
+<g transform="translate(150 1080)">
+  <rect x="-40" y="-110" width="80" height="150" rx="10" fill="#f0eee9" stroke="#8c8577" stroke-width="5"/>
+  <rect x="-22" y="-90" width="44" height="110" rx="18" fill="#d1271b"/>
+  <rect x="-8" y="-104" width="16" height="16" fill="#333"/>
+</g>
+
+<!-- PERSONAGEM (pose: de costas pro público, olhando o elevador, braço recuado) -->
+<g id="lia" transform="translate(470 1080)">
+  <ellipse cx="0" cy="470" rx="150" ry="22" fill="#000" opacity=".25"/>
+  <!-- pernas -->
+  <path d="M-38 250 L-60 445" stroke="#23324a" stroke-width="54" stroke-linecap="round"/>
+  <path d="M38 250 L70 440" stroke="#23324a" stroke-width="54" stroke-linecap="round"/>
+  <rect x="-100" y="430" width="80" height="36" rx="14" fill="#1a1a1a"/>
+  <rect x="38" y="425" width="80" height="36" rx="14" fill="#1a1a1a"/>
+  <!-- tronco (moletom) -->
+  <path d="M-95 20 Q-110 150 -85 275 L85 275 Q110 150 95 20 Q0 -15 -95 20Z" fill="#2c2f36"/>
+  <path d="M-60 210 L60 210" stroke="#1f2228" stroke-width="10" stroke-linecap="round"/>
+  <!-- mochila -->
+  <rect x="-70" y="40" width="140" height="170" rx="26" fill="#8a3b2a" stroke="#5e2619" stroke-width="7"/>
+  <rect x="-45" y="120" width="90" height="56" rx="12" fill="#a24935" stroke="#5e2619" stroke-width="5"/>
+  <!-- braços -->
+  <path d="M-90 50 Q-150 140 -140 220" stroke="#2c2f36" stroke-width="46" fill="none" stroke-linecap="round"/>
+  <path d="M90 50 Q170 70 200 10" stroke="#2c2f36" stroke-width="46" fill="none" stroke-linecap="round"/>
+  <circle cx="-140" cy="230" r="27" fill="#f2e6cf" stroke="#2a2420" stroke-width="5"/>
+  <circle cx="205" cy="0" r="27" fill="#f2e6cf" stroke="#2a2420" stroke-width="5"/>
+  <!-- cabeça + capuz -->
+  <path d="M-95 25 Q-120 -40 -95 -60 L95 -60 Q120 -40 95 25Z" fill="#23262c"/>
+  <rect x="-34" y="-50" width="68" height="40" fill="#e6d6b8"/>
+  <ellipse cx="-118" cy="-130" rx="18" ry="28" fill="#f2e6cf" stroke="#2a2420" stroke-width="6"/>
+  <ellipse cx="118" cy="-130" rx="18" ry="28" fill="#f2e6cf" stroke="#2a2420" stroke-width="6"/>
+  <circle cx="0" cy="-140" r="118" fill="#3a2a22" stroke="#2a2420" stroke-width="7"/>
+  <path d="M-60 -230 Q-20 -250 30 -238" stroke="#56402f" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M-90 -120 Q0 -100 90 -120 L80 -40 Q0 -20 -80 -40Z" fill="#33251d"/>
+</g>
+
+<!-- LUZ DE EMERGÊNCIA -->
+<rect width="1080" height="1920" fill="url(#alarm)"/>
+
+<!-- UI: selo do dia + cronômetro -->
+<g transform="translate(60 120)">
+  <rect width="330" height="56" rx="8" fill="#0e0f12" opacity=".92"/>
+  <circle cx="30" cy="28" r="9" fill="#ff3b2b"/>
+  <text x="52" y="38" class="ui" font-size="27" fill="#fff">DIA 1</text>
+  <text x="140" y="38" class="ui" font-size="22" fill="#a9adb4">· 14º ANDAR</text>
+  <rect y="70" width="250" height="100" rx="8" fill="#0e0f12" opacity=".92"/>
+  <text x="125" y="146" text-anchor="middle" class="ui" font-size="78" fill="#ffc21a" letter-spacing="4">00:42</text>
+</g>
+
+<!-- Cartão de título -->
+<g transform="translate(540 640)">
+  <rect x="-470" y="-75" width="940" height="150" rx="10" fill="#0e0f12" opacity=".9"/>
+  <text text-anchor="middle" y="-6" class="cap" font-size="56" fill="#fff">A ENERGIA ACABOU HÁ <tspan fill="#ffc21a">1 HORA</tspan>.</text>
+  <text text-anchor="middle" y="58" class="cap" font-size="56" fill="#fff">POR QUE O ELEVADOR ESTÁ <tspan fill="#ff3b2b">SUBINDO?</tspan></text>
+</g>
+
+<!-- Legenda falada (palavra atual destacada) -->
+<g transform="translate(540 1470)">
+  <text text-anchor="middle" class="cap" font-size="96" fill="#fff" stroke="#000" stroke-width="12" paint-order="stroke">ALGUÉM <tspan fill="#ff3b2b">CHAMOU</tspan> ELE</text>
+</g>
+</svg>
+</body></html>
