@@ -144,7 +144,7 @@ export function desenharHumano(f: Figurino, v: VistaBase, px: string): string {
     L.bracosFrente.map((l) => braco(px, f, v, l, L.ombros[l])).join("");
   const quadril =
     L.ordemPernas.map((l) => perna(px, f, v, l, L.pernas[l])).join("") +
-    (f.saia?.(v) ?? "") +
+    (f.saia?.(v, px) ?? "") +
     `<g id="${px}-tronco">${tronco}</g>`;
   return (
     `<g id="${px}-corpo">` +

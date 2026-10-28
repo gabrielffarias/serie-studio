@@ -15,6 +15,8 @@ export type Desenhavel = {
   temRosto: boolean;
   /** segmentos encolhíveis: junta filha e comprimento */
   filhos: Partial<Record<Junta, { filho: Junta; L: number }>>;
+  /** acessórios pendurados e a cadeia de juntas até eles (contra-giro) */
+  pendurados: Record<string, Junta[]>;
   /** raio da sombra de contato */
   sombraRx: number;
 };
@@ -26,6 +28,14 @@ export function desenhavelHumano(f: Figurino): Desenhavel {
     acessoriosPadrao: () => Object.fromEntries(Object.entries(f.acessorios ?? {}).map(([k, a]) => [k, a.padrao])),
     temRosto: true,
     filhos: filhos(f),
+    pendurados: Object.fromEntries(
+      Object.entries(f.acessorios ?? {})
+        .filter(([, a]) => a.pendurado && a.junta.startsWith("mao_"))
+        .map(([nome, a]) => {
+          const lado = a.junta.slice(-1);
+          return [nome, ["tronco", `braco_${lado}`, `antebraco_${lado}`, `mao_${lado}`] as Junta[]];
+        }),
+    ),
     sombraRx: 150,
   };
 }
@@ -68,6 +78,10 @@ export function kfsPose(
   kfs.push({ alvo: `#${px}-corpo`, prop: "y", t, v: pose.corpo_y, dur, ease });
   if (d.temRosto && v !== "costas") {
     for (const e of EXPRESSOES) kfs.push({ alvo: `#${px}-rosto-${e}`, prop: "opacity", t, v: e === pose.expressao ? 1 : 0 });
+  }
+  for (const [nome, cadeia] of Object.entries(d.pendurados)) {
+    const soma = cadeia.reduce((s, j) => s + pose.angulos[j], 0);
+    kfs.push({ alvo: `#${px}-ac-${nome}`, prop: "rotation", t, v: Math.round(-soma * 100) / 100 + 0, dur, ease });
   }
   for (const [nome, ligado] of Object.entries(pose.acessorios)) {
     kfs.push({ alvo: `#${px}-ac-${nome}`, prop: "opacity", t, v: ligado ? 1 : 0 });

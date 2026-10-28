@@ -91,12 +91,19 @@ export type Figurino = {
   /** tronco (e pescoço), coordenadas a partir do quadril */
   tronco(v: VistaBase, px: string): string;
   /** saia/aba presa ao quadril, por cima das pernas e por baixo do tronco */
-  saia?(v: VistaBase): string;
+  saia?(v: VistaBase, px: string): string;
   /** cabeça: `base` vai por baixo do rosto, `topo` por cima (boné, óculos) */
   cabeca(v: VistaBase, acessorios: Record<string, boolean>): { base: string; topo: string };
   /** detalhes extra por segmento de membro (faixa refletiva na canela etc.) */
   detalheMembro?(v: VistaBase, junta: Junta): string;
   pe?(v: VistaBase, lado: Lado): string;
   /** acessórios presos a juntas (isopor na mão, pasta…) */
-  acessorios?: Record<string, { junta: Junta | "corpo"; padrao: boolean; desenhar(v: VistaBase): string; atras?: boolean }>;
+  acessorios?: Record<string, {
+    junta: Junta | "corpo";
+    padrao: boolean;
+    desenhar(v: VistaBase): string;
+    atras?: boolean;
+    /** pendurado pela alça: fica sempre na vertical, apesar do braço */
+    pendurado?: boolean;
+  }>;
 };

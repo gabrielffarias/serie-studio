@@ -6,7 +6,7 @@
 // Uso: npm run preview:assets [id…]
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { compilar } from "../engine/core/keyframes";
+import { compilar, type Keyframe } from "../engine/core/keyframes";
 import { abrirNavegador, fotografar } from "../engine/core/navegador";
 import { kfsPose, kfsRaiz, kfsVista, svgInstancia, slugVista } from "../engine/rig/instancia";
 import { PERSONAGENS, pose } from "../engine/rig/personagens";
@@ -22,7 +22,7 @@ function folhaHtml(celulas: Celula[], cols: number, cw: number, ch: number, esca
   const linhas = Math.ceil(celulas.length / cols);
   const w = cols * cw, h = linhas * ch;
   const svgs: string[] = [];
-  const kfs = [];
+  const kfs: Keyframe[] = [];
   celulas.forEach((c, i) => {
     const { d } = PERSONAGENS[c.personagem];
     const inst = `c${i}-${c.personagem}`;

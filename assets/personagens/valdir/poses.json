@@ -1,0 +1,20 @@
+{
+  "segurando_pasta": {
+    "expressao": "neutro",
+    "angulos": { "braco_d": -40, "antebraco_d": -84, "braco_e": -34, "antebraco_e": -88 },
+    "acessorios": { "pasta_peito": true, "pasta": false },
+    "por_vista": {
+      "frente": { "angulos": { "braco_d": 22, "antebraco_d": -96, "braco_e": -22, "antebraco_e": 96 } },
+      "costas": { "angulos": { "braco_d": -22, "antebraco_d": 96, "braco_e": 22, "antebraco_e": -96 } }
+    }
+  },
+  "ajustar_oculos": {
+    "expressao": "desconfiado",
+    "angulos": { "braco_d": -100, "antebraco_d": -95, "braco_e": -6, "antebraco_e": -10 },
+    "acessorios": { "pasta": false },
+    "por_vista": {
+      "frente": { "angulos": { "braco_d": 160, "antebraco_d": 103, "braco_e": -8, "antebraco_e": -4 } },
+      "costas": { "angulos": { "braco_d": -160, "antebraco_d": -103, "braco_e": 8, "antebraco_e": 4 } }
+    }
+  }
+}

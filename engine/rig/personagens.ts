@@ -2,6 +2,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { caio } from "../../assets/personagens/caio/rig.svg";
+import { socorro } from "../../assets/personagens/socorro/rig.svg";
+import { valdir } from "../../assets/personagens/valdir/rig.svg";
 import { desenhavelHumano, type Desenhavel } from "./instancia";
 import { resolverPose } from "./poses";
 import type { PoseDef, PoseResolvida, VistaBase } from "./tipos";
@@ -20,6 +22,8 @@ function humano(f: Parameters<typeof desenhavelHumano>[0]): Personagem {
 
 export const PERSONAGENS: Record<string, Personagem> = {
   caio: humano(caio),
+  socorro: humano(socorro),
+  valdir: humano(valdir),
 };
 
 export function personagem(id: string): Personagem {

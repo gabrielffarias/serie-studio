@@ -1,0 +1,11 @@
+{
+  "abracando_isopor": {
+    "expressao": "neutro",
+    "angulos": { "braco_d": -42, "antebraco_d": -82, "braco_e": -36, "antebraco_e": -86 },
+    "acessorios": { "isopor_peito": true, "isopor_mao": false },
+    "por_vista": {
+      "frente": { "angulos": { "braco_d": 22, "antebraco_d": -96, "braco_e": -22, "antebraco_e": 96 } },
+      "costas": { "angulos": { "braco_d": -22, "antebraco_d": 96, "braco_e": 22, "antebraco_e": -96 } }
+    }
+  }
+}
