@@ -1,4 +1,4 @@
-// Interior do vagão: bancos azuis, barras amarelas, janelas pretas (bíblia, seção 5).
+// Interior do vagão: bancos azuis, barras amarelas, janelas escuras (bíblia, seção 5).
 // Sem logo, marca ou nome do Metrô-DF.
 import type { Cenario } from "../../../engine/cenario/tipos";
 
@@ -8,6 +8,9 @@ const C = {
   parede: "#D6D3CA",
   paredeBaixa: "#BDB8AC",
   janela: "#28303C",
+  // lado de fora (parede do túnel com o reflexo da luz do vagão): um pouco mais
+  // claro que o vidro, para o vulto escuro recortar
+  fora: "#465266",
   reflexo: "#3A4452",
   moldura: "#8E949B",
   barra: "#F2C230",
@@ -23,6 +26,7 @@ function janela(x: number): string {
   return (
     `<rect x="${x - 14}" y="506" width="${308}" height="408" rx="34" fill="${C.moldura}"/>` +
     `<rect x="${x}" y="520" width="280" height="380" rx="26" fill="${C.janela}"/>` +
+    `<rect x="${x + 18}" y="538" width="244" height="344" rx="16" fill="${C.fora}"/>` +
     `<path d="M${x + 30} 560 L${x + 90} 560 L${x + 20} 700 Z" fill="${C.reflexo}" opacity=".7"/>`
   );
 }
@@ -52,7 +56,7 @@ export const vagao: Cenario = {
     // porta de emergência entre as janelas
     `<rect x="400" y="430" width="280" height="1040" fill="#C9C5BB" stroke="${C.moldura}" stroke-width="8"/>` +
     `<path d="M540 430 L540 1470" stroke="${C.moldura}" stroke-width="6"/>` +
-    `<rect x="420" y="520" width="100" height="300" rx="16" fill="${C.janela}"/><rect x="560" y="520" width="100" height="300" rx="16" fill="${C.janela}"/>` +
+    [420, 560].map((x) => `<rect x="${x}" y="520" width="100" height="300" rx="16" fill="${C.janela}"/><rect x="${x + 12}" y="532" width="76" height="276" rx="10" fill="${C.fora}"/>`).join("") +
     `<rect x="478" y="880" width="124" height="70" rx="8" fill="#D1271B" stroke="${C.contorno}" stroke-width="5"/>` +
     `<text data-layout-ignore x="540" y="926" text-anchor="middle" font-family="InterHF, Inter, sans-serif" font-weight="800" font-size="20" fill="#fff">EMERGÊNCIA</text>` +
     // faixa baixa e bancos
