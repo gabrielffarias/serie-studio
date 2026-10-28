@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Anton"; src: url("assets/fonts/anton-400.woff2") format("woff2"); }
+      @font-face { font-family: "InterHF"; font-weight: 800; src: url("assets/fonts/inter-800.woff2") format("woff2"); }
+      :root {
+        --amarelo: #ffc21a;
+        --vermelho: #ff3b2b;
+        --painel: #0e0f12;
+        --contorno: #000;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #111; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
+      #fundo { position: absolute; inset: 0; }
+      .cap { font-family: "Anton", sans-serif; letter-spacing: 1px; }
+      .ui { font-family: "InterHF", sans-serif; font-weight: 800; }
+
+      #selo {
+        position: absolute; left: 60px; top: 120px; height: 56px; padding: 0 26px 0 20px;
+        display: flex; align-items: center; gap: 14px; border-radius: 8px;
+        background: var(--painel); opacity: 0.92; color: #fff; font-size: 27px;
+      }
+      #selo .ponto { width: 18px; height: 18px; border-radius: 50%; background: var(--vermelho); }
+
+      #cartao {
+        position: absolute; left: 70px; right: 70px; top: 700px; height: 190px;
+        display: flex; align-items: center; justify-content: center; border-radius: 10px;
+      }
+      #cartao-caixa { position: absolute; inset: 0; border-radius: 10px; background: var(--painel); opacity: 0.9; }
+      #cartao-texto { position: relative; font-size: 104px; color: #fff; }
+      #cartao-texto span { color: var(--amarelo); }
+
+      #legenda {
+        position: absolute; left: 0; right: 0; top: 1390px; text-align: center;
+        font-size: 96px; color: #fff;
+        -webkit-text-stroke: 12px var(--contorno); paint-order: stroke fill;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="5" data-width="1080" data-height="1920" data-fps="30">
+      <svg id="fundo" class="clip" data-start="0" data-duration="5" data-track-index="0" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="alarme" cx=".5" cy=".18" r=".8">
+            <stop offset="0" stop-color="#ff2a1a" stop-opacity=".55" />
+            <stop offset=".45" stop-color="#8a0d06" stop-opacity=".35" />
+            <stop offset="1" stop-color="#05070c" stop-opacity=".78" />
+          </radialGradient>
+        </defs>
+        <rect width="1080" height="1920" fill="#d9d0bf" />
+        <rect y="1420" width="1080" height="500" fill="#5b4a3c" />
+        <rect y="1420" width="1080" height="18" fill="#3f3229" />
+        <rect id="luz" width="1080" height="1920" fill="url(#alarme)" />
+      </svg>
+
+      <div id="selo" class="clip ui" data-start="0" data-duration="5" data-track-index="1">
+        <div class="ponto"></div><div>NOITE 1 · 18:04</div>
+      </div>
+
+      <div id="cartao" class="clip cap" data-start="0.3" data-duration="4.7" data-track-index="2">
+        <div id="cartao-caixa"></div>
+        <div id="cartao-texto">ESTAÇÃO <span>FANTASMA</span></div>
+      </div>
+
+      <div id="legenda" class="clip cap" data-start="1.4" data-duration="3.6" data-track-index="3" data-layout-allow-caption-zone>
+        <span id="w1">OLÁ,</span> <span id="w2">SERIE</span><span id="w3">-STUDIO</span>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // luz de emergência pulsando (função do tempo, sem repeat infinito)
+      tl.fromTo("#luz", { opacity: 1 }, { opacity: 0.6, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 9 }, 0);
+      // cartão: encaixe seco 0 → 1,08 → 1
+      tl.fromTo("#cartao-caixa", { scale: 0 }, { scale: 1.08, duration: 0.12, ease: "power2.out" }, 0.3);
+      tl.to("#cartao-caixa", { scale: 1, duration: 0.06, ease: "none" }, 0.42);
+      tl.fromTo("#cartao-texto", { scale: 0 }, { scale: 1.08, duration: 0.12, ease: "power2.out" }, 0.3);
+      tl.to("#cartao-texto", { scale: 1, duration: 0.06, ease: "none" }, 0.42);
+      // legenda: palavra atual em vermelho
+      const palavras = [["#w1", 1.4], ["#w2", 2.2], ["#w3", 2.8]];
+      palavras.forEach(([id, t], i) => {
+        tl.fromTo(id, { color: "#ffffff" }, { color: "#ff3b2b", duration: 0.01 }, t);
+        const fim = i + 1 < palavras.length ? palavras[i + 1][1] : 4.2;
+        tl.to(id, { color: "#ffffff", duration: 0.01 }, fim);
+      });
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
