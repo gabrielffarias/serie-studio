@@ -36,14 +36,18 @@ export type Catalogo = {
   infograficos: { id: string; descricao: string }[];
   acoes: ItemAcao[];
   camera: { mov: string; descricao: string }[];
+  /** luzes ambiente (estado de cada local) */
   luzes: string[];
+  /** efeitos de luz: piscar_luz e os eventos que mudam a luz ambiente */
   efeitos: string[];
+  /** evento → transição da luz ambiente do local */
+  eventos_luz: Record<string, { de: string[]; para: string; descricao: string }>;
   sons: string[];
   musicas: string[];
   /** itens do estado que mudam o desenho (ex.: lanterna_cabeca no Caio) */
   itens_visiveis: Record<string, string>;
-  /** luz, pose ou prop que só vale com um destes itens em estado.itens (basta um) */
-  exige_item: { luz: Record<string, string[]>; poses: Record<string, string[]>; props: Record<string, string[]> };
+  /** camada (lanterna), pose ou prop que só vale com um destes itens em estado.itens (basta um) */
+  exige_item: { camadas: Record<string, string[]>; poses: Record<string, string[]>; props: Record<string, string[]> };
   regras: string[];
 };
 

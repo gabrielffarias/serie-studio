@@ -82,9 +82,11 @@ export function esqueleto(md: string): NoEsqueleto[] {
 
 // ── §7 estado inicial ────────────────────────────────────────────────────────
 
-/** "100" → 100, "[]" → [], "[caio, socorro]" → ["caio","socorro"], "`vagao`" → "vagao" */
+/** "100" → 100, "[]" → [], "[caio, socorro]" → ["caio","socorro"], "`vagao`" → "vagao", "{vagao: normal}" → { vagao: "normal" } */
 function valorInicial(bruto: string): unknown {
   const s = semMarcacao(bruto);
+  const mapa = s.match(/^\{(.*)\}$/);
+  if (mapa) return Object.fromEntries(mapa[1].split(",").map((par) => par.split(":").map((x) => x.trim())).filter(([k]) => k));
   if (/^-?\d+(\.\d+)?$/.test(s)) return Number(s);
   const lista = s.match(/^\[(.*)\]$/);
   if (lista) return lista[1].split(",").map((x) => x.trim()).filter(Boolean);

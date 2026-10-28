@@ -6,6 +6,7 @@ import path from "node:path";
 import { POSES_DA_ACAO } from "./acoes/acoes";
 import { CENARIOS } from "./cenario/cenarios";
 import { LUZES } from "./luz/luz";
+import { TRANSICOES_LUZ } from "../src/lib/luz";
 import { PERSONAGENS } from "./rig/personagens";
 import { GESTOS_MAO } from "./rig/humano";
 import { ACOES, EFEITOS_LUZ, MOVIMENTOS_CAMERA, VISTAS } from "../src/lib/episodio-schema";
@@ -45,9 +46,9 @@ const DESCRICAO_CAMERA: Record<(typeof MOVIMENTOS_CAMERA)[number], string> = {
   corte_seco: "corte seco para este plano, câmera parada",
 };
 
-/** Luz, pose ou prop que o motor só desenha com um destes itens no estado (basta um). */
+/** Camada, pose ou prop que o motor só desenha com um destes itens no estado (basta um). */
 export const EXIGE_ITEM: Catalogo["exige_item"] = {
-  luz: { lanterna: ["lanterna_mao", "lanterna_cabeca"] },
+  camadas: { lanterna: ["lanterna_mao", "lanterna_cabeca"] },
   poses: { segurar_lanterna: ["lanterna_mao"] },
   props: {},
 };
@@ -58,14 +59,14 @@ const NOTAS_CENARIO: Record<string, string[]> = {
     "vulto lá fora: `criatura_vulto` com y entre 0,40 e 0,55 e escala ~0,9 aparece só através das janelas",
     "sentado no banco: pose `sentado`, vista 3/4, y ~0,71, escala ~0,9",
   ],
-  tunel: ["use luz `lanterna` (escuro em volta do feixe; quem está fora dele vira silhueta com contorno)"],
+  tunel: ["luz ambiente `escuro`: quem está fora do feixe da lanterna vira silhueta com contorno"],
 };
 
 const NOTAS_PERSONAGEM: Record<string, string[]> = {
   caio: [
-    "começa com `lanterna_mao` (item do estado): com luz `lanterna` e pose `segurar_lanterna`, o feixe sai da mão, na direção do braço",
+    "começa com `lanterna_mao` (item do estado): com `lanterna: true` e pose `segurar_lanterna`, o feixe sai da mão e acompanha o braço",
     "`lanterna_cabeca` (no boné) só aparece quando o item está no estado; com ela, o feixe sai da cabeça em qualquer pose",
-    "luz `lanterna` sem ninguém segurando a lanterna no plano: o feixe vem de baixo, do ponto de vista de quem a segura fora do quadro",
+    "`lanterna: true` sem ninguém segurando a lanterna no plano: o feixe vem de baixo, do ponto de vista de quem a segura fora do quadro",
   ],
   socorro: ["o isopor fica sempre numa mão; os gestos usam a outra", "`abracando_isopor` e `assustado` seguram o isopor no peito"],
   valdir: ["a pasta fica sempre numa mão; os gestos usam a outra", "`ajustar_oculos` antes de mentir (bordão)"],
@@ -127,6 +128,7 @@ export function gerarCatalogo(): Catalogo {
     camera: MOVIMENTOS_CAMERA.map((mov) => ({ mov, descricao: DESCRICAO_CAMERA[mov] })),
     luzes: [...LUZES],
     efeitos: [...EFEITOS_LUZ],
+    eventos_luz: Object.fromEntries(Object.entries(TRANSICOES_LUZ).map(([k, t]) => [k, { de: [...t.de], para: t.para, descricao: t.descricao }])),
     sons: arquivosAudio("sfx"),
     musicas: arquivosAudio("musica"),
     itens_visiveis: { lanterna_mao: "caio", lanterna_cabeca: "caio" },
@@ -135,8 +137,9 @@ export function gerarCatalogo(): Catalogo {
       "x: 0–1 na largura do quadro; y omitido = pés no chão do cenário; escala 1 = adulto em primeiro plano (0,85–0,95 = um passo atrás)",
       "ações de movimento (entrar, sair, andar, correr) leem melhor em perfil ou 3/4; de frente ou de costas o passo não aparece",
       "a pose `sentado` só existe em 3/4",
-      "`luz` é a iluminação do plano; `efeitos` é o que acontece com ela durante o plano (emergencia_vermelha e lanterna são luz, nunca efeito)",
-      "luz, pose ou prop listados em `exige_item` só valem com o item em estado.itens",
+      "luz é estado: `luz` do plano = estado.luz_ambiente do local; só muda com um evento de `eventos_luz` em `efeitos` (no máximo um por plano), que atualiza estado_final.luz_ambiente",
+      "a lanterna é uma camada (`lanterna: true`) que soma luz ao ambiente quando o Caio aponta para algo; a bateria só cai nos planos com ela acesa",
+      "camada, pose ou prop listados em `exige_item` só valem com o item em estado.itens",
       "uma ação só vale para quem tem as poses dela (veja `acoes` em cada personagem)",
       "camera.foco: uma âncora do cenário ou o id de um personagem do plano",
       "os de baixo: antes do EP5, só `criatura_vulto` (silhueta, sombra); `criatura`, `criatura_clara` e `criatura_escura` só do EP5 em diante",

@@ -27,6 +27,7 @@ describe("bíblia", () => {
     expect(estadoInicialDaBiblia(BIBLIA)).toEqual({
       bateria: 100, comida_dias: 1, agua_litros: 1.5, ferimentos: [], confianca_valdir: 0, exposicao: 0,
       pistas: [], grupo: ["caio", "socorro", "valdir"], itens: ["lanterna_mao"], local_atual: "vagao", noite: 1, hora: "18:04",
+      luz_ambiente: { vagao: "normal", tunel: "escuro", plataforma_1959: "escuro", porta_1959: "escuro" },
     });
   });
 
@@ -55,8 +56,8 @@ describe("catálogo", () => {
   });
 
   it("diz o que exige item: luz lanterna (mão ou cabeça) e a pose segurar_lanterna (mão)", () => {
-    expect(catalogo.exige_item).toEqual({ luz: { lanterna: ["lanterna_mao", "lanterna_cabeca"] }, poses: { segurar_lanterna: ["lanterna_mao"] }, props: {} });
-    expect(catalogo.efeitos).toEqual(["piscar_luz", "apagao"]);
+    expect(catalogo.exige_item).toEqual({ camadas: { lanterna: ["lanterna_mao", "lanterna_cabeca"] }, poses: { segurar_lanterna: ["lanterna_mao"] }, props: {} });
+    expect(catalogo.efeitos).toEqual(["piscar_luz", "apagao", "luz_emergencia_falha", "luz_volta"]);
     expect(catalogo.personagens.find((p) => p.id === "caio")!.acessorios).toEqual(["lanterna_cabeca", "lanterna_mao"]);
   });
 });
@@ -142,14 +143,14 @@ describe("checarRoteiro", () => {
   it("luz e pose que exigem item: lanterna_mao no estado libera; sem ela, bloqueia", () => {
     const ep = ep1();
     const p = ep.planos[4] as Extract<Episodio["planos"][number], { tipo: "cena" }>;
-    p.luz = "lanterna";
+    p.lanterna = true;
     p.personagens[0].pose = "segurar_lanterna";
     p.personagens[0].acao = { tipo: "tremer" };
     expect(bloqueios(ep)).toEqual([]);
     const semItens = { ...ctx, estadoAntes: { ...ctx.estadoAntes, itens: [] } };
     const cs = checarRoteiro(ep, semItens);
     expect(cs.find((c) => c.id === "itens_exigidos")?.mensagem).toBe(
-      "item ausente do estado (itens: nenhum): p05: luz lanterna exige lanterna_mao ou lanterna_cabeca, p05: pose segurar_lanterna (caio) exige lanterna_mao",
+      "item ausente do estado (itens: nenhum): p05: lanterna exige lanterna_mao ou lanterna_cabeca, p05: pose segurar_lanterna (caio) exige lanterna_mao",
     );
     // só a lanterna de cabeça: a luz vale, a pose de segurar a de mão não
     const soCabeca = { ...ctx, estadoAntes: { ...ctx.estadoAntes, itens: ["lanterna_cabeca"] } };
@@ -159,7 +160,7 @@ describe("checarRoteiro", () => {
   it("item ganho no meio do episódio (estado_depois de um plano anterior) vale dali em diante", () => {
     const ep = ep1();
     const p = ep.planos[4] as Extract<Episodio["planos"][number], { tipo: "cena" }>;
-    p.luz = "lanterna";
+    p.lanterna = true;
     const semItens = { ...ctx, estadoAntes: { ...ctx.estadoAntes, itens: [] } };
     expect(falhasBloqueantes(checarRoteiro(ep, semItens)).map((c) => c.id)).toEqual(["itens_exigidos"]);
     (ep.planos[2] as { estado_depois?: Record<string, unknown> }).estado_depois = { itens: ["lanterna_cabeca"] };
@@ -173,18 +174,47 @@ describe("checarRoteiro", () => {
     const semPiscar = { ...ctx, catalogo: { ...catalogo, luzes: catalogo.luzes.filter((l) => l !== "emergencia_vermelha"), efeitos: ["apagao"] } };
     const c = checarRoteiro(ep, semPiscar).find((x) => x.id === "luz_efeitos")!;
     expect(c.ok).toBe(false);
-    expect(c.mensagem).toMatch(/p01: luz emergencia_vermelha.*p04: efeito piscar_luz/);
+    expect(c.mensagem).toMatch(/p02: luz emergencia_vermelha.*p04: efeito piscar_luz/);
   });
 
-  it("emergencia_vermelha e lanterna em efeitos são recusadas pelo Zod, com a dica de usar luz", () => {
+  it("emergencia_vermelha e lanterna em efeitos são recusadas pelo Zod, com a dica de usar luz ambiente ou a camada", () => {
     const j = ep1Json();
     (j.planos as Record<string, unknown>[])[2].efeitos = ["emergencia_vermelha", "lanterna"];
     const r = validarEpisodio(j);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.erros).toEqual([
-      "planos.2.efeitos.0: efeito inválido: use piscar_luz ou apagao (emergencia_vermelha e lanterna vão em luz)",
-      "planos.2.efeitos.1: efeito inválido: use piscar_luz ou apagao (emergencia_vermelha e lanterna vão em luz)",
+      "planos.2.efeitos.0: efeito inválido: use piscar_luz, apagao, luz_emergencia_falha, luz_volta (emergencia_vermelha é luz ambiente; lanterna é `lanterna: true`)",
+      "planos.2.efeitos.1: efeito inválido: use piscar_luz, apagao, luz_emergencia_falha, luz_volta (emergencia_vermelha é luz ambiente; lanterna é `lanterna: true`)",
     ]);
+  });
+
+  it("luz é estado: trocar a luz sem evento bloqueia; o evento muda a luz dali em diante e precisa ir para o estado final", () => {
+    const ep = ep1();
+    const cena = (i: number) => ep.planos[i] as Extract<Episodio["planos"][number], { tipo: "cena" }>;
+    cena(6).luz = "escuro";
+    const msg = () => checarRoteiro(ep, ctx).find((c) => c.id === "luz_continuidade")!;
+    expect(msg().ok).toBe(false);
+    expect(msg().mensagem).toContain("p07: luz escuro, mas vagao está em emergencia_vermelha");
+    // com o evento no plano anterior, o escuro passa a valer
+    cena(5).efeitos = ["luz_emergencia_falha"];
+    for (let i = 7; i < 14; i++) cena(i).luz = "escuro";
+    expect(msg().mensagem).toContain("estado_final.luz_ambiente.vagao = emergencia_vermelha; depois dos eventos é escuro");
+    (ep.estado_final.luz_ambiente as Record<string, string>).vagao = "escuro";
+    expect(msg()).toMatchObject({ ok: true, mensagem: "luz ambiente contínua (eventos: p01 apagao, p06 luz_emergencia_falha)" });
+  });
+
+  it("evento que não combina com a luz vigente bloqueia (luz_volta com a luz normal)", () => {
+    const ep = ep1();
+    (ep.planos[0] as { efeitos: string[] }).efeitos = ["luz_volta"];
+    expect(checarRoteiro(ep, ctx).find((c) => c.id === "luz_continuidade")!.mensagem).toContain("p01: luz_volta com vagao em normal");
+  });
+
+  it("bateria que cai sem lanterna acesa é aviso", () => {
+    const ep = ep1();
+    ep.estado_final.bateria = 90;
+    expect(avisos(ep)).toContain("bateria_lanterna");
+    (ep.planos[3] as { lanterna: boolean }).lanterna = true;
+    expect(avisos(ep)).not.toContain("bateria_lanterna");
   });
 
   it("avisos de estilo não bloqueiam", () => {

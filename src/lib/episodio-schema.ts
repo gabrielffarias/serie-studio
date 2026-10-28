@@ -1,6 +1,7 @@
 // Contrato do JSON de episódio (MODO 2 da skill serie-interativa).
 // Todo roteiro vindo do Claude passa por aqui antes de entrar no banco.
 import { z } from "zod";
+import { EFEITOS, LUZES_AMBIENTE } from "./luz";
 
 export const VISTAS = ["frente", "costas", "perfil_esq", "perfil_dir", "3/4_esq", "3/4_dir"] as const;
 
@@ -13,10 +14,10 @@ export const MOVIMENTOS_CAMERA = [
   "fixo", "push_in", "pull_out", "pan_esq", "pan_dir", "tilt_cima", "tilt_baixo", "shake", "corte_seco",
 ] as const;
 
-export const LUZES = ["normal", "escuro", "emergencia_vermelha", "lanterna", "apagao"] as const;
-// `luz` é a iluminação do plano; `efeitos` é o que acontece com ela durante o plano.
-// emergencia_vermelha e lanterna são luz, nunca efeito.
-export const EFEITOS_LUZ = ["piscar_luz", "apagao"] as const;
+// Luz ambiente (estado do local) e efeitos/eventos de luz: src/lib/luz.ts.
+// A lanterna é uma camada por cima do ambiente (`lanterna: true`), não uma luz.
+export const LUZES = LUZES_AMBIENTE;
+export const EFEITOS_LUZ = EFEITOS;
 export const INFOGRAFICOS = ["corte_tunel", "ondas_som", "mapa_linha", "placar_votacao"] as const;
 
 const fracao = z.number().min(0).max(1);
@@ -102,12 +103,15 @@ export const planoSchema = z.discriminatedUnion("tipo", [
     ...planoBase,
     tipo: z.literal("cena"),
     cenario: z.string().min(1),
-    luz: z.enum(LUZES, { error: `luz inválida: use ${LUZES.join(", ")}` }).nullish(),
+    // luz ambiente do local no início do plano: vem do estado (omitida = a do estado)
+    luz: z.enum(LUZES, { error: `luz ambiente inválida: use ${LUZES.join(", ")} (lanterna é a camada \`lanterna: true\`)` }).nullish(),
+    // camada de lanterna acesa por cima do ambiente (exige lanterna_mao ou lanterna_cabeca)
+    lanterna: z.boolean().default(false),
     camera: cameraSchema.nullish(),
     personagens: z.array(personagemEmCenaSchema).default([]),
     props: z.array(propEmCenaSchema).default([]),
     efeitos: z
-      .array(z.enum(EFEITOS_LUZ, { error: `efeito inválido: use ${EFEITOS_LUZ.join(" ou ")} (emergencia_vermelha e lanterna vão em luz)` }))
+      .array(z.enum(EFEITOS_LUZ, { error: `efeito inválido: use ${EFEITOS_LUZ.join(", ")} (emergencia_vermelha é luz ambiente; lanterna é \`lanterna: true\`)` }))
       .default([]),
     cartao: cartaoSchema.nullish(),
     estado_antes: estadoParcial.optional(),

@@ -63,8 +63,8 @@
 
 | Chave | Local | Entra no |
 |---|---|---|
-| `vagao` | Interior do vagão: bancos azuis, barras amarelas, janelas pretas, luz de emergência | EP1 |
-| `tunel` | Túnel: trilho, cabos na parede, poças, luz só da lanterna | EP1–2 |
+| `vagao` | Interior do vagão: bancos azuis, barras amarelas, janelas pretas. Luz normal até o apagão do EP1; depois, emergência vermelha constante | EP1 |
+| `tunel` | Túnel: trilho, cabos na parede, poças. Escuro; só a lanterna soma luz | EP1–2 |
 | `plataforma_1959` | Plataforma da estação fantasma: azulejos creme e verde-água inacabados, andaimes, sacos de cimento, letreiro "1959" pintado à mão | EP2 |
 | `sala_tecnica` | Sala técnica: quadro de energia, armário de ferramentas, rádio antigo, mapa amarelado da obra | EP3 |
 | `tunel_antigo` | Galeria de pedra mais antiga que o concreto, com **símbolos geométricos** riscados (círculos concêntricos e linhas em cruz, lembrando o Plano Piloto visto de cima) | EP4 |
@@ -107,7 +107,15 @@
 | `grupo` | lista | [caio, socorro, valdir] | Quem ainda está junto |
 | `itens` | lista | [lanterna_mao] | Caio começa com a `lanterna_mao`. Outros: `lanterna_cabeca` (opção A do EP1), `chave_1959`, `radio`, `pilhas` |
 | `local_atual` | chave | `vagao` | |
+| `luz_ambiente` | mapa local → luz | {vagao: normal, tunel: escuro, plataforma_1959: escuro, porta_1959: escuro} | Luz de cada local: `normal`, `emergencia_vermelha` ou `escuro`. Só muda com evento de luz (ver abaixo) |
 | `noite` / `hora` | | 1 / 18:04 | |
+
+**Luz é estado, não escolha do plano.** Cada local tem a sua luz ambiente em `luz_ambiente`, e todo plano naquele local usa essa luz. Ela só muda com um evento de luz no plano, que atualiza o estado:
+- `apagao`: a luz principal cai e a de emergência vermelha acende (`normal` → `emergencia_vermelha`). É o que acontece no vagão no EP1; depois disso, o vagão fica em emergência vermelha constante.
+- `luz_emergencia_falha`: a emergência falha (`emergencia_vermelha` → `escuro`).
+- `luz_volta`: a luz principal volta (→ `normal`).
+
+Túnel e estação 1959 são escuros. A **lanterna** é uma camada que soma luz ao ambiente quando o Caio aponta para algo; nunca substitui a luz do local. A bateria só cai nos planos com a lanterna acesa. Locais novos entram em `luz_ambiente` quando o cenário for aprovado.
 
 ## 8. VERDADE SECRETA (só para quem escreve)
 

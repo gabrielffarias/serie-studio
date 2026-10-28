@@ -3,6 +3,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
+import { LUZES_AMBIENTE } from "./luz";
 import { estadoInicialDaBiblia } from "./biblia";
 
 const ferimentoSchema = z.object({ quem: z.string(), onde: z.string(), gravidade: z.number().int().min(1).max(3) });
@@ -24,6 +25,8 @@ export const estadoSchema = z
     grupo: z.array(z.string()),
     itens: z.array(z.string()),
     local_atual: z.string(),
+    /** luz ambiente de cada local; só muda com evento de luz (src/lib/luz.ts) */
+    luz_ambiente: z.record(z.string(), z.enum(LUZES_AMBIENTE)),
     noite: z.number().int().min(1),
     hora: z.string().regex(/^\d{2}:\d{2}$/),
   })

@@ -50,9 +50,9 @@
         "soltar"
       ],
       "notas": [
-        "começa com `lanterna_mao` (item do estado): com luz `lanterna` e pose `segurar_lanterna`, o feixe sai da mão, na direção do braço",
+        "começa com `lanterna_mao` (item do estado): com `lanterna: true` e pose `segurar_lanterna`, o feixe sai da mão e acompanha o braço",
         "`lanterna_cabeca` (no boné) só aparece quando o item está no estado; com ela, o feixe sai da cabeça em qualquer pose",
-        "luz `lanterna` sem ninguém segurando a lanterna no plano: o feixe vem de baixo, do ponto de vista de quem a segura fora do quadro"
+        "`lanterna: true` sem ninguém segurando a lanterna no plano: o feixe vem de baixo, do ponto de vista de quem a segura fora do quadro"
       ]
     },
     {
@@ -332,7 +332,7 @@
       ],
       "estados": [],
       "notas": [
-        "use luz `lanterna` (escuro em volta do feixe; quem está fora dele vira silhueta com contorno)"
+        "luz ambiente `escuro`: quem está fora do feixe da lanterna vira silhueta com contorno"
       ]
     },
     {
@@ -636,15 +636,39 @@
   ],
   "luzes": [
     "normal",
-    "escuro",
     "emergencia_vermelha",
-    "lanterna",
-    "apagao"
+    "escuro"
   ],
   "efeitos": [
     "piscar_luz",
-    "apagao"
+    "apagao",
+    "luz_emergencia_falha",
+    "luz_volta"
   ],
+  "eventos_luz": {
+    "apagao": {
+      "de": [
+        "normal"
+      ],
+      "para": "emergencia_vermelha",
+      "descricao": "a luz principal cai; a de emergência vermelha acende"
+    },
+    "luz_emergencia_falha": {
+      "de": [
+        "emergencia_vermelha"
+      ],
+      "para": "escuro",
+      "descricao": "a luz de emergência falha; fica escuro"
+    },
+    "luz_volta": {
+      "de": [
+        "emergencia_vermelha",
+        "escuro"
+      ],
+      "para": "normal",
+      "descricao": "a luz principal volta"
+    }
+  },
   "sons": [],
   "musicas": [],
   "itens_visiveis": {
@@ -652,7 +676,7 @@
     "lanterna_cabeca": "caio"
   },
   "exige_item": {
-    "luz": {
+    "camadas": {
       "lanterna": [
         "lanterna_mao",
         "lanterna_cabeca"
@@ -669,8 +693,9 @@
     "x: 0–1 na largura do quadro; y omitido = pés no chão do cenário; escala 1 = adulto em primeiro plano (0,85–0,95 = um passo atrás)",
     "ações de movimento (entrar, sair, andar, correr) leem melhor em perfil ou 3/4; de frente ou de costas o passo não aparece",
     "a pose `sentado` só existe em 3/4",
-    "`luz` é a iluminação do plano; `efeitos` é o que acontece com ela durante o plano (emergencia_vermelha e lanterna são luz, nunca efeito)",
-    "luz, pose ou prop listados em `exige_item` só valem com o item em estado.itens",
+    "luz é estado: `luz` do plano = estado.luz_ambiente do local; só muda com um evento de `eventos_luz` em `efeitos` (no máximo um por plano), que atualiza estado_final.luz_ambiente",
+    "a lanterna é uma camada (`lanterna: true`) que soma luz ao ambiente quando o Caio aponta para algo; a bateria só cai nos planos com ela acesa",
+    "camada, pose ou prop listados em `exige_item` só valem com o item em estado.itens",
     "uma ação só vale para quem tem as poses dela (veja `acoes` em cada personagem)",
     "camera.foco: uma âncora do cenário ou o id de um personagem do plano",
     "os de baixo: antes do EP5, só `criatura_vulto` (silhueta, sombra); `criatura`, `criatura_clara` e `criatura_escura` só do EP5 em diante",

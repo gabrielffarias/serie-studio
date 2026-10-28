@@ -6,6 +6,7 @@ import type { NoEsqueleto } from "./biblia";
 import type { Catalogo } from "./catalogo";
 import type { Episodio, Plano } from "./episodio-schema";
 import type { Estado } from "./estado";
+import { percorrerLuz } from "./luz";
 
 /** `aviso`: aparece na revisão, mas não bloqueia nem vai para o retry do roteiro. */
 export type Checagem = { id: string; ok: boolean; mensagem: string; aviso?: boolean };
@@ -253,7 +254,7 @@ export function checarItens(ep: Episodio, cat: Catalogo, antes: Estado): Checage
   for (const p of ep.planos) {
     if (p.tipo !== "cena") continue;
     itens = itensDe(p.estado_antes) ?? itens;
-    if (p.luz) falta(p.id, `luz ${p.luz}`, ex.luz[p.luz]);
+    if (p.lanterna) falta(p.id, "lanterna", ex.camadas.lanterna);
     for (const pc of p.personagens) falta(p.id, `pose ${pc.pose} (${pc.id})`, ex.poses[pc.pose]);
     for (const pr of p.props) falta(p.id, `prop ${pr.id}`, ex.props[pr.id]);
     itens = itensDe(p.estado_depois) ?? itens;
@@ -267,6 +268,34 @@ export function checarItens(ep: Episodio, cat: Catalogo, antes: Estado): Checage
         : `luz, poses e props com os itens do estado (${(antes.itens ?? []).join(", ") || "nenhum"})`,
     },
   ];
+}
+
+/**
+ * Luz é estado: a luz de cada plano é a luz ambiente vigente do local, que só
+ * muda com um evento de luz; o estado final traz a luz resultante.
+ */
+export function checarLuz(ep: Episodio, antes: Estado): Checagem[] {
+  const r = percorrerLuz(ep.planos, antes.luz_ambiente ?? {});
+  const problemas = [...r.problemas];
+  const final = ep.estado_final.luz_ambiente as Record<string, string> | undefined;
+  const mudou = Object.keys(r.final).some((k) => r.final[k] !== antes.luz_ambiente?.[k]);
+  if (final) {
+    for (const [k, v] of Object.entries(r.final)) if (k in (antes.luz_ambiente ?? {}) && final[k] !== v) problemas.push(`estado_final.luz_ambiente.${k} = ${final[k] ?? "(faltando)"}; depois dos eventos é ${v}`);
+  } else if (mudou) {
+    problemas.push(`estado_final sem luz_ambiente, mas a luz mudou: ${Object.entries(r.final).filter(([k, v]) => v !== antes.luz_ambiente?.[k]).map(([k, v]) => `${k} → ${v}`).join(", ")}`);
+  }
+  const eventos = r.planos.filter((p) => p.evento).map((p) => `${p.id} ${p.evento}`);
+  const out: Checagem[] = [
+    {
+      id: "luz_continuidade",
+      ok: problemas.length === 0,
+      mensagem: problemas.length ? `luz fora de continuidade: ${lista(problemas)}` : `luz ambiente contínua${eventos.length ? ` (eventos: ${eventos.join(", ")})` : " (sem eventos de luz)"}`,
+    },
+  ];
+  const caiu = typeof ep.estado_final.bateria === "number" && ep.estado_final.bateria < antes.bateria;
+  const comLanterna = ep.planos.some((p) => p.tipo === "cena" && p.lanterna);
+  if (caiu && !comLanterna) out.push({ id: "bateria_lanterna", ok: false, aviso: true, mensagem: "a bateria cai, mas nenhum plano acende a lanterna (o HUD só desce com a lanterna acesa)" });
+  return out;
 }
 
 export function checarCronograma(ep: Episodio, cronograma: Record<string, number>, antes: Estado): Checagem[] {
@@ -361,6 +390,7 @@ export function checarRoteiro(ep: Episodio, ctx: ContextoRoteiro): Checagem[] {
     ...checarEpisodio(ep, ctx),
     ...checarCatalogo(ep, ctx.catalogo),
     ...checarItens(ep, ctx.catalogo, ctx.estadoAntes),
+    ...checarLuz(ep, ctx.estadoAntes),
     ...checarCronograma(ep, ctx.cronograma, ctx.estadoAntes),
     ...checarEstilo(ep, ctx, ctx.estadoAntes),
   ];

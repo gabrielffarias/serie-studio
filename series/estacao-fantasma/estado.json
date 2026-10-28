@@ -18,6 +18,12 @@
     "lanterna_mao"
   ],
   "local_atual": "vagao",
+  "luz_ambiente": {
+    "vagao": "normal",
+    "tunel": "escuro",
+    "plataforma_1959": "escuro",
+    "porta_1959": "escuro"
+  },
   "noite": 1,
   "hora": "18:04"
 }
