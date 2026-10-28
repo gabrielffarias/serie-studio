@@ -26,7 +26,16 @@ describe("efeitos de luz", () => {
     const p = { ...plano([]), luz: "emergencia_vermelha", lanterna: true, personagens: [{ id: "caio", vista: "perfil_dir", pose: "segurar_lanterna", x: 0.3, acao: { tipo: "andar", para_x: 0.6, em_s: 1 } }] } as PlanoCena;
     const c = comporCena(p, { px: "p01", dur: 5, itens: ["lanterna_mao"], semente: "t" });
     expect(() => compilar(c.kfs)).not.toThrow();
-    const xs = c.kfs.filter((k) => k.alvo === "#p01-cone" && k.prop === "x").map((k) => k.v as number);
+    const xs = c.kfs.filter((k) => k.alvo === "#p01-cone-pos" && k.prop === "x").map((k) => k.v as number);
     expect(Math.max(...xs) - xs[0]).toBeCloseTo(0.3 * 1080, -1);
+  });
+
+  it("o cone translada num grupo e gira no path (girar quem translada tira o pivô da ponta)", () => {
+    const p = { ...plano([]), luz: "emergencia_vermelha", lanterna: true, personagens: [{ id: "caio", vista: "3/4_esq", pose: "segurar_lanterna", x: 0.6 }] } as PlanoCena;
+    const c = comporCena(p, { px: "p01", dur: 2, itens: ["lanterna_mao"], semente: "t" });
+    expect(c.svg).toContain('<g id="p01-cone-pos"><path id="p01-cone"');
+    const props = (alvo: string) => new Set(c.kfs.filter((k) => k.alvo === alvo).map((k) => k.prop));
+    expect([...props("#p01-cone-pos")].sort()).toEqual(["x", "y"]);
+    expect([...props("#p01-cone")]).toEqual(["rotation"]);
   });
 });

@@ -48,7 +48,7 @@ function conePadrao(): string {
 export function mascaraLanterna(px: string, o: OrigemLanterna): string {
   const cone = o.alvo
     ? `<ellipse id="${px}-cone" cx="${o.alvo.x}" cy="${o.alvo.y}" rx="300" ry="270" fill="url(#${px}-feixe)"/>`
-    : `<path id="${px}-cone" d="${conePadrao()}" fill="url(#${px}-feixe)"/>`;
+    : `<g id="${px}-cone-pos"><path id="${px}-cone" d="${conePadrao()}" fill="url(#${px}-feixe)"/></g>`;
   const grad = o.alvo
     ? `<radialGradient id="${px}-feixe" cx="${o.alvo.x}" cy="${o.alvo.y}" r="320" gradientUnits="userSpaceOnUse">`
     : `<radialGradient id="${px}-feixe" cx="0" cy="0" r="${ALCANCE}" gradientUnits="userSpaceOnUse">`;
@@ -60,16 +60,20 @@ export function mascaraLanterna(px: string, o: OrigemLanterna): string {
 
 /** Brilho quente dentro do cone (id `${px}-brilho`), por cima do ambiente. */
 export function brilhoLanterna(px: string, o: OrigemLanterna): string {
-  return o.alvo ? "" : `<path id="${px}-brilho" d="${conePadrao()}" fill="#FFF3B0" opacity=".12"/>`;
+  return o.alvo ? "" : `<g id="${px}-brilho-pos"><path id="${px}-brilho" d="${conePadrao()}" fill="#FFF3B0" opacity=".12"/></g>`;
 }
 
-/** Posição do feixe em t (cone e brilho andam juntos). */
+/**
+ * Posição do feixe em t (cone e brilho andam juntos). A translação vai no
+ * grupo `-pos` e a rotação no path: com svgOrigin "0 0", girar o mesmo
+ * elemento que translada tira o pivô da ponta do cone.
+ */
 export function kfsFeixe(px: string, o: OrigemLanterna, t: number, dur = 0): Keyframe[] {
   if (o.alvo) return [];
   const r = (n: number) => Math.round(n * 10) / 10;
   return [`#${px}-cone`, `#${px}-brilho`].flatMap((alvo) => [
-    { alvo, prop: "x", t, v: r(o.x), dur },
-    { alvo, prop: "y", t, v: r(o.y), dur },
+    { alvo: `${alvo}-pos`, prop: "x", t, v: r(o.x), dur },
+    { alvo: `${alvo}-pos`, prop: "y", t, v: r(o.y), dur },
     { alvo, prop: "rotation", t, v: r(o.angulo), dur },
   ]);
 }
