@@ -44,3 +44,21 @@ describe("compilar", () => {
     expect(f.get("#a|opacity")).toBe(1);
   });
 });
+
+describe("compilar: encaixes no mesmo instante", () => {
+  it("só o último encaixe de duração zero no mesmo t vale", () => {
+    const segs = compilar([
+      { alvo: "#h", prop: "opacity", t: 0, v: 1 },
+      { alvo: "#h", prop: "opacity", t: 0, v: 0 },
+      { alvo: "#h", prop: "opacity", t: 5, v: 1 },
+    ]);
+    expect(segs.map((s) => [s[2], s[3], s[4]])).toEqual([[0, 0, 0], [0, 1, 5]]);
+  });
+  it("mantém o encaixe em t=0 quando a transição seguinte começa no mesmo t", () => {
+    const segs = compilar([
+      { alvo: "#j", prop: "rotation", t: 0, v: 5 },
+      { alvo: "#j", prop: "rotation", t: 0, v: 20, dur: 0.1 },
+    ]);
+    expect(segs.length).toBe(2);
+  });
+});

@@ -78,3 +78,26 @@ describe("regra dos objetos (isopor, pasta)", () => {
     });
   }
 });
+
+describe("ações", () => {
+  it("espelhar lados troca perna/braço da frente e de trás (de frente, inverte o sinal)", async () => {
+    const { espelharLados } = await import("../acoes/acoes");
+    const p = pose("caio", "andar", "perfil");
+    const e = espelharLados(p, "perfil");
+    expect(e.angulos.coxa_d).toBe(p.angulos.coxa_e);
+    expect(e.angulos.braco_e).toBe(p.angulos.braco_d);
+    const f = pose("caio", "andar", "frente");
+    expect(espelharLados(f, "frente").angulos.coxa_d).toBe(-f.angulos.coxa_e + 0);
+  });
+  it("andar até para_x: a raiz chega ao destino e todas as trilhas compilam", async () => {
+    const { kfsAcao } = await import("../acoes/acoes");
+    const { compilar } = await import("../core/keyframes");
+    const ctx = { id: "caio", inst: "i", vista: "perfil" as const, espelho: false, pos: { x: 100, y: 1470, escala: 1 }, poseBase: "em_pe", extras: {}, dur: 5, semente: "s" };
+    const kfs = kfsAcao({ tipo: "andar", para_x: 0.5 }, ctx);
+    const xs = kfs.filter((k) => k.alvo === "#i" && k.prop === "x");
+    expect(xs.at(-1)!.v).toBe(540);
+    // a pose inicial em t=0 vem do montarCena
+    const base = kfsPose(PERSONAGENS.caio.d, "i", "perfil", pose("caio", "em_pe", "perfil"), 0);
+    expect(() => compilar([...base, ...kfsRaiz("i", { x: 100, y: 1470, escala: 1, espelho: false }, 0), ...kfs])).not.toThrow();
+  });
+});

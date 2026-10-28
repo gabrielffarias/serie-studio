@@ -25,7 +25,13 @@ export function compilar(kfs: Keyframe[], iniciais: Record<string, Valor> = {}):
   const out: Segmento[] = [];
   for (const [chave, lista] of trilhas) {
     // ordem estável por tempo (keyframes no mesmo t: vale o último declarado)
-    const ord = lista.map((k, i) => ({ k, i })).sort((a, b) => a.k.t - b.k.t || a.i - b.i).map((x) => x.k);
+    const ordenada = lista.map((k, i) => ({ k, i })).sort((a, b) => a.k.t - b.k.t || a.i - b.i).map((x) => x.k);
+    // encaixes no mesmo instante: só o último vale (dois tweens de duração zero
+    // no mesmo t deixam o runtime do HyperFrames no estado errado ao buscar o quadro)
+    const ord = ordenada.filter((k, i) => {
+      const prox = ordenada[i + 1];
+      return !(prox && prox.t === k.t && (k.dur ?? 0) === 0 && (prox.dur ?? 0) === 0);
+    });
     let atual: Valor | undefined = iniciais[chave];
     if (atual === undefined) {
       if (ord[0].t !== 0 || (ord[0].dur ?? 0) !== 0) {

@@ -54,7 +54,7 @@ export const vagao: Cenario = {
     `<path d="M540 430 L540 1470" stroke="${C.moldura}" stroke-width="6"/>` +
     `<rect x="420" y="520" width="100" height="300" rx="16" fill="${C.janela}"/><rect x="560" y="520" width="100" height="300" rx="16" fill="${C.janela}"/>` +
     `<rect x="478" y="880" width="124" height="70" rx="8" fill="#D1271B" stroke="${C.contorno}" stroke-width="5"/>` +
-    `<text x="540" y="926" text-anchor="middle" font-family="InterHF, Inter, sans-serif" font-weight="800" font-size="20" fill="#fff">EMERGÊNCIA</text>` +
+    `<text data-layout-ignore x="540" y="926" text-anchor="middle" font-family="InterHF, Inter, sans-serif" font-weight="800" font-size="20" fill="#fff">EMERGÊNCIA</text>` +
     // faixa baixa e bancos
     `<rect y="1110" width="1080" height="360" fill="${C.paredeBaixa}"/>` +
     `<rect x="0" y="1080" width="400" height="150" rx="22" fill="${C.banco}"/><rect x="680" y="1080" width="400" height="150" rx="22" fill="${C.banco}"/>` +
