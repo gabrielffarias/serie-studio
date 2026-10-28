@@ -62,6 +62,7 @@ describe("promptRoteiro", () => {
     expect(p).toContain("Não use infográfico");
     expect(p).toContain("resultado_anterior é null");
     expect(p).toContain("series/estacao-fantasma/estado.json, assets/catalogo.json");
+    expect(p).toContain("Itens no estado: lanterna_mao.");
   });
 
   it("com votação anterior, pede o plano de resultado; sem votação no nó, pede CONTINUA", () => {

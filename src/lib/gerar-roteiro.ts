@@ -64,6 +64,7 @@ export function promptRoteiro(p: PedidoRoteiro): string {
     `Escreva o nó \`${no.no}\` (EP${no.numero}) do esqueleto: ${no.resumo}`,
     `Leia antes, inteiros: ${leituras.join(", ")}.`,
     `Estado atual: noite ${estado.noite}, ${estado.hora}, local ${estado.local_atual}, bateria ${estado.bateria}. O HUD usa o selo "NOITE ${estado.noite} · HH:MM" e o medidor BATERIA.`,
+    `Itens no estado: ${estado.itens.join(", ") || "nenhum"}. Luz, pose ou prop em \`exige_item\` do catálogo só com o item no estado; \`luz\` e \`efeitos\` só com os valores do catálogo (emergencia_vermelha e lanterna são luz, nunca efeito).`,
     p.resultado
       ? `Houve votação: venceu ${p.resultado.opcao} (A ${p.resultado.pct_a}% × B ${p.resultado.pct_b}%, ${p.resultado.total_votos} votos). Preencha resultado_anterior e abra com o plano \`resultado\` (4–6 s).`
       : "Não houve votação antes deste episódio: resultado_anterior é null, nenhum plano `resultado`, e a primeira narração traz a hora e o local.",
