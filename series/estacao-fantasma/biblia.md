@@ -37,7 +37,7 @@
 - 24 anos, técnico terceirizado de manutenção do metrô. Conhece os túneis, os quadros de energia e as passagens de serviço.
 - **Quer:** voltar pra casa em Ceilândia, onde a irmã mais nova está sozinha.
 - **Defeito:** age antes de pensar. Tem medo de ficar no escuro desde criança e esconde isso.
-- **Visual:** cabeça redonda grande (o estilo da série), pele morena média, cabelo preto curto, **boné azul-marinho**, **macacão laranja de manutenção com faixa refletiva cinza na altura do peito e das canelas**, botina preta, **lanterna de cabeça** (adquirida no EP1/2) e cinto com chave de fenda.
+- **Visual:** cabeça redonda grande (o estilo da série), pele morena média, cabelo preto curto, **boné azul-marinho**, **macacão laranja de manutenção com faixa refletiva cinza na altura do peito e das canelas**, botina preta e cinto com chave de fenda. Começa com uma **lanterna de mão** de técnico de manutenção (item `lanterna_mao`; na pose `segurar_lanterna` o feixe sai da mão). A **lanterna de cabeça** (`lanterna_cabeca`, presa no boné) só aparece se ele ganhar o item (opção A do EP1).
 - **Paleta:** laranja `#E8752A`, faixa `#C9CDD2`, boné `#1F2A44`, pele `#B98260`.
 
 ### Dona Socorro
@@ -97,7 +97,7 @@
 
 | Variável | Tipo | Início | Significado |
 |---|---|---|---|
-| `bateria` | 0–100 | 100 | Lanterna. Cai de 8 a 15 por episódio. Pilhas extras recarregam |
+| `bateria` | 0–100 | 100 | Bateria da lanterna de mão do Caio (`lanterna_mao`). Cai de 8 a 15 por episódio. Pilhas extras recarregam |
 | `comida_dias` | número | 1 | Estoque (isopor + achados) |
 | `agua_litros` | número | 1.5 | |
 | `ferimentos` | lista | [] | Ex.: `{quem:"caio", onde:"tornozelo", gravidade:1}` |
@@ -105,7 +105,7 @@
 | `exposicao` | 0–10 | 0 | Quanto barulho e rastro o grupo já deixou. Alta = criaturas mais perto |
 | `pistas` | lista | [] | Chaves de pista já vistas (ver Cronograma) |
 | `grupo` | lista | [caio, socorro, valdir] | Quem ainda está junto |
-| `itens` | lista | [] | Ex.: `lanterna_cabeca`, `chave_1959`, `radio`, `pilhas` |
+| `itens` | lista | [lanterna_mao] | Caio começa com a `lanterna_mao`. Outros: `lanterna_cabeca` (opção A do EP1), `chave_1959`, `radio`, `pilhas` |
 | `local_atual` | chave | `vagao` | |
 | `noite` / `hora` | | 1 / 18:04 | |
 

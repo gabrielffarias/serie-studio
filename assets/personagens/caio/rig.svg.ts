@@ -124,6 +124,21 @@ function lanterna(v: VistaBase): string {
   );
 }
 
+/** comprimento da lanterna de mão a partir do pivô da mão, até a lente (o feixe sai daí) */
+export const PONTA_LANTERNA_MAO = 98;
+
+/**
+ * Lanterna de mão (item `lanterna_mao`), presa na mão direita ao longo do
+ * antebraço: o cabo fica atrás do punho e a cabeça com a lente sai à frente.
+ */
+function lanternaMao(): string {
+  return (
+    `<rect x="-14" y="-24" width="28" height="84" rx="7" fill="#2E3238" stroke="${CONTORNO}" stroke-width="5"/>` +
+    `<path d="M-17 58 L17 58 L25 90 L-25 90 Z" fill="#454A52" stroke="${CONTORNO}" stroke-width="5" stroke-linejoin="round"/>` +
+    `<rect x="-22" y="88" width="44" height="${PONTA_LANTERNA_MAO - 86}" rx="4" fill="#FFF3B0" stroke="${CONTORNO}" stroke-width="3"/>`
+  );
+}
+
 export const caio: Figurino = {
   id: "caio",
   nome: "Caio",
@@ -135,5 +150,6 @@ export const caio: Figurino = {
     j.startsWith("canela") ? `<rect x="-28" y="34" width="56" height="18" fill="${C.faixa}"/>` : "",
   acessorios: {
     lanterna_cabeca: { junta: "cabeca", padrao: false, desenhar: lanterna },
+    lanterna_mao: { junta: "mao_d", padrao: false, atras: true, desenhar: lanternaMao },
   },
 };

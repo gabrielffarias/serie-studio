@@ -2,7 +2,7 @@
 // cada junta num grupo próprio (pivô na origem do grupo) para o GSAP girar.
 // O visual específico vem do Figurino de cada personagem.
 import { desenharRostos, CONTORNO } from "./rosto";
-import type { Figurino, Junta, Lado, VistaBase } from "./tipos";
+import type { Figurino, Junta, Lado, PoseResolvida, VistaBase } from "./tipos";
 
 type Ponto = { x: number; y: number };
 
@@ -71,6 +71,42 @@ export function filhos(f: Figurino): Partial<Record<Junta, { filho: Junta; L: nu
     braco_d: { filho: "antebraco_d", L: p.braco }, braco_e: { filho: "antebraco_e", L: p.braco },
     antebraco_d: { filho: "mao_d", L: p.antebraco }, antebraco_e: { filho: "mao_e", L: p.antebraco },
   };
+}
+
+/** Direção do eixo +y de um segmento girado `graus` (rotação de tela, y para baixo). */
+const eixo = (graus: number) => {
+  const r = (graus * Math.PI) / 180;
+  return { x: -Math.sin(r), y: Math.cos(r) };
+};
+
+/**
+ * Ponto `alem` px depois do pivô da mão, ao longo do antebraço, nas
+ * coordenadas da instância (origem no chão, olhando à direita, escala 1), e a
+ * direção do antebraço em graus de tela (0 = direita, 90 = para baixo).
+ * Segue a mesma cadeia que o SVG: quadril → tronco → ombro → braço → antebraço → mão.
+ */
+export function pontaDaMao(f: Figurino, v: VistaBase, pose: PoseResolvida, lado: Lado, alem = 0): { x: number; y: number; angulo: number } {
+  const p = f.prop;
+  const a = pose.angulos;
+  const quadril = { x: 0, y: -p.quadril + pose.corpo_y };
+  const ombro = layout(v, f).ombros[lado];
+  const rt = (a.tronco * Math.PI) / 180;
+  let x = quadril.x + ombro.x * Math.cos(rt) - ombro.y * Math.sin(rt);
+  let y = quadril.y + ombro.x * Math.sin(rt) + ombro.y * Math.cos(rt);
+  let g = a.tronco;
+  const segs: [number, number][] = [
+    [a[`braco_${lado}`], p.braco * pose.escalas[`braco_${lado}`]],
+    [a[`antebraco_${lado}`], p.antebraco * pose.escalas[`antebraco_${lado}`]],
+    [a[`mao_${lado}`], alem],
+  ];
+  for (const [ang, L] of segs) {
+    g += ang;
+    const e = eixo(g);
+    x += e.x * L;
+    y += e.y * L;
+  }
+  const e = eixo(g);
+  return { x, y, angulo: (Math.atan2(e.y, e.x) * 180) / Math.PI };
 }
 
 function acessoriosDa(px: string, f: Figurino, v: VistaBase, j: Junta, atras: boolean): string {

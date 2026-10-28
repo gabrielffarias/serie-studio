@@ -10,7 +10,7 @@ import { camadaCartao } from "../hud/cartao";
 import { telaContinua, telaResultado, telaVotacao } from "../hud/telas";
 import type { VistaBase } from "../rig/tipos";
 import type { Episodio, Plano } from "../../src/lib/episodio-schema";
-import { extrasDosItens, montarCena, parseVista, type CenaSpec } from "./cena";
+import { extrasDaInstancia, montarCena, parseVista, type CenaSpec } from "./cena";
 
 export type PlanoCena = Extract<Plano, { tipo: "cena" }>;
 
@@ -66,12 +66,22 @@ export function comporCena(p: PlanoCena, ctx: ContextoPlano): PlanoComposto {
         espelho: inst.espelho,
         pos: inst.pos,
         poseBase: inst.spec.pose,
-        extras: extrasDosItens(inst.spec.id, ctx.itens),
+        extras: extrasDaInstancia(inst.spec, ctx.itens),
         dur: ctx.dur,
         semente: `${ctx.semente}-${inst.inst}`,
       }),
     );
   });
+
+  // o feixe da lanterna acompanha quem a segura quando anda
+  const dono = m.instancias.find((i) => i.inst === m.lanterna?.dono);
+  if (dono) {
+    const mov = kfs.filter((k) => k.alvo === `#${dono.inst}` && (k.prop === "x" || k.prop === "y") && k.t + (k.dur ?? 0) > 0);
+    for (const k of mov) {
+      const v0 = k.prop === "x" ? dono.pos.x : dono.pos.y;
+      for (const alvo of [`#${ctx.px}-cone`, `#${ctx.px}-brilho`]) kfs.push({ ...k, alvo, v: Math.round(((k.v as number) - v0) * 10) / 10 });
+    }
+  }
 
   // câmera: âncoras do cenário + cada personagem pelo id (foco na cabeça)
   const ancoras = { ...cenario(p.cenario).ancoras };

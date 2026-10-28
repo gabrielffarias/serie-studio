@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { resolverPose } from "./poses";
 import { kfsPose, kfsRaiz } from "./instancia";
 import { PERSONAGENS, personagem, pose } from "./personagens";
-import { parseVista } from "../compose/cena";
+import { montarCena, parseVista } from "../compose/cena";
 
 describe("resolverPose", () => {
   const apontar = { angulos: { braco_d: -80 } };
@@ -99,5 +99,31 @@ describe("ações", () => {
     // a pose inicial em t=0 vem do montarCena
     const base = kfsPose(PERSONAGENS.caio.d, "i", "perfil", pose("caio", "em_pe", "perfil"), 0);
     expect(() => compilar([...base, ...kfsRaiz("i", { x: 100, y: 1470, escala: 1, espelho: false }, 0), ...kfs])).not.toThrow();
+  });
+});
+
+describe("lanterna de mão", () => {
+  it("segurar_lanterna em perfil: a ponta fica à frente do corpo, na altura do peito, e o feixe sai quase na horizontal", () => {
+    const { d } = personagem("caio");
+    const pr = pose("caio", "segurar_lanterna", "perfil");
+    expect(pr.acessorios.lanterna_mao).toBe(true);
+    const p = d.pontaDaMao!("perfil", pr, "d", 98);
+    expect(p.x).toBeGreaterThan(200);
+    expect(p.y).toBeLessThan(-300);
+    expect(p.y).toBeGreaterThan(-450);
+    expect(p.angulo).toBeGreaterThan(0);
+    expect(p.angulo).toBeLessThan(15);
+  });
+
+  it("montarCena: o feixe sai da mão (espelhado para a esquerda) e acompanha a instância", () => {
+    const m = montarCena({ px: "t", cenario: "vagao", luz: "lanterna", itens: ["lanterna_mao"], personagens: [{ id: "caio", vista: "3/4_esq", pose: "segurar_lanterna", x: 0.6 }] });
+    expect(m.lanterna!.dono).toBe(m.instancias[0].inst);
+    expect(m.lanterna!.x).toBeLessThan(0.6 * 1080 - 150);
+    expect(Math.abs(m.lanterna!.angulo - 180)).toBeLessThan(20);
+  });
+
+  it("sem ninguém segurando, o feixe vem de baixo (ponto de vista)", () => {
+    const m = montarCena({ px: "t", cenario: "tunel", luz: "lanterna", itens: ["lanterna_mao"], personagens: [{ id: "socorro", vista: "3/4_dir", pose: "em_pe", x: 0.5 }] });
+    expect(m.lanterna).toMatchObject({ x: 540, angulo: -90 });
   });
 });

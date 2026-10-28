@@ -1,7 +1,7 @@
 // Uma instância de personagem em cena: SVG com as vistas necessárias e os
 // keyframes que posicionam, trocam vista, aplicam pose e expressão.
 import type { Keyframe } from "../core/keyframes";
-import { desenharHumano, filhos, GESTOS_MAO } from "./humano";
+import { desenharHumano, filhos, GESTOS_MAO, pontaDaMao } from "./humano";
 import { EXPRESSOES, JUNTAS, type Figurino, type Junta, type PoseResolvida, type VistaBase } from "./tipos";
 
 export const slugVista = (v: VistaBase) => (v === "3/4" ? "tq" : v);
@@ -24,6 +24,8 @@ export type Desenhavel = {
   alturaCabeca: number;
   /** opacidade do desenho (vulto = 0,9) */
   opacidade?: number;
+  /** ponta da mão (+ `alem` px no eixo do antebraço) e direção, na escala 1 olhando à direita */
+  pontaDaMao?(v: VistaBase, pose: PoseResolvida, lado: "d" | "e", alem?: number): { x: number; y: number; angulo: number };
 };
 
 export function desenhavelHumano(f: Figurino): Desenhavel {
@@ -47,6 +49,7 @@ export function desenhavelHumano(f: Figurino): Desenhavel {
     ),
     sombraRx: Math.round(f.prop.cabecaR * 1.27),
     alturaCabeca: f.prop.quadril + f.prop.cabeca,
+    pontaDaMao: (v, pose, lado, alem) => pontaDaMao(f, v, pose, lado, alem),
   };
 }
 

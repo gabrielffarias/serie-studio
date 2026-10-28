@@ -6,6 +6,7 @@ import { cenario } from "../cenario/cenarios";
 import { camadaLuz, camadaPiscar, contornoDeLuz, type Luz, type OrigemLanterna } from "../luz/luz";
 import { kfsPose, kfsRaiz, kfsVista, svgInstancia } from "../rig/instancia";
 import { personagem, pose } from "../rig/personagens";
+import { PONTA_LANTERNA_MAO } from "../../assets/personagens/caio/rig.svg";
 import type { VistaBase } from "../rig/tipos";
 
 export type VistaCena = "frente" | "costas" | "perfil_esq" | "perfil_dir" | "3/4_esq" | "3/4_dir";
@@ -41,6 +42,17 @@ export function parseVista(v: VistaCena): { base: VistaBase; espelho: boolean } 
 /** Acessórios ligados pelos itens do estado. */
 export function extrasDosItens(idPersonagem: string, itens: string[] = []): Record<string, boolean> {
   return idPersonagem === "caio" && itens.includes("lanterna_cabeca") ? { lanterna_cabeca: true } : {};
+}
+
+/** Pose em que o Caio segura a lanterna de mão: o feixe sai da mão. */
+export const POSE_LANTERNA_MAO = "segurar_lanterna";
+
+/**
+ * Acessórios de uma instância: os itens do estado e o que a pose segura. Quem
+ * começa o plano com a lanterna de mão continua com ela durante as ações.
+ */
+export function extrasDaInstancia(p: { id: string; pose: string }, itens: string[] = []): Record<string, boolean> {
+  return { ...extrasDosItens(p.id, itens), ...(p.pose === POSE_LANTERNA_MAO ? { lanterna_mao: true } : {}) };
 }
 
 export type InstanciaCena = {
@@ -81,26 +93,46 @@ export function montarCena(spec: CenaSpec): { svg: string; kfs: Keyframe[]; inst
   const kfs: Keyframe[] = [];
   for (const i of instancias) {
     const { d } = personagem(i.spec.id);
-    const extras = extrasDosItens(i.spec.id, spec.itens);
+    const extras = extrasDaInstancia(i.spec, spec.itens);
     kfs.push(...kfsRaiz(i.inst, i.pos, 0));
     kfs.push(...kfsVista(i.inst, i.vistas, i.base, 0));
     for (const v of i.vistas) kfs.push(...kfsPose(d, i.inst, v, pose(i.spec.id, v === i.base ? i.spec.pose : "em_pe", v, extras), 0));
   }
 
-  // lanterna: sai da cabeça de quem tem a lanterna ligada, na direção em que olha
+  // lanterna: sai da mão de quem está na pose segurar_lanterna; senão da cabeça
+  // de quem tem a lanterna de cabeça; sem ninguém, vem de baixo (ponto de vista)
   let lanterna: OrigemLanterna | undefined;
   if (spec.luz === "lanterna") {
-    const dono = instancias.find((i) => extrasDosItens(i.spec.id, spec.itens).lanterna_cabeca) ?? instancias.find((i) => i.spec.id === "caio");
-    if (dono) {
+    const naMao = instancias.find((i) => i.spec.pose === POSE_LANTERNA_MAO);
+    const dono = naMao ?? instancias.find((i) => extrasDosItens(i.spec.id, spec.itens).lanterna_cabeca);
+    if (!dono) {
+      lanterna = { x: 540, y: 2000, angulo: -90 };
+    } else if (dono.base === "costas") {
+      // de costas, ilumina o que está à frente dele: a âncora principal do cenário
+      const { d } = personagem(dono.spec.id);
+      const alvo = Object.values(c.ancoras)[0] ?? { x: 540, y: 820 };
+      lanterna = { x: dono.pos.x, y: dono.pos.y - (d.alturaCabeca + 88) * dono.pos.escala, angulo: 90, alvo, dono: dono.inst };
+    } else if (dono === naMao) {
+      const { d } = personagem(dono.spec.id);
+      const pr = pose(dono.spec.id, dono.spec.pose, dono.base, extrasDaInstancia(dono.spec, spec.itens));
+      const ponta = d.pontaDaMao!(dono.base, pr, "d", PONTA_LANTERNA_MAO);
+      const dir = dono.espelho ? -1 : 1;
+      lanterna = {
+        x: dono.pos.x + dir * ponta.x * dono.pos.escala,
+        y: dono.pos.y + ponta.y * dono.pos.escala,
+        angulo: dono.espelho ? 180 - ponta.angulo : ponta.angulo,
+        dono: dono.inst,
+      };
+    } else {
       const { d } = personagem(dono.spec.id);
       const dir = dono.espelho ? -1 : 1;
-      const frontal = dono.base === "frente" || dono.base === "costas";
-      const x = dono.pos.x + (frontal ? 0 : dir * 80 * dono.pos.escala);
-      const y = dono.pos.y - (d.alturaCabeca + 88) * dono.pos.escala;
-      // de costas, ilumina o que está à frente dele: a âncora principal do cenário
-      const alvo = dono.base === "costas" ? (Object.values(c.ancoras)[0] ?? { x: 540, y: 820 }) : undefined;
-      const angulo = dono.base === "frente" ? 90 : dono.espelho ? 168 : 12;
-      lanterna = { x, y, angulo, alvo };
+      const frontal = dono.base === "frente";
+      lanterna = {
+        x: dono.pos.x + (frontal ? 0 : dir * 80 * dono.pos.escala),
+        y: dono.pos.y - (d.alturaCabeca + 88) * dono.pos.escala,
+        angulo: frontal ? 90 : dono.espelho ? 168 : 12,
+        dono: dono.inst,
+      };
     }
   }
 

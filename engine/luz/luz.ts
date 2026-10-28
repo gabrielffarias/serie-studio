@@ -13,6 +13,8 @@ export type OrigemLanterna = {
   angulo: number;
   /** de costas para a câmera: em vez de cone, um círculo de luz no alvo */
   alvo?: { x: number; y: number };
+  /** instância que segura a lanterna: o feixe acompanha quando ela anda */
+  dono?: string;
 };
 
 /** escuridão em volta do feixe: ~18% de luz ambiente fica (forte, mas legível no celular) */
@@ -81,7 +83,7 @@ export function camadaLuz(px: string, luz: Luz, lanterna?: OrigemLanterna): stri
         `<mask id="${px}-mascara"><rect width="1080" height="1920" fill="#fff"/><path id="${px}-cone" d="${cone}" fill="url(#${px}-feixe)"/></mask>` +
         `</defs>` +
         `<rect id="${px}-luz" width="1080" height="1920" fill="#020305" opacity="${ESCURO_LANTERNA}" mask="url(#${px}-mascara)"/>` +
-        (o.alvo ? "" : `<path d="${cone}" fill="#FFF3B0" opacity=".12"/>`)
+        (o.alvo ? "" : `<path id="${px}-brilho" d="${cone}" fill="#FFF3B0" opacity=".12"/>`)
       );
     }
   }

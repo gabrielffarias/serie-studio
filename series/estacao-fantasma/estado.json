@@ -14,7 +14,9 @@
     "socorro",
     "valdir"
   ],
-  "itens": [],
+  "itens": [
+    "lanterna_mao"
+  ],
   "local_atual": "vagao",
   "noite": 1,
   "hora": "18:04"
