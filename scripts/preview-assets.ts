@@ -51,6 +51,12 @@ ${svgs.join("\n")}</svg>
   return { html, w, h };
 }
 
+/** poses das linhas da folha de vistas (as humanas, ou as primeiras do personagem) */
+function linhasVistas(poses: string[]): string[] {
+  const preferidas = ["em_pe", "apontar", "assustado", "andar"].filter((p) => poses.includes(p));
+  return preferidas.length === 4 ? preferidas : poses.slice(0, 4);
+}
+
 async function main() {
   const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(PERSONAGENS);
   mkdirSync(TMP, { recursive: true });
@@ -58,11 +64,14 @@ async function main() {
   try {
     for (const id of ids) {
       const poses = Object.keys(PERSONAGENS[id].poses);
-      const destino = path.join(RAIZ, `assets/personagens/${id}/preview`);
+      // variações da criatura ficam na pasta dela, com o tom no nome
+      const pasta = id.startsWith("criatura") ? "criatura" : id;
+      const prefixo = pasta === id ? "" : `${id.replace("criatura_", "")}-`;
+      const destino = path.join(RAIZ, `assets/personagens/${pasta}/preview`);
       mkdirSync(destino, { recursive: true });
       const folhas: Record<string, ReturnType<typeof folhaHtml>> = {
         vistas: folhaHtml(
-          ["em_pe", "apontar", "assustado", "andar"].flatMap((p) => ORDEM_VISTAS.map((v) => ({ personagem: id, vista: v, pose: p, rotulo: `${p} · ${v}` }))),
+          linhasVistas(poses).flatMap((p) => ORDEM_VISTAS.map((v) => ({ personagem: id, vista: v, pose: p, rotulo: `${p} · ${v}` }))),
           4, 380, 560, 0.66, 480,
         ),
         "poses-tq": folhaHtml(poses.map((p) => ({ personagem: id, vista: "3/4", pose: p, rotulo: p })), 5, 340, 540, 0.6, 460, ),
@@ -72,10 +81,11 @@ async function main() {
           6, 330, 520, 0.62, 450,
         ),
       };
+      if (!PERSONAGENS[id].d.temRosto) delete folhas.expressoes;
       for (const [nome, f] of Object.entries(folhas)) {
         const html = path.join(TMP, `${id}-${nome}.html`);
         writeFileSync(html, f.html);
-        const png = path.join(destino, `${nome}.png`);
+        const png = path.join(destino, `${prefixo}${nome}.png`);
         await fotografar(nav, html, png, f.w, f.h);
         console.log(`🖼  ${path.relative(RAIZ, png)}`);
       }

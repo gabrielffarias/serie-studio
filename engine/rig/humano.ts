@@ -93,7 +93,7 @@ function braco(px: string, f: Figurino, v: VistaBase, lado: Lado, em: Ponto): st
   const m = `mao_${lado}` as Junta;
   const mao =
     acessoriosDa(px, f, v, m, true) +
-    `<circle cx="0" cy="12" r="27" fill="${f.cores.pele}" stroke="${CONTORNO}" stroke-width="5"/>` +
+    `<circle cx="0" cy="${Math.round((f.maoR ?? 27) * 0.45)}" r="${f.maoR ?? 27}" fill="${f.cores.pele}"${f.semContorno ? "" : ` stroke="${CONTORNO}" stroke-width="5"`}/>` +
     acessoriosDa(px, f, v, m, false);
   const ante =
     segmento(px, `antebraco_${lado}` as Junta, traco(p.antebraco, p.larguraBraco * 0.92, f.cores.antebraco ?? f.cores.manga) +
@@ -132,7 +132,7 @@ export function desenharHumano(f: Figurino, v: VistaBase, px: string): string {
   const cabeca =
     `<g transform="translate(${centroCabeca.x} ${centroCabeca.y})">` +
     cab.base +
-    desenharRostos(px, v, p.cabecaR, f.cores.sobrancelha) +
+    (f.semRosto ? "" : desenharRostos(px, v, p.cabecaR, f.cores.sobrancelha)) +
     cab.topo +
     `</g>` +
     acessoriosDa(px, f, v, "cabeca", false);

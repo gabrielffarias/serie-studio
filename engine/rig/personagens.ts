@@ -4,6 +4,7 @@ import path from "node:path";
 import { caio } from "../../assets/personagens/caio/rig.svg";
 import { socorro } from "../../assets/personagens/socorro/rig.svg";
 import { valdir } from "../../assets/personagens/valdir/rig.svg";
+import { criatura, OPACIDADE, TONS } from "../../assets/personagens/criatura/rig.svg";
 import { desenhavelHumano, type Desenhavel } from "./instancia";
 import { resolverPose } from "./poses";
 import type { PoseDef, PoseResolvida, VistaBase } from "./tipos";
@@ -20,10 +21,20 @@ function humano(f: Parameters<typeof desenhavelHumano>[0]): Personagem {
   return { d: desenhavelHumano(f), poses: { ...POSES_BASE, ...proprias } };
 }
 
+/** Os de baixo: poses próprias (sem as humanas), uma entrada por tom. */
+const POSES_CRIATURA: Record<string, PoseDef> = lerJson("assets/personagens/criatura/poses.json");
+const criaturas = Object.fromEntries(
+  (Object.keys(TONS) as (keyof typeof TONS)[]).map((id) => [
+    id,
+    { d: { ...desenhavelHumano(criatura(id)), opacidade: OPACIDADE[id] }, poses: POSES_CRIATURA },
+  ]),
+);
+
 export const PERSONAGENS: Record<string, Personagem> = {
   caio: humano(caio),
   socorro: humano(socorro),
   valdir: humano(valdir),
+  ...criaturas,
 };
 
 export function personagem(id: string): Personagem {

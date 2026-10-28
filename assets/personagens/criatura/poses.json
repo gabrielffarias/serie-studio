@@ -1,0 +1,38 @@
+{
+  "em_pe": {
+    "angulos": { "tronco": -32, "cabeca": 26, "braco_d": 18, "antebraco_d": -20, "braco_e": 8, "antebraco_e": -24, "coxa_d": -26, "canela_d": 30, "coxa_e": -16, "canela_e": 24 },
+    "corpo_y": 8,
+    "por_vista": {
+      "frente": { "angulos": { "tronco": 0, "cabeca": 0, "braco_d": 10, "antebraco_d": -6, "braco_e": -10, "antebraco_e": 6, "coxa_d": 6, "canela_d": -4, "coxa_e": -6, "canela_e": 4 } },
+      "costas": { "angulos": { "tronco": 0, "cabeca": 0, "braco_d": -10, "antebraco_d": 6, "braco_e": 10, "antebraco_e": -6, "coxa_d": -6, "canela_d": 4, "coxa_e": 6, "canela_e": -4 } }
+    }
+  },
+  "andar": {
+    "angulos": { "tronco": -38, "cabeca": 30, "braco_d": 30, "antebraco_d": -30, "braco_e": -20, "antebraco_e": -30, "coxa_d": -40, "canela_d": 36, "coxa_e": 14, "canela_e": 40 },
+    "corpo_y": 10
+  },
+  "correr": {
+    "angulos": { "tronco": -55, "cabeca": 42, "braco_d": 50, "antebraco_d": -20, "braco_e": -40, "antebraco_e": -30, "coxa_d": -60, "canela_d": 60, "coxa_e": 30, "canela_e": 70 },
+    "corpo_y": 16
+  },
+  "agachar": {
+    "angulos": { "tronco": -50, "cabeca": 40, "braco_d": -30, "antebraco_d": -20, "braco_e": -40, "antebraco_e": -10, "coxa_d": -80, "canela_d": 120, "coxa_e": -70, "canela_e": 110 },
+    "corpo_y": 52,
+    "por_vista": {
+      "frente": { "corpo_y": 44, "escalas": { "coxa_d": 0.4, "coxa_e": 0.4 }, "angulos": { "tronco": 0, "cabeca": 0, "braco_d": 30, "antebraco_d": -10, "braco_e": -30, "antebraco_e": 10, "coxa_d": 30, "canela_d": -20, "coxa_e": -30, "canela_e": 20 } },
+      "costas": { "corpo_y": 44, "escalas": { "coxa_d": 0.4, "coxa_e": 0.4 }, "angulos": { "tronco": 0, "cabeca": 0, "coxa_d": -30, "canela_d": 20, "coxa_e": 30, "canela_e": -20 } }
+    }
+  },
+  "ouvindo": {
+    "angulos": { "tronco": -24, "cabeca": -18, "braco_d": 10, "antebraco_d": -60, "braco_e": 4, "antebraco_e": -40, "coxa_d": -20, "canela_d": 26, "coxa_e": -10, "canela_e": 20 },
+    "corpo_y": 6,
+    "por_vista": {
+      "frente": { "angulos": { "tronco": 0, "cabeca": 22, "braco_d": 14, "antebraco_d": -30, "braco_e": -14, "antebraco_e": 30, "coxa_d": 6, "coxa_e": -6 } },
+      "costas": { "angulos": { "tronco": 0, "cabeca": -22, "braco_d": -14, "antebraco_d": 30, "braco_e": 14, "antebraco_e": -30, "coxa_d": -6, "coxa_e": 6 } }
+    }
+  },
+  "espreitar": {
+    "angulos": { "tronco": -70, "cabeca": 58, "braco_d": -50, "antebraco_d": -10, "braco_e": -60, "antebraco_e": 0, "coxa_d": -50, "canela_d": 70, "coxa_e": -30, "canela_e": 60 },
+    "corpo_y": 30
+  }
+}

@@ -77,6 +77,11 @@ export type Figurino = {
   id: string;
   nome: string;
   prop: Proporcoes;
+  /** criaturas: sem olhos/sobrancelhas e sem contorno (bíblia, regra 1) */
+  semRosto?: boolean;
+  semContorno?: boolean;
+  /** raio da mão (padrão 27) */
+  maoR?: number;
   cores: {
     pele: string;
     manga: string;

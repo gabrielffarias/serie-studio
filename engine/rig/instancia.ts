@@ -19,6 +19,8 @@ export type Desenhavel = {
   pendurados: Record<string, Junta[]>;
   /** raio da sombra de contato */
   sombraRx: number;
+  /** opacidade do desenho (vulto = 0,9) */
+  opacidade?: number;
 };
 
 export function desenhavelHumano(f: Figurino): Desenhavel {
@@ -26,7 +28,7 @@ export function desenhavelHumano(f: Figurino): Desenhavel {
     id: f.id,
     desenhar: (v, px) => desenharHumano(f, v, px),
     acessoriosPadrao: () => Object.fromEntries(Object.entries(f.acessorios ?? {}).map(([k, a]) => [k, a.padrao])),
-    temRosto: true,
+    temRosto: !f.semRosto,
     filhos: filhos(f),
     pendurados: Object.fromEntries(
       Object.entries(f.acessorios ?? {})
@@ -36,7 +38,7 @@ export function desenhavelHumano(f: Figurino): Desenhavel {
           return [nome, ["tronco", `braco_${lado}`, `antebraco_${lado}`, `mao_${lado}`] as Junta[]];
         }),
     ),
-    sombraRx: 150,
+    sombraRx: Math.round(f.prop.cabecaR * 1.27),
   };
 }
 
@@ -51,7 +53,7 @@ export function svgInstancia(d: Desenhavel, inst: string, vistas: VistaBase[], v
   return (
     `<g id="${inst}">` +
     `<ellipse id="${inst}-sombra" cx="0" cy="4" rx="${d.sombraRx}" ry="22" fill="#000" opacity=".25"/>` +
-    grupos +
+    (d.opacidade !== undefined && d.opacidade < 1 ? `<g opacity="${d.opacidade}">${grupos}</g>` : grupos) +
     `</g>`
   );
 }
