@@ -15,7 +15,8 @@ Derivado de `referencias/cena-exemplo.html` / `.png`. Vale para todo SVG do moto
 ## 2. Traço e cor
 
 - **Vetor chapado.** Cor sólida por forma. Gradiente só em **fundo de cenário** (parede, céu, túnel) e em **luz** (overlay de emergência, cone da lanterna). Nunca em personagem ou prop.
-- **Contorno** `#2A2420`, 5–7 px, `stroke-linejoin="round"`, `stroke-linecap="round"`. Partes pequenas (mãos, orelhas, olhos) 5 px; formas grandes 6–7 px.
+- **Contorno** `#2A2420`, 5–7 px, `stroke-linejoin="round"`, `stroke-linecap="round"`, em **cabeça, mãos, orelhas, pés e props**. Partes pequenas 5 px; formas grandes 6–7 px.
+- **Roupa e membros são chapados, sem contorno** (como o moletom e as pernas da referência): braço e perna são traços grossos de ponta redonda; a separação vem da cor e de uma dobra mais escura.
 - **Exceção:** os de baixo (criaturas) **não têm contorno**. O contraste com os humanos é proposital.
 - **Sombra de contato**: elipse `#000` com opacidade .25 sob os pés. Sem outras sombras projetadas.
 - Sombreado interno só por **uma** forma chapada mais escura (ex.: dobra do macacão), nunca por gradiente.
