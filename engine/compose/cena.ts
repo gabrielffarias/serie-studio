@@ -3,7 +3,7 @@
 // Devolve o SVG e os keyframes de t=0; o compose acrescenta as ações.
 import type { Keyframe } from "../core/keyframes";
 import { cenario } from "../cenario/cenarios";
-import { camadaLuz, camadaPiscar, type Luz, type OrigemLanterna } from "../luz/luz";
+import { camadaLuz, camadaPiscar, contornoDeLuz, type Luz, type OrigemLanterna } from "../luz/luz";
 import { kfsPose, kfsRaiz, kfsVista, svgInstancia } from "../rig/instancia";
 import { personagem, pose } from "../rig/personagens";
 import type { VistaBase } from "../rig/tipos";
@@ -112,8 +112,10 @@ export function montarCena(spec: CenaSpec): { svg: string; kfs: Keyframe[]; inst
       : "") +
     dentro.map(svgDe).join("") +
     (c.frente ? `<g id="${spec.px}-frente">${c.frente(spec.px)}</g>` : "") +
+    // a lanterna fica dentro da câmera (o cone acompanha o zoom) e ganha o contorno de luz por cima
+    (spec.luz === "lanterna" ? camadaLuz(spec.px, spec.luz, lanterna) + contornoDeLuz(spec.px, dentro.map((i) => i.inst)) : "") +
     `</g>` +
-    camadaLuz(spec.px, spec.luz, lanterna) +
+    (spec.luz === "lanterna" ? "" : camadaLuz(spec.px, spec.luz, lanterna)) +
     camadaPiscar(spec.px);
 
   kfs.push(

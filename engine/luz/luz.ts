@@ -15,8 +15,37 @@ export type OrigemLanterna = {
   alvo?: { x: number; y: number };
 };
 
-/** escuridão em volta do feixe: forte, mas deixando as silhuetas legíveis no celular */
-const ESCURO_LANTERNA = 0.84;
+/** escuridão em volta do feixe: ~18% de luz ambiente fica (forte, mas legível no celular) */
+export const ESCURO_LANTERNA = 0.82;
+
+/** contorno de luz fria nos personagens fora do feixe, para a silhueta ler no escuro */
+export const CONTORNO_LANTERNA = { cor: "#AFC3E0", opacidade: 0.38, raio: 3 };
+
+/**
+ * Passada de contorno por cima da escuridão: cada personagem de novo (<use>,
+ * em ordem de profundidade), escurecido como a escuridão deixa e com uma borda
+ * fria. Como a cópia é opaca, quem está na frente cobre o contorno de quem
+ * está atrás. Usa a mesma máscara da escuridão, então some dentro do feixe.
+ */
+export function contornoDeLuz(px: string, instancias: string[]): string {
+  if (!instancias.length) return "";
+  const c = CONTORNO_LANTERNA;
+  const k = (1 - ESCURO_LANTERNA).toFixed(2);
+  return (
+    `<defs><filter id="${px}-aro" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">` +
+    `<feGaussianBlur in="SourceAlpha" stdDeviation="${c.raio / 2}"/>` +
+    `<feComponentTransfer result="d"><feFuncA type="linear" slope="4"/></feComponentTransfer>` +
+    `<feComposite in="d" in2="SourceAlpha" operator="out" result="borda"/>` +
+    `<feFlood flood-color="${c.cor}" flood-opacity="${c.opacidade}"/>` +
+    `<feComposite in2="borda" operator="in" result="aro"/>` +
+    `<feComponentTransfer in="SourceGraphic" result="escuro">` +
+    `<feFuncR type="linear" slope="${k}"/><feFuncG type="linear" slope="${k}"/><feFuncB type="linear" slope="${k}"/></feComponentTransfer>` +
+    `<feMerge><feMergeNode in="escuro"/><feMergeNode in="aro"/></feMerge></filter></defs>` +
+    `<g mask="url(#${px}-mascara)">` +
+    instancias.map((i) => `<use href="#${i}" filter="url(#${px}-aro)" style="--sombra:0"/>`).join("") +
+    `</g>`
+  );
+}
 
 /** Overlay estático da luz base do plano. Ids: `${px}-luz`, `${px}-cone`. */
 export function camadaLuz(px: string, luz: Luz, lanterna?: OrigemLanterna): string {

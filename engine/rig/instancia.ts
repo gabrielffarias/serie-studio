@@ -60,7 +60,8 @@ export function svgInstancia(d: Desenhavel, inst: string, vistas: VistaBase[], v
     .join("");
   return (
     `<g id="${inst}"><g id="${inst}-espelho">` +
-    `<ellipse id="${inst}-sombra" cx="0" cy="4" rx="${d.sombraRx}" ry="22" fill="#000" opacity=".25"/>` +
+    // opacidade por variável: a cópia de contorno (luz de lanterna) zera a sombra
+    `<ellipse id="${inst}-sombra" cx="0" cy="4" rx="${d.sombraRx}" ry="22" fill="#000" style="opacity:var(--sombra,.25)"/>` +
     (d.opacidade !== undefined && d.opacidade < 1 ? `<g opacity="${d.opacidade}">${grupos}</g>` : grupos) +
     `</g></g>`
   );
