@@ -64,7 +64,8 @@ export function promptRoteiro(p: PedidoRoteiro): string {
     `Escreva o nó \`${no.no}\` (EP${no.numero}) do esqueleto: ${no.resumo}`,
     `Leia antes, inteiros: ${leituras.join(", ")}.`,
     `Estado atual: noite ${estado.noite}, ${estado.hora}, local ${estado.local_atual}, bateria ${estado.bateria}. O HUD usa o selo "NOITE ${estado.noite} · HH:MM" e o medidor BATERIA.`,
-    `Itens no estado: ${estado.itens.join(", ") || "nenhum"}. Luz, pose ou prop em \`exige_item\` do catálogo só com o item no estado; \`luz\` e \`efeitos\` só com os valores do catálogo (emergencia_vermelha e lanterna são luz, nunca efeito).`,
+    `Itens no estado: ${estado.itens.join(", ") || "nenhum"}. Camada, pose ou prop em \`exige_item\` do catálogo só com o item no estado.`,
+    `Luz é estado: luz ambiente agora — ${Object.entries(estado.luz_ambiente ?? {}).map(([k, v]) => `${k} ${v}`).join(", ")}. A \`luz\` de cada plano é a do local; ela só muda com um evento de \`eventos_luz\` em \`efeitos\` (vale do meio daquele plano em diante), e estado_final.luz_ambiente traz o resultado. A lanterna é a camada \`"lanterna": true\` (soma luz quando o Caio aponta para algo; a bateria só cai nesses planos), nunca luz nem efeito.`,
     p.resultado
       ? `Houve votação: venceu ${p.resultado.opcao} (A ${p.resultado.pct_a}% × B ${p.resultado.pct_b}%, ${p.resultado.total_votos} votos). Preencha resultado_anterior e abra com o plano \`resultado\` (4–6 s).`
       : "Não houve votação antes deste episódio: resultado_anterior é null, nenhum plano `resultado`, e a primeira narração traz a hora e o local.",

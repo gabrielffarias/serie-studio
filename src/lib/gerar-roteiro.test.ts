@@ -63,6 +63,7 @@ describe("promptRoteiro", () => {
     expect(p).toContain("resultado_anterior é null");
     expect(p).toContain("series/estacao-fantasma/estado.json, assets/catalogo.json");
     expect(p).toContain("Itens no estado: lanterna_mao.");
+    expect(p).toContain("luz ambiente agora — vagao normal, tunel escuro, plataforma_1959 escuro, porta_1959 escuro");
   });
 
   it("com votação anterior, pede o plano de resultado; sem votação no nó, pede CONTINUA", () => {
