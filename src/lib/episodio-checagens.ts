@@ -213,6 +213,19 @@ export function checarCatalogo(ep: Episodio, cat: Catalogo): Checagem[] {
     ok: focos.length === 0,
     mensagem: focos.length ? `foco de câmera que não é âncora do cenário nem personagem do plano: ${lista(focos)}` : "focos de câmera válidos",
   });
+  const luzEfeitos: string[] = [];
+  for (const p of ep.planos) {
+    if (p.tipo !== "cena") continue;
+    if (p.luz && !cat.luzes.includes(p.luz)) luzEfeitos.push(`${p.id}: luz ${p.luz}`);
+    for (const e of p.efeitos) if (!cat.efeitos.includes(e)) luzEfeitos.push(`${p.id}: efeito ${e}`);
+  }
+  out.push({
+    id: "luz_efeitos",
+    ok: luzEfeitos.length === 0,
+    mensagem: luzEfeitos.length
+      ? `luz ou efeito fora do catálogo (luzes: ${cat.luzes.join(", ")}; efeitos: ${cat.efeitos.join(", ")}): ${lista(luzEfeitos)}`
+      : "luz e efeitos do catálogo",
+  });
   const sons = cat.sons.length ? ep.planos.flatMap((p) => p.som ?? []).filter((s) => !cat.sons.includes(s)) : [];
   out.push({
     id: "sons",
@@ -221,6 +234,39 @@ export function checarCatalogo(ep: Episodio, cat: Catalogo): Checagem[] {
     mensagem: sons.length ? `sons fora da biblioteca: ${lista(sons)}` : cat.sons.length ? "sons da biblioteca" : "biblioteca de sons vazia (Fase 2)",
   });
   return out;
+}
+
+const itensDe = (e: Record<string, unknown> | undefined) => (Array.isArray(e?.itens) ? (e.itens as string[]) : undefined);
+
+/**
+ * Luz, pose ou prop que exige item (catálogo `exige_item`) só vale com o item
+ * no estado. Os itens partem do estado anterior e seguem o `estado_antes` /
+ * `estado_depois` dos planos, se o roteiro mudar os itens no meio.
+ */
+export function checarItens(ep: Episodio, cat: Catalogo, antes: Estado): Checagem[] {
+  const ex = cat.exige_item;
+  let itens = antes.itens ?? [];
+  const faltam: string[] = [];
+  const falta = (plano: string, o_que: string, precisa: string[] | undefined) => {
+    if (precisa && !precisa.some((i) => itens.includes(i))) faltam.push(`${plano}: ${o_que} exige ${precisa.join(" ou ")}`);
+  };
+  for (const p of ep.planos) {
+    if (p.tipo !== "cena") continue;
+    itens = itensDe(p.estado_antes) ?? itens;
+    if (p.luz) falta(p.id, `luz ${p.luz}`, ex.luz[p.luz]);
+    for (const pc of p.personagens) falta(p.id, `pose ${pc.pose} (${pc.id})`, ex.poses[pc.pose]);
+    for (const pr of p.props) falta(p.id, `prop ${pr.id}`, ex.props[pr.id]);
+    itens = itensDe(p.estado_depois) ?? itens;
+  }
+  return [
+    {
+      id: "itens_exigidos",
+      ok: faltam.length === 0,
+      mensagem: faltam.length
+        ? `item ausente do estado (itens: ${(antes.itens ?? []).join(", ") || "nenhum"}): ${lista(faltam)}`
+        : `luz, poses e props com os itens do estado (${(antes.itens ?? []).join(", ") || "nenhum"})`,
+    },
+  ];
 }
 
 export function checarCronograma(ep: Episodio, cronograma: Record<string, number>, antes: Estado): Checagem[] {
@@ -314,6 +360,7 @@ export function checarRoteiro(ep: Episodio, ctx: ContextoRoteiro): Checagem[] {
     ...checarNo(ep, ctx.no),
     ...checarEpisodio(ep, ctx),
     ...checarCatalogo(ep, ctx.catalogo),
+    ...checarItens(ep, ctx.catalogo, ctx.estadoAntes),
     ...checarCronograma(ep, ctx.cronograma, ctx.estadoAntes),
     ...checarEstilo(ep, ctx, ctx.estadoAntes),
   ];

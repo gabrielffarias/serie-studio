@@ -140,6 +140,9 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
 Tipos de plano: `resultado` | `cena` | `cartao` (tela de texto) | `infografico` | `votacao` | `continua`.
 Ações de personagem (`acao.tipo`): `entrar`, `sair`, `andar`, `correr`, `apontar`, `empurrar`, `agachar`, `virar`, `tremer`, `respirar`, `olhar`, `cair`, `levantar`, `pegar`, `soltar`. Elas viram tweens GSAP no código.
 Movimentos de câmera (`camera.mov`): `fixo`, `push_in`, `pull_out`, `pan_esq`, `pan_dir`, `tilt_cima`, `tilt_baixo`, `shake`, `corte_seco`.
+Luz do plano (`luz`, uma por plano): `normal`, `escuro`, `emergencia_vermelha`, `lanterna`, `apagao`.
+Efeitos (`efeitos`, o que acontece com a luz durante o plano): `piscar_luz`, `apagao` (a luz cai no meio do plano). `emergencia_vermelha` e `lanterna` são **luz**, nunca efeito.
+Itens que o desenho exige (vêm de `estado.itens`): luz `lanterna` exige `lanterna_mao` ou `lanterna_cabeca`; a pose `segurar_lanterna` exige `lanterna_mao` (o feixe sai da mão do Caio); a lanterna de cabeça só aparece com `lanterna_cabeca`. O código recusa luz, pose ou objeto que exija item ausente do estado (veja `exige_item` no catálogo).
 
 ### Autoconferência (obrigatória antes de devolver)
 - [ ] Soma das durações entre 65 e 90 s.
@@ -147,6 +150,7 @@ Movimentos de câmera (`camera.mov`): `fixo`, `push_in`, `pull_out`, `pan_esq`, 
 - [ ] Todo plano `cena` tem uma `acao` visível.
 - [ ] Nenhuma revelação antes da hora; ameaça só como vulto, se for o caso.
 - [ ] Todos os `cenario`, `pose`, `props` existem no catálogo, ou estão em `assets_novos`.
+- [ ] `luz` e `efeitos` usam só os valores do catálogo; nenhuma luz, pose ou objeto exige item que não está em `estado.itens`.
 - [ ] `estado_final` coerente com o estado anterior + as consequências.
 - [ ] `ultima_frase_falada` é uma frase completa.
 - [ ] Opções A e B têm o mesmo peso e consequências reais no esqueleto.

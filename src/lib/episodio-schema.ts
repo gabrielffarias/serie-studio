@@ -14,7 +14,9 @@ export const MOVIMENTOS_CAMERA = [
 ] as const;
 
 export const LUZES = ["normal", "escuro", "emergencia_vermelha", "lanterna", "apagao"] as const;
-export const EFEITOS_LUZ = ["emergencia_vermelha", "lanterna", "piscar_luz", "apagao"] as const;
+// `luz` é a iluminação do plano; `efeitos` é o que acontece com ela durante o plano.
+// emergencia_vermelha e lanterna são luz, nunca efeito.
+export const EFEITOS_LUZ = ["piscar_luz", "apagao"] as const;
 export const INFOGRAFICOS = ["corte_tunel", "ondas_som", "mapa_linha", "placar_votacao"] as const;
 
 const fracao = z.number().min(0).max(1);
@@ -100,11 +102,13 @@ export const planoSchema = z.discriminatedUnion("tipo", [
     ...planoBase,
     tipo: z.literal("cena"),
     cenario: z.string().min(1),
-    luz: z.enum(LUZES).nullish(),
+    luz: z.enum(LUZES, { error: `luz inválida: use ${LUZES.join(", ")}` }).nullish(),
     camera: cameraSchema.nullish(),
     personagens: z.array(personagemEmCenaSchema).default([]),
     props: z.array(propEmCenaSchema).default([]),
-    efeitos: z.array(z.enum(EFEITOS_LUZ)).default([]),
+    efeitos: z
+      .array(z.enum(EFEITOS_LUZ, { error: `efeito inválido: use ${EFEITOS_LUZ.join(" ou ")} (emergencia_vermelha e lanterna vão em luz)` }))
+      .default([]),
     cartao: cartaoSchema.nullish(),
     estado_antes: estadoParcial.optional(),
     estado_depois: estadoParcial.optional(),

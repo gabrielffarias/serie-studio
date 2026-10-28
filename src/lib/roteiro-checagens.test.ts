@@ -26,7 +26,7 @@ describe("bíblia", () => {
   it("lê o estado inicial, dividindo noite / hora", () => {
     expect(estadoInicialDaBiblia(BIBLIA)).toEqual({
       bateria: 100, comida_dias: 1, agua_litros: 1.5, ferimentos: [], confianca_valdir: 0, exposicao: 0,
-      pistas: [], grupo: ["caio", "socorro", "valdir"], itens: [], local_atual: "vagao", noite: 1, hora: "18:04",
+      pistas: [], grupo: ["caio", "socorro", "valdir"], itens: ["lanterna_mao"], local_atual: "vagao", noite: 1, hora: "18:04",
     });
   });
 
@@ -52,6 +52,12 @@ describe("catálogo", () => {
   it("movimento recomenda perfil e 3/4; gestos de mão não aparecem como acessórios", () => {
     expect(catalogo.acoes.find((a) => a.tipo === "andar")!.vistas_recomendadas).toEqual(["perfil_esq", "perfil_dir", "3/4_esq", "3/4_dir"]);
     expect(catalogo.personagens.find((p) => p.id === "valdir")!.acessorios).toEqual(["pasta", "pasta_peito"]);
+  });
+
+  it("diz o que exige item: luz lanterna (mão ou cabeça) e a pose segurar_lanterna (mão)", () => {
+    expect(catalogo.exige_item).toEqual({ luz: { lanterna: ["lanterna_mao", "lanterna_cabeca"] }, poses: { segurar_lanterna: ["lanterna_mao"] }, props: {} });
+    expect(catalogo.efeitos).toEqual(["piscar_luz", "apagao"]);
+    expect(catalogo.personagens.find((p) => p.id === "caio")!.acessorios).toEqual(["lanterna_cabeca", "lanterna_mao"]);
   });
 });
 
@@ -131,6 +137,54 @@ describe("checarRoteiro", () => {
     expect(bloqueios(ep)).toEqual(["votacao_destinos"]);
     ep.no = "ep02_tunel";
     expect(bloqueios(ep)).toContain("no_certo");
+  });
+
+  it("luz e pose que exigem item: lanterna_mao no estado libera; sem ela, bloqueia", () => {
+    const ep = ep1();
+    const p = ep.planos[4] as Extract<Episodio["planos"][number], { tipo: "cena" }>;
+    p.luz = "lanterna";
+    p.personagens[0].pose = "segurar_lanterna";
+    p.personagens[0].acao = { tipo: "tremer" };
+    expect(bloqueios(ep)).toEqual([]);
+    const semItens = { ...ctx, estadoAntes: { ...ctx.estadoAntes, itens: [] } };
+    const cs = checarRoteiro(ep, semItens);
+    expect(cs.find((c) => c.id === "itens_exigidos")?.mensagem).toBe(
+      "item ausente do estado (itens: nenhum): p05: luz lanterna exige lanterna_mao ou lanterna_cabeca, p05: pose segurar_lanterna (caio) exige lanterna_mao",
+    );
+    // só a lanterna de cabeça: a luz vale, a pose de segurar a de mão não
+    const soCabeca = { ...ctx, estadoAntes: { ...ctx.estadoAntes, itens: ["lanterna_cabeca"] } };
+    expect(falhasBloqueantes(checarRoteiro(ep, soCabeca)).find((c) => c.id === "itens_exigidos")?.mensagem).toMatch(/p05: pose segurar_lanterna \(caio\) exige lanterna_mao$/);
+  });
+
+  it("item ganho no meio do episódio (estado_depois de um plano anterior) vale dali em diante", () => {
+    const ep = ep1();
+    const p = ep.planos[4] as Extract<Episodio["planos"][number], { tipo: "cena" }>;
+    p.luz = "lanterna";
+    const semItens = { ...ctx, estadoAntes: { ...ctx.estadoAntes, itens: [] } };
+    expect(falhasBloqueantes(checarRoteiro(ep, semItens)).map((c) => c.id)).toEqual(["itens_exigidos"]);
+    (ep.planos[2] as { estado_depois?: Record<string, unknown> }).estado_depois = { itens: ["lanterna_cabeca"] };
+    expect(falhasBloqueantes(checarRoteiro(ep, semItens))).toEqual([]);
+  });
+
+  it("luz e efeitos fora do catálogo bloqueiam", () => {
+    const ep = ep1();
+    const p = ep.planos[3] as Extract<Episodio["planos"][number], { tipo: "cena" }>;
+    p.efeitos = ["piscar_luz"];
+    const semPiscar = { ...ctx, catalogo: { ...catalogo, luzes: catalogo.luzes.filter((l) => l !== "emergencia_vermelha"), efeitos: ["apagao"] } };
+    const c = checarRoteiro(ep, semPiscar).find((x) => x.id === "luz_efeitos")!;
+    expect(c.ok).toBe(false);
+    expect(c.mensagem).toMatch(/p01: luz emergencia_vermelha.*p04: efeito piscar_luz/);
+  });
+
+  it("emergencia_vermelha e lanterna em efeitos são recusadas pelo Zod, com a dica de usar luz", () => {
+    const j = ep1Json();
+    (j.planos as Record<string, unknown>[])[2].efeitos = ["emergencia_vermelha", "lanterna"];
+    const r = validarEpisodio(j);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.erros).toEqual([
+      "planos.2.efeitos.0: efeito inválido: use piscar_luz ou apagao (emergencia_vermelha e lanterna vão em luz)",
+      "planos.2.efeitos.1: efeito inválido: use piscar_luz ou apagao (emergencia_vermelha e lanterna vão em luz)",
+    ]);
   });
 
   it("avisos de estilo não bloqueiam", () => {
