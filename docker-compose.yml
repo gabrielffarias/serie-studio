@@ -1,0 +1,13 @@
+# Opcional: Postgres local para máquinas com Docker.
+# No servidor atual (container code-server, sem Docker) o banco é o Postgres de 192.168.0.2.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: serie
+      POSTGRES_PASSWORD: serie
+      POSTGRES_DB: serie_studio
+    ports: ["5433:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+volumes:
+  pgdata:

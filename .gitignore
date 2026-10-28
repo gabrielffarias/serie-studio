@@ -1,0 +1,23 @@
+/node_modules
+/.next/
+/out/
+/build
+/coverage
+.DS_Store
+*.pem
+npm-debug.log*
+.env*
+!.env.example
+*.tsbuildinfo
+next-env.d.ts
+
+# dados locais (voz, renders, stills, prévias, comentários)
+/data/*
+!/data/.gitkeep
+!/data/*/
+/data/*/*
+!/data/*/.gitkeep
+
+# HyperFrames: artefatos e renders dos projetos do motor
+.hyperframes/
+engine/**/renders/
