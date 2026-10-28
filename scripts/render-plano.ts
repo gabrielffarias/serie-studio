@@ -1,5 +1,6 @@
 // Renderiza planos de um episódio (padrão: o demo do motor) e mede o tempo.
 // Uso: npm run render:plano -- [arquivo.json] [p02 p03…]   (sem ids = episódio inteiro)
+// RENDER_QUALIDADE=draft|looks|delivery (padrão draft), RENDER_WORKERS (padrão 2).
 // Saída: data/renders/<no>[-<ids>].mp4 e um quadro por plano em data/stills/.
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
@@ -10,6 +11,7 @@ import { validarEpisodio } from "../src/lib/episodio-schema";
 const RAIZ = path.resolve(import.meta.dirname, "..");
 const HF = path.join(RAIZ, "node_modules/.bin/hyperframes");
 const env = { ...process.env, HYPERFRAMES_NO_TELEMETRY: "1", HYPERFRAMES_SKIP_SKILLS: "1" };
+const QUALIDADE = process.env.RENDER_QUALIDADE ?? "draft";
 
 function rodar(cmd: string, args: string[], cwd = RAIZ, eco = true): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -41,7 +43,7 @@ async function main() {
 
   await rodar(HF, ["lint"], dir);
   const t0 = Date.now();
-  await rodar(HF, ["render", "--quality", "draft", "--workers", process.env.RENDER_WORKERS ?? "2", "--output", saida], dir);
+  await rodar(HF, ["render", "--quality", QUALIDADE, "--workers", process.env.RENDER_WORKERS ?? "2", "--output", saida], dir);
   const seg = (Date.now() - t0) / 1000;
   if (!existsSync(saida) || statSync(saida).size === 0) throw new Error("MP4 não foi gerado");
 
@@ -61,7 +63,7 @@ async function main() {
   ];
   console.log("\n— resultado —");
   for (const c of checagens) console.log(`${c.ok ? "✅" : "❌"} ${c.msg}`);
-  console.log(`⏱  render: ${seg.toFixed(1)}s para ${proj.duracao}s de vídeo (${(seg / proj.duracao).toFixed(2)}× tempo real, ${process.env.RENDER_WORKERS ?? "2"} workers)`);
+  console.log(`⏱  render: ${seg.toFixed(1)}s para ${proj.duracao}s de vídeo (${(seg / proj.duracao).toFixed(2)}× tempo real, ${process.env.RENDER_WORKERS ?? "2"} workers, qualidade ${QUALIDADE})`);
   console.log(`📼 ${path.relative(RAIZ, saida)} (${(statSync(saida).size / 1024).toFixed(0)} KB)`);
   for (const s of stills) console.log(`🖼  ${path.relative(RAIZ, s)}`);
   if (checagens.some((c) => !c.ok)) process.exit(1);
