@@ -15,7 +15,7 @@ const CENAS: CenaSpec[] = [
     px: "a", cenario: "vagao", luz: "emergencia_vermelha",
     personagens: [
       { id: "criatura_vulto", vista: "perfil_dir", pose: "andar", x: 0.86, y: 0.47, escala: 0.9 },
-      { id: "socorro", vista: "frente", pose: "sentado", x: 0.8, y: 0.71, escala: 0.9 },
+      { id: "socorro", vista: "3/4_esq", pose: "sentado", x: 0.8, y: 0.71, escala: 0.9 },
       { id: "valdir", vista: "3/4_dir", pose: "olhar_tras", x: 0.56, escala: 0.95 },
       { id: "caio", vista: "3/4_esq", pose: "apontar", x: 0.3 },
     ],

@@ -14,10 +14,11 @@ const C = {
   sapato: "#2A1E18",
 };
 
+// ~5% mais alto que o Caio e um pouco mais encorpado
 const prop = {
-  quadril: 225, quadrilX: 36, coxa: 108, canela: 97,
-  ombro: 205, ombroX: 84, braco: 98, antebraco: 86,
-  cabeca: 340, cabecaR: 118, larguraPerna: 50, larguraBraco: 44,
+  quadril: 232, quadrilX: 40, coxa: 112, canela: 100,
+  ombro: 212, ombroX: 93, braco: 101, antebraco: 89,
+  cabeca: 352, cabecaR: 118, larguraPerna: 56, larguraBraco: 50,
 };
 
 const corpo: Record<VistaBase, string> = {
@@ -112,6 +113,8 @@ export const valdir: Figurino = {
   id: "valdir",
   nome: "Dr. Valdir",
   prop,
+  // o terno foi desenhado para ombro 205 e meia largura 88
+  escalaTronco: { x: 1.1, y: 212 / 205 },
   cores: { pele: C.pele, manga: C.terno, perna: C.terno, pe: C.sapato, sobrancelha: "#7A7A7A" },
   tronco: (v) => tronco(v),
   cabeca: (v) => cabeca(v),

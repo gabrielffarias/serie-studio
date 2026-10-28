@@ -82,6 +82,10 @@ export type Figurino = {
   semContorno?: boolean;
   /** raio da mão (padrão 27) */
   maoR?: number;
+  /** mão própria (dedos da criatura); origem no punho */
+  mao?(v: VistaBase, lado: Lado): string;
+  /** alarga/encolhe tronco e saia sem redesenhar (silhueta: Socorro larga, Valdir encorpado) */
+  escalaTronco?: { x: number; y: number };
   cores: {
     pele: string;
     manga: string;

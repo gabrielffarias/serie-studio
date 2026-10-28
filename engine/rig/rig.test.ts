@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolverPose } from "./poses";
 import { kfsPose, kfsRaiz } from "./instancia";
-import { PERSONAGENS, pose } from "./personagens";
+import { PERSONAGENS, personagem, pose } from "./personagens";
 import { parseVista } from "../compose/cena";
 
 describe("resolverPose", () => {
@@ -55,4 +55,26 @@ describe("personagens do catálogo", () => {
     expect(parseVista("3/4_esq")).toEqual({ base: "3/4", espelho: true });
     expect(parseVista("frente")).toEqual({ base: "frente", espelho: false });
   });
+});
+
+describe("regra dos objetos (isopor, pasta)", () => {
+  const OBJETO: Record<string, string> = { socorro: "isopor_mao", valdir: "pasta" };
+  const GESTOS = ["apontar", "braco_estendido", "assustado", "maos_na_cabeca", "empurrar", "ajustar_oculos"];
+  for (const [id, objeto] of Object.entries(OBJETO)) {
+    it(`${id}: com o objeto na mão, o braço dele não gesticula`, () => {
+      for (const nome of Object.keys(personagem(id).poses)) {
+        for (const v of ["perfil", "3/4", "frente"] as const) {
+          const p = pose(id, nome, v);
+          if (!p.acessorios[objeto]) continue;
+          expect(Math.abs(p.angulos.braco_d), `${nome} · ${v}`).toBeLessThanOrEqual(45);
+        }
+      }
+    });
+    it(`${id}: gestos usam a outra mão`, () => {
+      for (const nome of GESTOS.filter((g) => personagem(id).poses[g])) {
+        const p = pose(id, nome, "perfil");
+        expect(Math.abs(p.angulos.braco_e), nome).toBeGreaterThan(45);
+      }
+    });
+  }
 });

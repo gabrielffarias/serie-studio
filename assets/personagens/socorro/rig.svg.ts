@@ -16,13 +16,15 @@ const C = {
   alca: "#D23A2E",
 };
 
+// ~8% mais baixa que o Caio, quadril e tronco mais largos
 const prop = {
-  quadril: 195, quadrilX: 38, coxa: 90, canela: 85,
-  ombro: 185, ombroX: 92, braco: 88, antebraco: 78,
-  cabeca: 318, cabecaR: 118, larguraPerna: 50, larguraBraco: 46,
+  quadril: 188, quadrilX: 46, coxa: 86, canela: 82,
+  ombro: 178, ombroX: 102, braco: 84, antebraco: 74,
+  cabeca: 309, cabecaR: 118, larguraPerna: 54, larguraBraco: 48,
 };
 
-const CAB_Y = -(prop.cabeca - prop.ombro - 8);
+/** os contornos do vestido foram desenhados para ombro 185 e meia largura 94 */
+const ESCALA_TRONCO = { x: 1.13, y: 178 / 185 };
 
 const corpo: Record<VistaBase, string> = {
   frente: "M-94 20 Q-116 -100 -90 -192 Q0 -214 90 -192 Q116 -100 94 20 Z",
@@ -137,10 +139,24 @@ function cabeca(v: VistaBase): { base: string; topo: string } {
   }
 }
 
+/** caixa de isopor com a alça vermelha (alças laterais e tampa marcadas) */
 function caixa(x: number, y: number, w: number, h: number): string {
   return (
-    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="${C.isopor}" stroke="${CONTORNO}" stroke-width="6"/>` +
-    `<rect x="${x + 6}" y="${y + h * 0.28}" width="${w - 12}" height="8" fill="${C.isoporSombra}"/>`
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="${C.isopor}" stroke="${CONTORNO}" stroke-width="6"/>` +
+    `<rect x="${x + 6}" y="${y + h * 0.26}" width="${w - 12}" height="9" fill="${C.isoporSombra}"/>` +
+    `<rect x="${x + 10}" y="${y + h * 0.62}" width="${w - 20}" height="6" fill="${C.isoporSombra}"/>`
+  );
+}
+
+/** alça: arco vermelho grosso preso às laterais da caixa (sobe até a mão) */
+function alca(x0: number, x1: number, yBase: number, yTopo: number): string {
+  const meio = (x0 + x1) / 2;
+  const ctrl = 2 * yTopo - yBase;
+  return (
+    `<path d="M${x0} ${yBase} Q${meio} ${ctrl} ${x1} ${yBase}" stroke="${CONTORNO}" stroke-width="20" fill="none" stroke-linecap="round"/>` +
+    `<path d="M${x0} ${yBase} Q${meio} ${ctrl} ${x1} ${yBase}" stroke="${C.alca}" stroke-width="11" fill="none" stroke-linecap="round"/>` +
+    `<rect x="${x0 - 10}" y="${yBase - 4}" width="20" height="24" rx="5" fill="${C.alca}" stroke="${CONTORNO}" stroke-width="4"/>` +
+    `<rect x="${x1 - 10}" y="${yBase - 4}" width="20" height="24" rx="5" fill="${C.alca}" stroke="${CONTORNO}" stroke-width="4"/>`
   );
 }
 
@@ -148,6 +164,7 @@ export const socorro: Figurino = {
   id: "socorro",
   nome: "Dona Socorro",
   prop,
+  escalaTronco: ESCALA_TRONCO,
   cores: { pele: C.pele, manga: C.vestido, antebraco: C.pele, perna: C.pele, pe: C.sandalia, sobrancelha: "#6E6A66" },
   tronco,
   saia,
@@ -157,15 +174,16 @@ export const socorro: Figurino = {
       ? `<rect x="-30" y="-4" width="60" height="26" rx="11" fill="${C.pele}" stroke="${CONTORNO}" stroke-width="5"/><path d="M-26 6 L26 6" stroke="${C.sandalia}" stroke-width="9"/><rect x="-32" y="16" width="64" height="8" rx="4" fill="${C.sandalia}"/>`
       : `<rect x="-22" y="-4" width="${v === "3/4" ? 58 : 70}" height="26" rx="11" fill="${C.pele}" stroke="${CONTORNO}" stroke-width="5"/><path d="M0 6 L30 6" stroke="${C.sandalia}" stroke-width="9"/><rect x="-24" y="16" width="${v === "3/4" ? 62 : 74}" height="8" rx="4" fill="${C.sandalia}"/>`,
   acessorios: {
-    // isopor pendurado pela alça, na mão direita
+    // isopor pendurado pela alça, na mão direita (~40% maior que o primeiro desenho)
     isopor_mao: {
       junta: "mao_d",
       padrao: true,
       atras: true,
       pendurado: true,
       desenhar: (v) => {
-        const w = v === "perfil" ? 80 : 120;
-        return `<path d="M-30 50 Q0 -6 30 50" stroke="${C.alca}" stroke-width="10" fill="none"/>` + caixa(-w / 2, 44, w, 86);
+        const w = v === "perfil" ? 112 : v === "3/4" ? 150 : 168;
+        const m = w / 2 - 18;
+        return caixa(-w / 2, 62, w, 120) + alca(-m, m, 70, 12);
       },
     },
     // isopor abraçado contra o peito
@@ -173,9 +191,9 @@ export const socorro: Figurino = {
       junta: "tronco",
       padrao: false,
       desenhar: (v) => {
-        const x = v === "perfil" ? 20 : v === "3/4" ? -40 : -80;
-        const w = v === "perfil" ? 90 : 150;
-        return `<path d="M${x + 20} -140 Q${x + w / 2} -190 ${x + w - 20} -140" stroke="${C.alca}" stroke-width="10" fill="none"/>` + caixa(x, -146, w, 104);
+        const x = v === "perfil" ? 6 : v === "3/4" ? -70 : -105;
+        const w = v === "perfil" ? 126 : v === "3/4" ? 190 : 210;
+        return caixa(x, -158, w, 140) + alca(x + 26, x + w - 26, -150, -176);
       },
     },
   },

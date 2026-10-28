@@ -3,6 +3,9 @@
 //   poses-tq.png      todas as poses em 3/4
 //   poses-frente.png  todas as poses de frente
 //   expressoes.png    as expressões, de frente
+// e as folhas de conjunto em assets/personagens/preview/:
+//   lineup.png        Caio, Socorro, Valdir e 3 criaturas lado a lado na mesma escala
+//   criatura-tons.png os 3 tons da criatura em frente, 3/4 e perfil
 // Uso: npm run preview:assets [id…]
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -18,7 +21,7 @@ const ORDEM_VISTAS: VistaBase[] = ["frente", "3/4", "perfil", "costas"];
 
 type Celula = { personagem: string; vista: VistaBase; pose: string; rotulo: string; expressao?: Expressao; extras?: Record<string, boolean> };
 
-function folhaHtml(celulas: Celula[], cols: number, cw: number, ch: number, escala: number, chaoY: number): { html: string; w: number; h: number } {
+function folhaHtml(celulas: Celula[], cols: number, cw: number, ch: number, escala: number, chaoY: number, regua = false): { html: string; w: number; h: number } {
   const linhas = Math.ceil(celulas.length / cols);
   const w = cols * cw, h = linhas * ch;
   const svgs: string[] = [];
@@ -46,9 +49,22 @@ html,body{margin:0;background:#E9E2D4}.r{font-family:I;font-weight:800;font-size
 <script src="${nm("gsap/dist/gsap.min.js")}"></script><script src="file://${path.join(RAIZ, "engine/core/motor.js")}"></script></head>
 <body><svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
 ${Array.from({ length: linhas }, (_, l) => `<line x1="0" x2="${w}" y1="${l * ch + chaoY}" y2="${l * ch + chaoY}" stroke="#C9BFAE" stroke-width="3"/>`).join("")}
+${regua ? reguaAlturas(celulas, w, chaoY, escala) : ""}
 ${svgs.join("\n")}</svg>
 <script>const tl=gsap.timeline({paused:true});Motor.aplicar(tl,${JSON.stringify(segs)});tl.seek(0);</script></body></html>`;
   return { html, w, h };
+}
+
+/** linhas tracejadas na altura do topo da cabeça de cada humano e na metade do Caio */
+function reguaAlturas(celulas: Celula[], w: number, chaoY: number, escala: number): string {
+  const altura = (id: string) => PERSONAGENS[id].d.alturaCabeca + 118;
+  const caio = altura("caio");
+  const linhas = [...new Set(celulas.filter((c) => !c.personagem.startsWith("criatura")).map((c) => altura(c.personagem)))]
+    .map((a) => ({ y: chaoY - a * escala, r: `${Math.round((a / caio) * 100)}%` }))
+    .concat({ y: chaoY - (caio / 2) * escala, r: "50% do Caio" });
+  return linhas
+    .map((l) => `<line x1="0" x2="${w}" y1="${l.y}" y2="${l.y}" stroke="#B5A78F" stroke-width="2" stroke-dasharray="10 8"/><text x="${w - 8}" y="${l.y - 8}" text-anchor="end" class="r" style="font-size:18px">${l.r}</text>`)
+    .join("");
 }
 
 /** poses das linhas da folha de vistas (as humanas, ou as primeiras do personagem) */
@@ -86,6 +102,33 @@ async function main() {
         const html = path.join(TMP, `${id}-${nome}.html`);
         writeFileSync(html, f.html);
         const png = path.join(destino, `${prefixo}${nome}.png`);
+        await fotografar(nav, html, png, f.w, f.h);
+        console.log(`🖼  ${path.relative(RAIZ, png)}`);
+      }
+    }
+    if (!process.argv.slice(2).length) {
+      const destino = path.join(RAIZ, "assets/personagens/preview");
+      mkdirSync(destino, { recursive: true });
+      const tons = ["criatura", "criatura_escura", "criatura_clara"];
+      const conjuntos: Record<string, ReturnType<typeof folhaHtml>> = {
+        lineup: folhaHtml(
+          [
+            { personagem: "caio", vista: "3/4", pose: "em_pe", rotulo: "Caio" },
+            { personagem: "socorro", vista: "3/4", pose: "em_pe", rotulo: "Socorro" },
+            { personagem: "valdir", vista: "3/4", pose: "em_pe", rotulo: "Valdir" },
+            ...tons.map((t) => ({ personagem: t, vista: "3/4" as VistaBase, pose: "em_pe", rotulo: t })),
+          ],
+          6, 300, 640, 0.7, 560, true,
+        ),
+        "criatura-tons": folhaHtml(
+          tons.flatMap((t) => (["frente", "3/4", "perfil"] as VistaBase[]).map((v) => ({ personagem: t, vista: v, pose: v === "perfil" ? "andar" : "em_pe", rotulo: `${t} · ${slugVista(v)}` }))),
+          3, 360, 420, 0.95, 340,
+        ),
+      };
+      for (const [nome, f] of Object.entries(conjuntos)) {
+        const html = path.join(TMP, `${nome}.html`);
+        writeFileSync(html, f.html);
+        const png = path.join(destino, `${nome}.png`);
         await fotografar(nav, html, png, f.w, f.h);
         console.log(`🖼  ${path.relative(RAIZ, png)}`);
       }

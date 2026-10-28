@@ -1,7 +1,7 @@
 // Uma instância de personagem em cena: SVG com as vistas necessárias e os
 // keyframes que posicionam, trocam vista, aplicam pose e expressão.
 import type { Keyframe } from "../core/keyframes";
-import { desenharHumano, filhos } from "./humano";
+import { desenharHumano, filhos, GESTOS_MAO } from "./humano";
 import { EXPRESSOES, JUNTAS, type Figurino, type Junta, type PoseResolvida, type VistaBase } from "./tipos";
 
 export const slugVista = (v: VistaBase) => (v === "3/4" ? "tq" : v);
@@ -29,7 +29,10 @@ export function desenhavelHumano(f: Figurino): Desenhavel {
   return {
     id: f.id,
     desenhar: (v, px) => desenharHumano(f, v, px),
-    acessoriosPadrao: () => Object.fromEntries(Object.entries(f.acessorios ?? {}).map(([k, a]) => [k, a.padrao])),
+    acessoriosPadrao: () => ({
+      ...(f.semRosto ? {} : Object.fromEntries(Object.keys(GESTOS_MAO).map((k) => [k, false]))),
+      ...Object.fromEntries(Object.entries(f.acessorios ?? {}).map(([k, a]) => [k, a.padrao])),
+    }),
     temRosto: !f.semRosto,
     filhos: filhos(f),
     pendurados: Object.fromEntries(

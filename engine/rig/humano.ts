@@ -93,7 +93,8 @@ function braco(px: string, f: Figurino, v: VistaBase, lado: Lado, em: Ponto): st
   const m = `mao_${lado}` as Junta;
   const mao =
     acessoriosDa(px, f, v, m, true) +
-    `<circle cx="0" cy="${Math.round((f.maoR ?? 27) * 0.45)}" r="${f.maoR ?? 27}" fill="${f.cores.pele}"${f.semContorno ? "" : ` stroke="${CONTORNO}" stroke-width="5"`}/>` +
+    (f.mao?.(v, lado) ??
+      `<circle cx="0" cy="${Math.round((f.maoR ?? 27) * 0.45)}" r="${f.maoR ?? 27}" fill="${f.cores.pele}"${f.semContorno ? "" : ` stroke="${CONTORNO}" stroke-width="5"`}/>`) +
     acessoriosDa(px, f, v, m, false);
   const ante =
     segmento(px, `antebraco_${lado}` as Junta, traco(p.antebraco, p.larguraBraco * 0.92, f.cores.antebraco ?? f.cores.manga) +
@@ -121,6 +122,33 @@ function perna(px: string, f: Figurino, v: VistaBase, lado: Lado, em: Ponto): st
 }
 
 /**
+ * Mãos de gesto presas à cabeça (mão na boca, na cabeça, nos óculos). O braço
+ * livre aponta para lá, mas de perfil ele passa por trás da cabeça; a mão
+ * desenhada aqui garante que o gesto leia. Ligadas pela pose (`acessorios`).
+ * Coordenadas no centro da cabeça (raio 118), olhando à direita.
+ */
+export const GESTOS_MAO: Record<string, Record<VistaBase, Ponto | null>> = {
+  mao_boca: { frente: { x: 0, y: 84 }, "3/4": { x: 42, y: 82 }, perfil: { x: 98, y: 80 }, costas: null },
+  mao_cabeca: { frente: { x: 82, y: -94 }, "3/4": { x: -18, y: -112 }, perfil: { x: -8, y: -114 }, costas: { x: -82, y: -94 } },
+  mao_oculos: { frente: { x: 0, y: 52 }, "3/4": { x: 32, y: 52 }, perfil: { x: 100, y: 52 }, costas: null },
+};
+
+function gestosMao(px: string, f: Figurino, v: VistaBase): string {
+  const k = f.prop.cabecaR / 118;
+  const r = f.maoR ?? 27;
+  return Object.entries(GESTOS_MAO)
+    .map(([nome, porVista]) => {
+      const p = porVista[v];
+      if (!p) return "";
+      const x = p.x * k, y = p.y * k;
+      // nos óculos, um dedo sobe até a ponte
+      const dedo = nome === "mao_oculos" ? `<path d="M${x} ${y} L${x} ${y - 30 * k}" stroke="${CONTORNO}" stroke-width="22" stroke-linecap="round"/><path d="M${x} ${y} L${x} ${y - 30 * k}" stroke="${f.cores.pele}" stroke-width="12" stroke-linecap="round"/>` : "";
+      return `<g id="${px}-ac-${nome}" opacity="0">${dedo}<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${f.cores.pele}" stroke="${CONTORNO}" stroke-width="5"/></g>`;
+    })
+    .join("");
+}
+
+/**
  * SVG de uma vista do personagem, com a origem no chão entre os pés.
  * `px` é o prefixo único dos ids (ex.: "p03-caio-frente").
  */
@@ -134,17 +162,19 @@ export function desenharHumano(f: Figurino, v: VistaBase, px: string): string {
     cab.base +
     (f.semRosto ? "" : desenharRostos(px, v, p.cabecaR, f.cores.sobrancelha)) +
     cab.topo +
+    (f.semRosto ? "" : gestosMao(px, f, v)) +
     `</g>` +
     acessoriosDa(px, f, v, "cabeca", false);
+  const esc = (svg: string) => (f.escalaTronco && svg ? `<g transform="scale(${f.escalaTronco.x} ${f.escalaTronco.y})">${svg}</g>` : svg);
   const tronco =
     L.bracosAtras.map((l) => braco(px, f, v, l, L.ombros[l])).join("") +
-    f.tronco(v, px) +
+    esc(f.tronco(v, px)) +
     acessoriosDa(px, f, v, "tronco", false) +
     junta(px, "cabeca", L.pescoco, cabeca) +
     L.bracosFrente.map((l) => braco(px, f, v, l, L.ombros[l])).join("");
   const quadril =
     L.ordemPernas.map((l) => perna(px, f, v, l, L.pernas[l])).join("") +
-    (f.saia?.(v, px) ?? "") +
+    esc(f.saia?.(v, px) ?? "") +
     `<g id="${px}-tronco">${tronco}</g>`;
   return (
     `<g id="${px}-corpo">` +

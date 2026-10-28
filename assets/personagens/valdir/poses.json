@@ -1,20 +1,241 @@
 {
   "segurando_pasta": {
     "expressao": "neutro",
-    "angulos": { "braco_d": -40, "antebraco_d": -84, "braco_e": -34, "antebraco_e": -88 },
-    "acessorios": { "pasta_peito": true, "pasta": false },
+    "angulos": {
+      "braco_d": -40,
+      "antebraco_d": -84,
+      "braco_e": -34,
+      "antebraco_e": -88
+    },
+    "acessorios": {
+      "pasta_peito": true,
+      "pasta": false
+    },
     "por_vista": {
-      "frente": { "angulos": { "braco_d": 22, "antebraco_d": -96, "braco_e": -22, "antebraco_e": 96 } },
-      "costas": { "angulos": { "braco_d": -22, "antebraco_d": 96, "braco_e": 22, "antebraco_e": -96 } }
+      "frente": {
+        "angulos": {
+          "braco_d": 22,
+          "antebraco_d": -96,
+          "braco_e": -22,
+          "antebraco_e": 96
+        }
+      },
+      "costas": {
+        "angulos": {
+          "braco_d": -22,
+          "antebraco_d": 96,
+          "braco_e": 22,
+          "antebraco_e": -96
+        }
+      }
     }
   },
   "ajustar_oculos": {
     "expressao": "desconfiado",
-    "angulos": { "braco_d": -100, "antebraco_d": -95, "braco_e": -6, "antebraco_e": -10 },
-    "acessorios": { "pasta": false },
+    "acessorios": {
+      "mao_oculos": true,
+      "pasta": true
+    },
+    "angulos": {
+      "braco_d": 6,
+      "antebraco_d": -10,
+      "braco_e": -99,
+      "antebraco_e": -81
+    },
     "por_vista": {
-      "frente": { "angulos": { "braco_d": 160, "antebraco_d": 103, "braco_e": -8, "antebraco_e": -4 } },
-      "costas": { "angulos": { "braco_d": -160, "antebraco_d": -103, "braco_e": 8, "antebraco_e": 4 } }
+      "3/4": {
+        "angulos": {
+          "braco_d": 6,
+          "antebraco_d": -10,
+          "braco_e": -135,
+          "antebraco_e": -114
+        }
+      },
+      "frente": {
+        "angulos": {
+          "braco_d": 8,
+          "antebraco_d": 4,
+          "braco_e": 96,
+          "antebraco_e": 88
+        }
+      },
+      "costas": {
+        "angulos": {
+          "braco_d": -8,
+          "antebraco_d": -4,
+          "braco_e": -96,
+          "antebraco_e": -88
+        }
+      }
+    }
+  },
+  "apontar": {
+    "expressao": "determinado",
+    "angulos": {
+      "tronco": -3,
+      "braco_e": -86,
+      "antebraco_e": -4,
+      "braco_d": 6,
+      "antebraco_d": -10
+    },
+    "por_vista": {
+      "frente": {
+        "angulos": {
+          "braco_e": -80,
+          "antebraco_e": -6,
+          "braco_d": 8,
+          "antebraco_d": 4
+        }
+      },
+      "costas": {
+        "angulos": {
+          "braco_e": 80,
+          "antebraco_e": 6,
+          "braco_d": -8,
+          "antebraco_d": -4
+        }
+      }
+    }
+  },
+  "braco_estendido": {
+    "expressao": "neutro",
+    "angulos": {
+      "tronco": -5,
+      "braco_e": -70,
+      "antebraco_e": -12,
+      "braco_d": 6,
+      "antebraco_d": -10
+    },
+    "por_vista": {
+      "frente": {
+        "angulos": {
+          "braco_e": -62,
+          "antebraco_e": -10,
+          "braco_d": 8,
+          "antebraco_d": 4
+        }
+      },
+      "costas": {
+        "angulos": {
+          "braco_e": 62,
+          "antebraco_e": 10,
+          "braco_d": -8,
+          "antebraco_d": -4
+        }
+      }
+    }
+  },
+  "empurrar": {
+    "expressao": "determinado",
+    "angulos": {
+      "tronco": -16,
+      "braco_e": -80,
+      "antebraco_e": -18,
+      "braco_d": 16,
+      "antebraco_d": -10,
+      "coxa_d": -22,
+      "canela_d": 12,
+      "coxa_e": 22,
+      "canela_e": 4
+    },
+    "por_vista": {
+      "frente": {
+        "angulos": {
+          "braco_e": -26,
+          "antebraco_e": 100,
+          "braco_d": 8,
+          "antebraco_d": 4
+        }
+      },
+      "costas": {
+        "angulos": {
+          "braco_e": 26,
+          "antebraco_e": -100,
+          "braco_d": -8,
+          "antebraco_d": -4
+        }
+      }
+    }
+  },
+  "assustado": {
+    "expressao": "medo",
+    "acessorios": {
+      "mao_boca": true
+    },
+    "angulos": {
+      "tronco": 7,
+      "cabeca": 4,
+      "coxa_d": -8,
+      "coxa_e": 6,
+      "braco_d": 12,
+      "antebraco_d": -8,
+      "braco_e": -83,
+      "antebraco_e": -99
+    },
+    "por_vista": {
+      "3/4": {
+        "angulos": {
+          "braco_d": 12,
+          "antebraco_d": -8,
+          "braco_e": -122,
+          "antebraco_e": -135
+        }
+      },
+      "frente": {
+        "angulos": {
+          "braco_d": 10,
+          "antebraco_d": 2,
+          "braco_e": 78,
+          "antebraco_e": 106
+        }
+      },
+      "costas": {
+        "angulos": {
+          "braco_d": -10,
+          "antebraco_d": -2,
+          "braco_e": -78,
+          "antebraco_e": -106
+        }
+      }
+    }
+  },
+  "maos_na_cabeca": {
+    "expressao": "medo",
+    "acessorios": {
+      "mao_cabeca": true
+    },
+    "angulos": {
+      "cabeca": 4,
+      "braco_d": 10,
+      "antebraco_d": -14,
+      "braco_e": 173,
+      "antebraco_e": 9
+    },
+    "por_vista": {
+      "3/4": {
+        "angulos": {
+          "braco_d": 10,
+          "antebraco_d": -14,
+          "braco_e": 162,
+          "antebraco_e": 9
+        }
+      },
+      "frente": {
+        "angulos": {
+          "braco_d": 8,
+          "antebraco_d": 4,
+          "braco_e": 183,
+          "antebraco_e": -9
+        }
+      },
+      "costas": {
+        "angulos": {
+          "braco_d": -8,
+          "antebraco_d": -4,
+          "braco_e": -183,
+          "antebraco_e": 9
+        }
+      }
     }
   }
 }
