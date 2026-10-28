@@ -201,3 +201,13 @@ describe("checarEpisodio", () => {
     expect(falhas(ep)).toEqual(["ultima_frase"]);
   });
 });
+
+describe("fala", () => {
+  it("aceita {personagem, tts, legenda} e recusa sem personagem", () => {
+    const ep = structuredClone(exemploSkill);
+    (ep.planos[1] as any).fala = { personagem: "socorro", tts: "Meu filho, come.", legenda: "MEU FILHO, COME." };
+    expect(validarEpisodio(ep).ok).toBe(true);
+    (ep.planos[1] as any).fala = { tts: "Meu filho, come.", legenda: "MEU FILHO, COME." };
+    expect(validarEpisodio(ep).ok).toBe(false);
+  });
+});

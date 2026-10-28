@@ -25,8 +25,9 @@ export const narracaoSchema = z.object({
   legenda: z.string().trim().min(1),
 });
 
+// Fala de personagem (SKILL.md, MODO 2): personagem é o id do catálogo.
 const falaSchema = z.object({
-  personagem: z.string().min(1),
+  personagem: z.string().regex(/^[a-z0-9_]+$/, "id do personagem no catálogo"),
   tts: z.string().trim().min(1),
   legenda: z.string().trim().min(1),
 });
