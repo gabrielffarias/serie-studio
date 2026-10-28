@@ -13,7 +13,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "render:hello": "tsx scripts/render-hello.ts",
-    "preview:assets": "tsx scripts/preview-assets.ts"
+    "preview:assets": "tsx scripts/preview-assets.ts",
+    "preview:cenarios": "tsx scripts/preview-cenarios.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

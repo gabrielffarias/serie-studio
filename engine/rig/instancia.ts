@@ -19,6 +19,8 @@ export type Desenhavel = {
   pendurados: Record<string, Junta[]>;
   /** raio da sombra de contato */
   sombraRx: number;
+  /** altura do centro da cabeça acima do chão, na escala 1 */
+  alturaCabeca: number;
   /** opacidade do desenho (vulto = 0,9) */
   opacidade?: number;
 };
@@ -39,6 +41,7 @@ export function desenhavelHumano(f: Figurino): Desenhavel {
         }),
     ),
     sombraRx: Math.round(f.prop.cabecaR * 1.27),
+    alturaCabeca: f.prop.quadril + f.prop.cabeca,
   };
 }
 
@@ -51,10 +54,10 @@ export function svgInstancia(d: Desenhavel, inst: string, vistas: VistaBase[], v
     })
     .join("");
   return (
-    `<g id="${inst}">` +
+    `<g id="${inst}"><g id="${inst}-espelho">` +
     `<ellipse id="${inst}-sombra" cx="0" cy="4" rx="${d.sombraRx}" ry="22" fill="#000" opacity=".25"/>` +
     (d.opacidade !== undefined && d.opacidade < 1 ? `<g opacity="${d.opacidade}">${grupos}</g>` : grupos) +
-    `</g>`
+    `</g></g>`
   );
 }
 
@@ -107,7 +110,9 @@ export function kfsRaiz(
   return [
     { alvo: `#${inst}`, prop: "x", t, v: Math.round(pos.x * 10) / 10, dur, ease },
     { alvo: `#${inst}`, prop: "y", t, v: Math.round(pos.y * 10) / 10, dur, ease },
-    { alvo: `#${inst}`, prop: "scaleX", t, v: pos.espelho ? -pos.escala : pos.escala },
-    { alvo: `#${inst}`, prop: "scaleY", t, v: pos.escala },
+    // escala e espelho num grupo à parte: em SVG o GSAP aplica a escala depois
+    // da translação, então escala na raiz multiplicaria também a posição
+    { alvo: `#${inst}-espelho`, prop: "scaleX", t, v: pos.espelho ? -pos.escala : pos.escala, dur, ease },
+    { alvo: `#${inst}-espelho`, prop: "scaleY", t, v: pos.escala, dur, ease },
   ];
 }
