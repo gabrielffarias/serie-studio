@@ -7,6 +7,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import path from "node:path";
 import { montarProjeto } from "../engine/compose/projeto";
 import { validarEpisodio } from "../src/lib/episodio-schema";
+import { lerEstado } from "../src/lib/estado";
 
 const RAIZ = path.resolve(import.meta.dirname, "..");
 const HF = path.join(RAIZ, "node_modules/.bin/hyperframes");
@@ -38,7 +39,11 @@ async function main() {
   mkdirSync(path.join(RAIZ, "data/stills"), { recursive: true });
   rmSync(saida, { force: true });
 
-  const proj = montarProjeto(ep, dir, { itens: ["lanterna_cabeca"], apenas });
+  // itens do estado antes do episódio (o demo do motor usa a lanterna de cabeça)
+  const demo = path.resolve(arquivo) === path.join(RAIZ, "engine/compose/fixtures/demo.json");
+  const itens = demo ? ["lanterna_cabeca"] : lerEstado(ep.serie).itens;
+  const proj = montarProjeto(ep, dir, { itens, apenas });
+  console.log(`▶ itens do estado: ${itens.join(", ") || "nenhum"}`);
   console.log(`▶ projeto ${path.relative(RAIZ, dir)}: ${proj.planos.map((p) => `${p.id} ${p.dur}s`).join(", ")} = ${proj.duracao}s`);
 
   await rodar(HF, ["lint"], dir);

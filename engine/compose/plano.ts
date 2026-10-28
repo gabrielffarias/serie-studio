@@ -92,6 +92,7 @@ export function comporCena(p: PlanoCena, ctx: ContextoPlano): PlanoComposto {
   if (p.efeitos.includes("piscar_luz")) kfs.push(...kfsPiscar(ctx.px, `${ctx.semente}-piscar`, ctx.dur, 0));
   if (p.efeitos.includes("apagao")) {
     // apagão no meio do plano: corte seco para quase preto
+    if (!p.efeitos.includes("piscar_luz")) kfs.push({ alvo: `#${ctx.px}-piscar`, prop: "opacity", t: 0, v: 0 });
     kfs.push({ alvo: `#${ctx.px}-piscar`, prop: "opacity", t: Math.min(ctx.dur * 0.5, ctx.dur - 0.5), v: 0.93 });
   }
 
