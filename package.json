@@ -15,7 +15,9 @@
     "render:hello": "tsx scripts/render-hello.ts",
     "preview:assets": "tsx scripts/preview-assets.ts",
     "preview:cenarios": "tsx scripts/preview-cenarios.ts",
-    "render:plano": "tsx scripts/render-plano.ts"
+    "render:plano": "tsx scripts/render-plano.ts",
+    "catalogo": "tsx scripts/gerar-catalogo.ts",
+    "estado:inicial": "tsx scripts/estado-inicial.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

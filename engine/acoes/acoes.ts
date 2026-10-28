@@ -23,6 +23,25 @@ export type ContextoAcao = {
   semente: string;
 };
 
+/** Poses de que cada ação precisa (o catálogo só oferece a ação a quem tem todas). */
+export const POSES_DA_ACAO: Record<string, string[]> = {
+  entrar: ["andar", "correr"],
+  sair: ["andar", "correr"],
+  andar: ["andar", "em_pe"],
+  correr: ["correr", "em_pe"],
+  apontar: ["apontar"],
+  empurrar: ["empurrar"],
+  agachar: ["agachar"],
+  virar: [],
+  tremer: [],
+  respirar: [],
+  olhar: ["olhar_tras"],
+  cair: ["assustado", "caido"],
+  levantar: ["agachar", "em_pe"],
+  pegar: ["braco_estendido"],
+  soltar: ["braco_estendido"],
+};
+
 export const TRANSICAO = 0.12;
 const VELOCIDADE = { andar: 300, correr: 640 }; // px/s na escala 1
 const PASSO = { andar: 0.52, correr: 0.32 }; // s por passo (2 poses-chave seguradas)

@@ -10,6 +10,7 @@ export const prefixoVista = (inst: string, v: VistaBase) => `${inst}-${slugVista
 /** Personagem desenhável: humano (Figurino) ou outro rig com a mesma interface. */
 export type Desenhavel = {
   id: string;
+  nome: string;
   desenhar(v: VistaBase, px: string): string;
   acessoriosPadrao(): Record<string, boolean>;
   temRosto: boolean;
@@ -28,6 +29,7 @@ export type Desenhavel = {
 export function desenhavelHumano(f: Figurino): Desenhavel {
   return {
     id: f.id,
+    nome: f.nome,
     desenhar: (v, px) => desenharHumano(f, v, px),
     acessoriosPadrao: () => ({
       ...(f.semRosto ? {} : Object.fromEntries(Object.keys(GESTOS_MAO).map((k) => [k, false]))),
