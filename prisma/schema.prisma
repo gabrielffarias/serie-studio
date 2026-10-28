@@ -1,0 +1,308 @@
+// serie-studio: o status no banco é a fila (padrão do cortes_tiktok).
+// Workers pegam o registro mais antigo no status de entrada com FOR UPDATE SKIP LOCKED.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AssetStatus {
+  DRAFT
+  PREVIEW
+  APPROVED
+  REJECTED
+}
+
+enum StoryNodeStatus {
+  PLANNED
+  ACTIVE
+  PRODUCED
+  SKIPPED
+}
+
+enum EpisodeStatus {
+  PLANNED
+  PENDING_SCRIPT
+  SCRIPTING
+  SCRIPT_REVIEW
+  SCRIPT_FAILED
+  PENDING_ASSETS
+  ASSETS
+  ASSET_REVIEW
+  ASSETS_FAILED
+  PENDING_VOICE
+  VOICING
+  VOICE_FAILED
+  PENDING_RENDER
+  RENDERING
+  RENDER_REVIEW
+  RENDER_FAILED
+  READY
+  POSTED
+  VOTING
+  VOTE_CLOSED
+  DONE
+}
+
+enum VoteStatus {
+  OPEN
+  CLOSED
+  APPLIED
+}
+
+enum VoteCriterio {
+  maioria
+  empate_padrao
+  poucos_votos_padrao
+  manual
+}
+
+enum Opcao {
+  A
+  B
+}
+
+enum CommentVoto {
+  A
+  B
+  NULO
+  AMBIGUO
+}
+
+enum CommentOrigem {
+  regex
+  claude
+  manual
+}
+
+model Series {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  titulo      String
+  bibliaPath  String
+  vozNarrador String   @default("pt-BR-AntonioNeural")
+  // { duracaoMinS, duracaoMaxS, janelaVotacaoH, minimoVotos }
+  config      Json     @default("{\"duracaoMinS\":65,\"duracaoMaxS\":90,\"janelaVotacaoH\":24,\"minimoVotos\":15}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  characters   Character[]
+  locations    Location[]
+  props        Prop[]
+  infographics Infographic[]
+  storyNodes   StoryNode[]
+  states       StoryState[]
+}
+
+model Character {
+  id          String      @id @default(cuid())
+  serieId     String
+  serie       Series      @relation(fields: [serieId], references: [id])
+  assetId     String
+  nome        String
+  status      AssetStatus @default(DRAFT)
+  spec        Json?
+  previewPath String?
+  versao      Int         @default(1)
+  // vistas e poses disponíveis (espelho de assets/personagens/<id>/poses.json)
+  poses       Json?
+  vozId       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([serieId, assetId])
+}
+
+model Location {
+  id          String      @id @default(cuid())
+  serieId     String
+  serie       Series      @relation(fields: [serieId], references: [id])
+  assetId     String
+  status      AssetStatus @default(DRAFT)
+  spec        Json?
+  previewPath String?
+  versao      Int         @default(1)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([serieId, assetId])
+}
+
+model Prop {
+  id          String      @id @default(cuid())
+  serieId     String
+  serie       Series      @relation(fields: [serieId], references: [id])
+  assetId     String
+  status      AssetStatus @default(DRAFT)
+  spec        Json?
+  previewPath String?
+  versao      Int         @default(1)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([serieId, assetId])
+}
+
+model Infographic {
+  id          String      @id @default(cuid())
+  serieId     String
+  serie       Series      @relation(fields: [serieId], references: [id])
+  assetId     String
+  status      AssetStatus @default(DRAFT)
+  spec        Json?
+  previewPath String?
+  versao      Int         @default(1)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([serieId, assetId])
+}
+
+// O esqueleto planejado da temporada (tabela "Esqueleto da temporada" da bíblia).
+model StoryNode {
+  id           String          @id @default(cuid())
+  serieId      String
+  serie        Series          @relation(fields: [serieId], references: [id])
+  no           String // ex.: ep02_tunel
+  numero       Int
+  resumo       String
+  temVotacao   Boolean         @default(false)
+  opcaoA       String?
+  opcaoB       String?
+  noSeA        String?
+  noSeB        String?
+  efeitosA     Json?
+  efeitosB     Json?
+  // opção usada em empate ou com poucos votos (padrão: A)
+  opcaoPadrao  Opcao           @default(A)
+  convergencia Boolean         @default(false)
+  status       StoryNodeStatus @default(PLANNED)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  episodes Episode[]
+
+  @@unique([serieId, no])
+}
+
+// O episódio realizado a partir de um nó.
+model Episode {
+  id                String        @id @default(cuid())
+  storyNodeId       String
+  storyNode         StoryNode     @relation(fields: [storyNodeId], references: [id])
+  roteiro           Json?
+  // resultado da votação anterior anexado ao prompt: { opcao, pct_a, pct_b, frase }
+  resultadoAnterior Json?
+  // comentário de rejeição do roteiro, anexado ao próximo prompt
+  comentarioRevisao String?
+  estadoAntes       Json?
+  estadoDepois      Json?
+  checagens         Json?
+  status            EpisodeStatus @default(PLANNED)
+  progress          Int           @default(0)
+  logs              String        @default("")
+  retryCount        Int           @default(0)
+  renderPath        String?
+  duracaoReal       Float?
+  copyTitulo        String?
+  copyLegenda       String?
+  bufferPostId      String?
+  postadoEm         DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  shots   Shot[]
+  votes   Vote[]
+  metrics EpisodeMetrics?
+  state   StoryState?
+
+  @@index([status, createdAt])
+}
+
+model Shot {
+  id           String   @id @default(cuid())
+  episodeId    String
+  episode      Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  planoId      String // p01, p02…
+  ordem        Int
+  audioPath    String?
+  falaPath     String?
+  // [{ palavra, inicio, fim }]
+  palavras     Json?
+  duracaoFinal Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([episodeId, planoId])
+}
+
+model Vote {
+  id        String        @id @default(cuid())
+  episodeId String
+  episode   Episode       @relation(fields: [episodeId], references: [id])
+  abreEm    DateTime
+  fechaEm   DateTime
+  status    VoteStatus    @default(OPEN)
+  votosA    Int           @default(0)
+  votosB    Int           @default(0)
+  nulos     Int           @default(0)
+  total     Int           @default(0)
+  vencedora Opcao?
+  criterio  VoteCriterio?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  comments Comment[]
+
+  @@index([status, fechaEm])
+}
+
+model Comment {
+  id       String        @id @default(cuid())
+  voteId   String
+  vote     Vote          @relation(fields: [voteId], references: [id], onDelete: Cascade)
+  autorId  String
+  texto    String
+  criadoEm DateTime
+  voto     CommentVoto
+  origem   CommentOrigem
+
+  // um voto por autor: vale o último dentro da janela
+  @@unique([voteId, autorId])
+}
+
+// Snapshot do estado da história depois de cada episódio.
+model StoryState {
+  id        String   @id @default(cuid())
+  serieId   String
+  serie     Series   @relation(fields: [serieId], references: [id])
+  episodeId String?  @unique
+  episode   Episode? @relation(fields: [episodeId], references: [id])
+  estado    Json
+  createdAt DateTime @default(now())
+
+  @@index([serieId, createdAt])
+}
+
+// Separada de Episode de propósito (como ClipMetrics no cortes).
+model EpisodeMetrics {
+  id                   String   @id @default(cuid())
+  episodeId            String   @unique
+  episode              Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  views                Int      @default(0)
+  curtidas             Int      @default(0)
+  comentarios          Int      @default(0)
+  compartilhamentos    Int      @default(0)
+  tempoMedioAssistidoS Float?
+  atualizadoEm         DateTime @updatedAt
+}
+
+model SystemSettings {
+  id               String  @id @default("singleton")
+  pilotoAutomatico Boolean @default(false)
+  serieAtiva       String?
+}
