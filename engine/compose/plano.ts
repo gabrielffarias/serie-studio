@@ -77,9 +77,11 @@ export function comporCena(p: PlanoCena, ctx: ContextoPlano): PlanoComposto {
   const dono = m.instancias.find((i) => i.inst === m.lanterna?.dono);
   if (dono) {
     const mov = kfs.filter((k) => k.alvo === `#${dono.inst}` && (k.prop === "x" || k.prop === "y") && k.t + (k.dur ?? 0) > 0);
+    const alvos = [`#${ctx.px}-cone`, ...(m.lanterna?.alvo ? [] : [`#${ctx.px}-brilho`])];
+    if (mov.length) for (const alvo of alvos) kfs.push({ alvo, prop: "x", t: 0, v: 0 }, { alvo, prop: "y", t: 0, v: 0 });
     for (const k of mov) {
       const v0 = k.prop === "x" ? dono.pos.x : dono.pos.y;
-      for (const alvo of [`#${ctx.px}-cone`, `#${ctx.px}-brilho`]) kfs.push({ ...k, alvo, v: Math.round(((k.v as number) - v0) * 10) / 10 });
+      for (const alvo of alvos) kfs.push({ ...k, alvo, v: Math.round(((k.v as number) - v0) * 10) / 10 });
     }
   }
 
