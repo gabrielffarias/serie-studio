@@ -5,7 +5,8 @@ import { copyFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { compilar, type Keyframe } from "../core/keyframes";
 import { CSS_CARTAO } from "../hud/cartao";
-import { camadaHud, CSS_HUD } from "../hud/hud";
+import { camadaHudEpisodio, CSS_HUD, partesSelo, passosHud } from "../hud/hud";
+import { percorrerLuz } from "../../src/lib/luz";
 import { blocos, camadaLegenda, CSS_LEGENDA, temposPorSilaba, type TempoPalavra } from "../hud/legenda";
 import { CSS_TELAS } from "../hud/telas";
 import { copiarVendor } from "../vendor";
@@ -17,6 +18,8 @@ const RAIZ = path.resolve(import.meta.dirname, "../..");
 export type OpcoesProjeto = {
   /** itens do estado antes do episódio (lanterna_cabeca etc.) */
   itens?: string[];
+  /** luz ambiente de cada local antes do episódio (estado.luz_ambiente) */
+  luzAmbiente?: Record<string, string>;
   /** tempos das palavras por plano (Whisper); sem isso, estimativa por sílaba */
   palavras?: Record<string, TempoPalavra[]>;
   /** só estes planos (medição de render de um plano isolado) */
@@ -94,13 +97,27 @@ export function montarProjeto(ep: Episodio, dir: string, op: OpcoesProjeto = {})
   const hosts: string[] = [];
   const kfsRaiz: Keyframe[] = [];
   const legendas: string[] = [];
-  const hud = camadaHud("r", ep.hud.selo, ep.hud.medidor.nome, ep.hud.medidor.valor, { t0: 0, t1: total });
+  // luz ambiente de cada plano, a partir do estado (só muda com evento de luz)
+  const luzes = Object.fromEntries(percorrerLuz(ep.planos, op.luzAmbiente ?? {}).planos.map((l) => [l.id, l]));
+
+  // HUD: relógio até a hora final; bateria cai só com a lanterna acesa
+  const horaFinal = typeof ep.estado_final.hora === "string" ? ep.estado_final.hora : partesSelo(ep.hud.selo)[1].replace(/[^\d:]/g, "");
+  const batFinal = typeof ep.estado_final.bateria === "number" ? ep.estado_final.bateria : ep.hud.medidor.valor;
+  const passos = passosHud(
+    planos.map((pl) => {
+      const p = ep.planos.find((x) => x.id === pl.id)!;
+      return { ini: pl.ini, dur: pl.dur, cena: p.tipo === "cena", lanterna: p.tipo === "cena" && p.lanterna };
+    }),
+    { de: partesSelo(ep.hud.selo)[1].replace(/[^\d:]/g, ""), para: horaFinal },
+    { de: ep.hud.medidor.valor, para: batFinal },
+  );
+  const hud = camadaHudEpisodio("r", ep.hud.selo, ep.hud.medidor.nome, passos, total);
   kfsRaiz.push(...hud.kfs, { alvo: "#r-hud", prop: "opacity", t: 0, v: 1 });
 
   planos.forEach((pl, k) => {
     const i = indices[k];
     const p = ep.planos[i];
-    const c = comporPlano(ep, i, { px: pl.id, dur: pl.dur, itens: op.itens ?? [], semente: `${ep.no}-${pl.id}` }, todas);
+    const c = comporPlano(ep, i, { px: pl.id, dur: pl.dur, itens: op.itens ?? [], semente: `${ep.no}-${pl.id}`, luzes }, todas);
     writeFileSync(path.join(dir, `compositions/${pl.id}.html`), htmlPlano(pl.id, pl.dur, c));
     hosts.push(
       `<div id="${pl.id}" data-composition-id="${pl.id}" data-composition-src="compositions/${pl.id}.html" data-start="${pl.ini}" data-duration="${pl.dur}" data-track-index="1" data-width="1080" data-height="1920"></div>`,

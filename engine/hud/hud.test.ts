@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { compilar } from "../core/keyframes";
 import { marcarDestaques, tamanhoCartao } from "./cartao";
-import { faixaBateria, partesSelo } from "./hud";
+import { camadaHudEpisodio, faixaBateria, partesSelo, passosHud } from "./hud";
 import { blocos, camadaLegenda, ehDestaque, MAX_CARACTERES, silabas, temposPorSilaba } from "./legenda";
 import { alturasBarras } from "./telas";
 
@@ -65,5 +65,29 @@ describe("cartão e telas", () => {
   it("barras proporcionais, a maior ocupa a altura toda", () => {
     expect(alturasBarras(64, 36, 600)).toEqual([600, 338]);
     expect(alturasBarras(0, 0, 600)).toEqual([0, 0]);
+  });
+});
+
+describe("HUD animado", () => {
+  const planos = [
+    { ini: 0, dur: 10, cena: true, lanterna: false },
+    { ini: 10, dur: 10, cena: true, lanterna: true },
+    { ini: 20, dur: 10, cena: true, lanterna: false },
+    { ini: 30, dur: 7, cena: false, lanterna: false },
+  ];
+  it("o relógio avança nas cenas até a hora final; a bateria cai só no plano com lanterna", () => {
+    const p = passosHud(planos, { de: "18:04", para: "18:07" }, { de: 100, para: 98 });
+    expect(p.horas).toEqual([{ t: 0, hora: "18:04" }, { t: 5, hora: "18:05" }, { t: 15, hora: "18:06" }, { t: 25, hora: "18:07" }]);
+    expect(p.bateria).toEqual([{ t: 0, valor: 100 }, { t: 12.5, valor: 99 }, { t: 17.5, valor: 98 }]);
+  });
+
+  it("sem lanterna acesa a bateria não cai; a camada compila", () => {
+    const p = passosHud(planos.map((x) => ({ ...x, lanterna: false })), { de: "23:59", para: "00:01" }, { de: 21, para: 15 });
+    expect(p.bateria).toEqual([{ t: 0, valor: 21 }]);
+    expect(p.horas.map((h) => h.hora)).toEqual(["23:59", "00:00", "00:01"]);
+    const c = camadaHudEpisodio("r", "NOITE 1 · 23:59", "BATERIA", passosHud(planos, { de: "18:04", para: "18:05" }, { de: 20, para: 18 }), 37);
+    expect(() => compilar(c.kfs)).not.toThrow();
+    expect(c.html).toContain("· 18:05");
+    expect(c.kfs.some((k) => k.alvo === "#r-bat-2-pct")).toBe(true);
   });
 });
