@@ -1,16 +1,18 @@
 // Um plano do roteiro → conteúdo visual (SVG + camadas HTML) e keyframes na
 // timeline local do plano (0 = início do plano).
 import type { Keyframe } from "../core/keyframes";
-import { valoresFinais } from "../core/keyframes";
+import { amostrador, valoresFinais } from "../core/keyframes";
 import { kfsAcao } from "../acoes/acoes";
 import { kfsCamera } from "../camera/camera";
 import { cenario } from "../cenario/cenarios";
-import { kfsPiscar } from "../luz/luz";
+import { kfsFeixe, kfsPiscar, type OrigemLanterna } from "../luz/luz";
+import { prefixoVista } from "../rig/instancia";
 import { camadaCartao } from "../hud/cartao";
 import { telaContinua, telaResultado, telaVotacao } from "../hud/telas";
-import type { VistaBase } from "../rig/tipos";
+import type { PoseResolvida, VistaBase } from "../rig/tipos";
+import type { LuzDoPlano } from "../../src/lib/luz";
 import type { Episodio, Plano } from "../../src/lib/episodio-schema";
-import { extrasDaInstancia, montarCena, parseVista, type CenaSpec } from "./cena";
+import { extrasDaInstancia, feixeDaMao, montarCena, parseVista, type CenaSpec, type InstanciaCena } from "./cena";
 
 export type PlanoCena = Extract<Plano, { tipo: "cena" }>;
 
@@ -29,7 +31,72 @@ export type ContextoPlano = {
   dur: number;
   itens: string[];
   semente: string;
+  /** luz ambiente de cada plano de cena (percorrerLuz a partir do estado) */
+  luzes?: Record<string, LuzDoPlano>;
 };
+
+/** passo da amostragem do feixe durante as ações (s) */
+const PASSO_FEIXE = 0.1;
+
+/** Ângulo equivalente mais perto do anterior (o feixe não dá a volta inteira). */
+const continuo = (a: number, ant: number) => a + 360 * Math.round((ant - a) / 360);
+
+/**
+ * O feixe acompanha quem segura a lanterna: amostra a raiz, a vista e as
+ * juntas do braço ao longo do plano e move/gira o cone junto com a mão.
+ */
+function kfsFeixeSeguindo(px: string, dono: InstanciaCena, o0: OrigemLanterna, kfs: Keyframe[], dur: number): Keyframe[] {
+  if (o0.alvo) return [];
+  const s = amostrador(kfs);
+  const out: Keyframe[] = [];
+  let ant = { x: o0.x, y: o0.y, angulo: o0.angulo };
+  let tAnt = 0;
+  for (let t = PASSO_FEIXE; t <= dur + 1e-6; t += PASSO_FEIXE) {
+    const raiz = `#${dono.inst}`;
+    const x = s(raiz, "x", t, dono.pos.x), y = s(raiz, "y", t, dono.pos.y);
+    let o = { x: o0.x + x - dono.pos.x, y: o0.y + y - dono.pos.y, angulo: o0.angulo };
+    if (o0.naMao) {
+      const base = dono.vistas.find((v) => s(`#${prefixoVista(dono.inst, v)}`, "opacity", t, v === dono.base ? 1 : 0) > 0.5) ?? dono.base;
+      if (base === "costas") {
+        tAnt = t;
+        continue;
+      }
+      const pv = prefixoVista(dono.inst, base);
+      const sx = s(`${raiz}-espelho`, "scaleX", t, dono.pos.espelho ? -dono.pos.escala : dono.pos.escala);
+      const ang = (j: string) => s(`#${pv}-${j}`, "rotation", t, 0);
+      const pr = {
+        angulos: { tronco: ang("tronco"), braco_d: ang("braco_d"), antebraco_d: ang("antebraco_d"), mao_d: ang("mao_d") } as PoseResolvida["angulos"],
+        escalas: { braco_d: s(`#${pv}-braco_d-seg`, "scaleY", t, 1), antebraco_d: s(`#${pv}-antebraco_d-seg`, "scaleY", t, 1) } as PoseResolvida["escalas"],
+        corpo_y: s(`#${pv}-corpo`, "y", t, 0),
+      };
+      o = feixeDaMao(dono.spec.id, base, pr, { x, y, escala: Math.abs(sx), espelho: sx < 0 });
+    }
+    o.angulo = continuo(o.angulo, ant.angulo);
+    if (Math.abs(o.x - ant.x) > 0.5 || Math.abs(o.y - ant.y) > 0.5 || Math.abs(o.angulo - ant.angulo) > 0.3) {
+      out.push(...kfsFeixe(px, { ...o0, ...o }, Math.round(tAnt * 1000) / 1000, Math.round((t - tAnt) * 1000) / 1000));
+      ant = o;
+    }
+    tAnt = t;
+  }
+  return out;
+}
+
+/**
+ * Evento de luz no meio do plano: corte para quase preto, troca a camada
+ * ambiente (amb0 → amb1) e a nova luz acende.
+ */
+function kfsEventoLuz(px: string, luz: LuzDoPlano, dur: number, temPiscar: boolean): Keyframe[] {
+  const tm = Math.round(Math.min(dur * 0.5, dur - 0.6) * 100) / 100;
+  const kfs: Keyframe[] = [
+    { alvo: `#${px}-amb0`, prop: "opacity", t: tm, v: 0 },
+    { alvo: `#${px}-amb1`, prop: "opacity", t: tm, v: 1 },
+    { alvo: `#${px}-piscar`, prop: "opacity", t: tm, v: 0.95 },
+    { alvo: `#${px}-piscar`, prop: "opacity", t: tm + 0.35, v: 0, dur: 0.25, ease: "power1.in" },
+  ];
+  if (!temPiscar) kfs.unshift({ alvo: `#${px}-piscar`, prop: "opacity", t: 0, v: 0 });
+  if (luz.inicio === "escuro" || luz.fim === "escuro") kfs.push({ alvo: `#${px}-aro-g`, prop: "opacity", t: tm, v: luz.fim === "escuro" ? 1 : 0 });
+  return kfs;
+}
 
 /** Vistas extras pedidas por ações `virar` (a instância precisa ter o desenho delas). */
 function vistasExtras(p: PlanoCena): Record<string, VistaBase[]> {
@@ -43,10 +110,13 @@ function vistasExtras(p: PlanoCena): Record<string, VistaBase[]> {
 }
 
 export function comporCena(p: PlanoCena, ctx: ContextoPlano): PlanoComposto {
+  const luz: LuzDoPlano = ctx.luzes?.[p.id] ?? { id: p.id, local: p.cenario, inicio: p.luz ?? "normal", fim: p.luz ?? "normal" };
   const spec: CenaSpec = {
     px: ctx.px,
     cenario: p.cenario,
-    luz: p.luz ?? "normal",
+    luz: luz.inicio,
+    luzFim: luz.fim,
+    lanterna: p.lanterna,
     itens: ctx.itens,
     personagens: p.personagens.map((pc) => ({ id: pc.id, vista: pc.vista, pose: pc.pose, x: pc.x, y: pc.y, escala: pc.escala })),
     vistasExtras: vistasExtras(p),
@@ -73,30 +143,19 @@ export function comporCena(p: PlanoCena, ctx: ContextoPlano): PlanoComposto {
     );
   });
 
-  // o feixe da lanterna acompanha quem a segura quando anda
+  // o feixe da lanterna acompanha a mão (ou a cabeça) de quem a segura
   const dono = m.instancias.find((i) => i.inst === m.lanterna?.dono);
-  if (dono) {
-    const mov = kfs.filter((k) => k.alvo === `#${dono.inst}` && (k.prop === "x" || k.prop === "y") && k.t + (k.dur ?? 0) > 0);
-    const alvos = [`#${ctx.px}-cone`, ...(m.lanterna?.alvo ? [] : [`#${ctx.px}-brilho`])];
-    if (mov.length) for (const alvo of alvos) kfs.push({ alvo, prop: "x", t: 0, v: 0 }, { alvo, prop: "y", t: 0, v: 0 });
-    for (const k of mov) {
-      const v0 = k.prop === "x" ? dono.pos.x : dono.pos.y;
-      for (const alvo of alvos) kfs.push({ ...k, alvo, v: Math.round(((k.v as number) - v0) * 10) / 10 });
-    }
-  }
+  if (dono && m.lanterna) kfs.push(...kfsFeixeSeguindo(ctx.px, dono, m.lanterna, kfs, ctx.dur));
 
   // câmera: âncoras do cenário + cada personagem pelo id (foco na cabeça)
   const ancoras = { ...cenario(p.cenario).ancoras };
   for (const i of m.instancias) ancoras[i.spec.id] ??= { x: i.pos.x, y: i.pos.y - 420 * i.pos.escala };
   kfs.push(...kfsCamera(ctx.px, p.camera, ctx.dur, ancoras, `${ctx.semente}-cam`));
 
-  // efeitos de luz
+  // efeitos de luz: piscar e o evento que muda a luz ambiente
   if (p.efeitos.includes("piscar_luz")) kfs.push(...kfsPiscar(ctx.px, `${ctx.semente}-piscar`, ctx.dur, 0));
-  if (p.efeitos.includes("apagao")) {
-    // apagão no meio do plano: corte seco para quase preto
-    if (!p.efeitos.includes("piscar_luz")) kfs.push({ alvo: `#${ctx.px}-piscar`, prop: "opacity", t: 0, v: 0 });
-    kfs.push({ alvo: `#${ctx.px}-piscar`, prop: "opacity", t: Math.min(ctx.dur * 0.5, ctx.dur - 0.5), v: 0.93 });
-  }
+  if (luz.evento) kfs.push(...kfsEventoLuz(ctx.px, luz, ctx.dur, p.efeitos.includes("piscar_luz")));
+  else if (!p.efeitos.includes("piscar_luz")) kfs.push({ alvo: `#${ctx.px}-piscar`, prop: "opacity", t: 0, v: 0 });
 
   let html = "";
   if (p.cartao) {

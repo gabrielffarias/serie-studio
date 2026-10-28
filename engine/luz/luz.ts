@@ -1,10 +1,12 @@
 // Camadas de luz por cima da cena (engine/STYLE.md: gradiente só aqui e no fundo).
-// A parte animada (piscar, apagão, lanterna balançando) vem em keyframes no compose.
+// Luz ambiente = estado do local; a lanterna é uma camada que soma por cima.
+// A parte animada (piscar, eventos de luz, feixe seguindo a mão) vem em keyframes no compose.
 import type { Keyframe } from "../core/keyframes";
 import { rng } from "../core/rng";
+import { LUZES_AMBIENTE, type LuzAmbiente } from "../../src/lib/luz";
 
-export const LUZES = ["normal", "escuro", "emergencia_vermelha", "lanterna", "apagao"] as const;
-export type Luz = (typeof LUZES)[number];
+export const LUZES = LUZES_AMBIENTE;
+export type Luz = LuzAmbiente;
 
 export type OrigemLanterna = {
   x: number;
@@ -13,23 +15,73 @@ export type OrigemLanterna = {
   angulo: number;
   /** de costas para a câmera: em vez de cone, um círculo de luz no alvo */
   alvo?: { x: number; y: number };
-  /** instância que segura a lanterna: o feixe acompanha quando ela anda */
+  /** instância que segura a lanterna: o feixe acompanha a mão dela */
   dono?: string;
+  /** a lanterna está na mão (segue o braço) ou na cabeça */
+  naMao?: boolean;
 };
 
-/** escuridão em volta do feixe: ~18% de luz ambiente fica (forte, mas legível no celular) */
+/** escuridão do local escuro: ~18% de luz ambiente fica (forte, mas legível no celular) */
 export const ESCURO_LANTERNA = 0.82;
 
-/** contorno de luz fria nos personagens fora do feixe, para a silhueta ler no escuro */
+/** contorno de luz fria nos personagens no escuro, para a silhueta ler */
 export const CONTORNO_LANTERNA = { cor: "#AFC3E0", opacidade: 0.38, raio: 3 };
+
+/** retângulo maior que o quadro: a luz fica dentro da câmera e não pode mostrar borda no zoom/pan */
+const TELA = `x="-540" y="-960" width="2160" height="3840"`;
+
+const ALCANCE = 1500;
+const ABERTURA = 26;
+
+/** Cone na origem, apontando para 0°: o motor posiciona e gira por keyframes (x, y, rotation). */
+function conePadrao(): string {
+  const a = (ABERTURA * Math.PI) / 180;
+  const x = (Math.cos(a) * ALCANCE).toFixed(0), y = (Math.sin(a) * ALCANCE).toFixed(0);
+  return `M0 0 L${x} ${-y} L${x} ${y} Z`;
+}
+
+/**
+ * Máscara do feixe (ids `${px}-mascara`, `${px}-cone`): branco = o ambiente
+ * vale; dentro do cone a camada ambiente some, então a lanterna soma luz ao
+ * local sem trocar a luz dele.
+ */
+export function mascaraLanterna(px: string, o: OrigemLanterna): string {
+  const cone = o.alvo
+    ? `<ellipse id="${px}-cone" cx="${o.alvo.x}" cy="${o.alvo.y}" rx="300" ry="270" fill="url(#${px}-feixe)"/>`
+    : `<path id="${px}-cone" d="${conePadrao()}" fill="url(#${px}-feixe)"/>`;
+  const grad = o.alvo
+    ? `<radialGradient id="${px}-feixe" cx="${o.alvo.x}" cy="${o.alvo.y}" r="320" gradientUnits="userSpaceOnUse">`
+    : `<radialGradient id="${px}-feixe" cx="0" cy="0" r="${ALCANCE}" gradientUnits="userSpaceOnUse">`;
+  return (
+    `<defs>${grad}<stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset=".6" stop-color="#000" stop-opacity=".25"/><stop offset="1" stop-color="#000" stop-opacity=".75"/></radialGradient>` +
+    `<mask id="${px}-mascara" maskUnits="userSpaceOnUse" ${TELA}><rect ${TELA} fill="#fff"/>${cone}</mask></defs>`
+  );
+}
+
+/** Brilho quente dentro do cone (id `${px}-brilho`), por cima do ambiente. */
+export function brilhoLanterna(px: string, o: OrigemLanterna): string {
+  return o.alvo ? "" : `<path id="${px}-brilho" d="${conePadrao()}" fill="#FFF3B0" opacity=".12"/>`;
+}
+
+/** Posição do feixe em t (cone e brilho andam juntos). */
+export function kfsFeixe(px: string, o: OrigemLanterna, t: number, dur = 0): Keyframe[] {
+  if (o.alvo) return [];
+  const r = (n: number) => Math.round(n * 10) / 10;
+  return [`#${px}-cone`, `#${px}-brilho`].flatMap((alvo) => [
+    { alvo, prop: "x", t, v: r(o.x), dur },
+    { alvo, prop: "y", t, v: r(o.y), dur },
+    { alvo, prop: "rotation", t, v: r(o.angulo), dur },
+  ]);
+}
 
 /**
  * Passada de contorno por cima da escuridão: cada personagem de novo (<use>,
  * em ordem de profundidade), escurecido como a escuridão deixa e com uma borda
  * fria. Como a cópia é opaca, quem está na frente cobre o contorno de quem
- * está atrás. Usa a mesma máscara da escuridão, então some dentro do feixe.
+ * está atrás. Com lanterna, usa a máscara do feixe e some dentro dele.
+ * Grupo `${px}-aro-g` (o compose liga/desliga quando a luz muda).
  */
-export function contornoDeLuz(px: string, instancias: string[]): string {
+export function contornoDeLuz(px: string, instancias: string[], comMascara: boolean): string {
   if (!instancias.length) return "";
   const c = CONTORNO_LANTERNA;
   const k = (1 - ESCURO_LANTERNA).toFixed(2);
@@ -43,49 +95,31 @@ export function contornoDeLuz(px: string, instancias: string[]): string {
     `<feComponentTransfer in="SourceGraphic" result="escuro">` +
     `<feFuncR type="linear" slope="${k}"/><feFuncG type="linear" slope="${k}"/><feFuncB type="linear" slope="${k}"/></feComponentTransfer>` +
     `<feMerge><feMergeNode in="escuro"/><feMergeNode in="aro"/></feMerge></filter></defs>` +
-    `<g mask="url(#${px}-mascara)">` +
+    `<g id="${px}-aro-g"><g${comMascara ? ` mask="url(#${px}-mascara)"` : ""}>` +
     instancias.map((i) => `<use href="#${i}" filter="url(#${px}-aro)" style="--sombra:0"/>`).join("") +
-    `</g>`
+    `</g></g>`
   );
 }
 
-/** Overlay estático da luz base do plano. Ids: `${px}-luz`, `${px}-cone`. */
-export function camadaLuz(px: string, luz: Luz, lanterna?: OrigemLanterna): string {
+/**
+ * Camada da luz ambiente do local, dentro de um grupo `id` (o compose troca de
+ * grupo quando um evento muda a luz). Com lanterna, recortada pelo feixe.
+ */
+export function camadaAmbiente(px: string, id: string, luz: Luz, comMascara: boolean): string {
+  const m = comMascara ? ` mask="url(#${px}-mascara)"` : "";
   switch (luz) {
     case "normal":
-      return `<rect id="${px}-luz" width="1080" height="1920" fill="#000" opacity="0"/>`;
+      return `<g id="${id}"></g>`;
     case "escuro":
-      return `<rect id="${px}-luz" width="1080" height="1920" fill="#05070C" opacity=".55"/>`;
-    case "apagao":
-      return `<rect id="${px}-luz" width="1080" height="1920" fill="#030406" opacity=".93"/>`;
+      return `<g id="${id}"><rect ${TELA} fill="#020305" opacity="${ESCURO_LANTERNA}"${m}/></g>`;
     case "emergencia_vermelha":
-      // mesma receita da cena-exemplo
+      // mesma receita da cena-exemplo (elipse de 0,8 do quadro centrada no alarme)
       return (
-        `<defs><radialGradient id="${px}-alarme" cx=".5" cy=".18" r=".8">` +
+        `<g id="${id}"><defs><radialGradient id="${id}-g" cx="540" cy="346" r="864" gradientUnits="userSpaceOnUse" gradientTransform="translate(540 346) scale(1 1.778) translate(-540 -346)">` +
         `<stop offset="0" stop-color="#ff2a1a" stop-opacity=".55"/><stop offset=".45" stop-color="#8a0d06" stop-opacity=".35"/>` +
         `<stop offset="1" stop-color="#05070c" stop-opacity=".78"/></radialGradient></defs>` +
-        `<rect id="${px}-luz" width="1080" height="1920" fill="url(#${px}-alarme)"/>`
+        `<rect ${TELA} fill="url(#${id}-g)"${m}/></g>`
       );
-    case "lanterna": {
-      const o = lanterna ?? { x: 540, y: 700, angulo: 90 };
-      // escuridão com um cone recortado (máscara) e um brilho suave dentro do cone
-      const alcance = 1500, abertura = 26;
-      const a1 = ((o.angulo - abertura) * Math.PI) / 180, a2 = ((o.angulo + abertura) * Math.PI) / 180;
-      const p1 = `${(o.x + Math.cos(a1) * alcance).toFixed(0)} ${(o.y + Math.sin(a1) * alcance).toFixed(0)}`;
-      const p2 = `${(o.x + Math.cos(a2) * alcance).toFixed(0)} ${(o.y + Math.sin(a2) * alcance).toFixed(0)}`;
-      const cone = o.alvo
-        ? `M${o.alvo.x - 300} ${o.alvo.y} a300 270 0 1 0 600 0 a300 270 0 1 0 -600 0 Z`
-        : `M${o.x} ${o.y} L${p1} L${p2} Z`;
-      return (
-        `<defs>` +
-        `<radialGradient id="${px}-feixe" cx="${o.alvo?.x ?? o.x}" cy="${o.alvo?.y ?? o.y}" r="${o.alvo ? 320 : alcance}" gradientUnits="userSpaceOnUse">` +
-        `<stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset=".6" stop-color="#000" stop-opacity=".25"/><stop offset="1" stop-color="#000" stop-opacity=".75"/></radialGradient>` +
-        `<mask id="${px}-mascara"><rect width="1080" height="1920" fill="#fff"/><path id="${px}-cone" d="${cone}" fill="url(#${px}-feixe)"/></mask>` +
-        `</defs>` +
-        `<rect id="${px}-luz" width="1080" height="1920" fill="#020305" opacity="${ESCURO_LANTERNA}" mask="url(#${px}-mascara)"/>` +
-        (o.alvo ? "" : `<path id="${px}-brilho" d="${cone}" fill="#FFF3B0" opacity=".12"/>`)
-      );
-    }
   }
 }
 

@@ -21,7 +21,7 @@ const CENAS: CenaSpec[] = [
     ],
   },
   {
-    px: "b", cenario: "tunel", luz: "lanterna", itens: ["lanterna_cabeca"],
+    px: "b", cenario: "tunel", luz: "escuro", lanterna: true, itens: ["lanterna_cabeca"],
     personagens: [
       { id: "criatura_vulto", vista: "perfil_esq", pose: "espreitar", x: 0.8, y: 0.62, escala: 0.45 },
       { id: "valdir", vista: "perfil_dir", pose: "andar", x: 0.12, escala: 0.85 },
@@ -38,7 +38,7 @@ const CENAS: CenaSpec[] = [
     ],
   },
   {
-    px: "d", cenario: "porta_1959", luz: "lanterna", itens: ["lanterna_cabeca"],
+    px: "d", cenario: "porta_1959", luz: "escuro", lanterna: true, itens: ["lanterna_cabeca"],
     personagens: [
       { id: "valdir", vista: "costas", pose: "em_pe", x: 0.66 },
       { id: "caio", vista: "costas", pose: "segurar_lanterna", x: 0.34 },

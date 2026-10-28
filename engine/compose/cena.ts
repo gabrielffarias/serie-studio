@@ -3,11 +3,11 @@
 // Devolve o SVG e os keyframes de t=0; o compose acrescenta as ações.
 import type { Keyframe } from "../core/keyframes";
 import { cenario } from "../cenario/cenarios";
-import { camadaLuz, camadaPiscar, contornoDeLuz, type Luz, type OrigemLanterna } from "../luz/luz";
+import { brilhoLanterna, camadaAmbiente, camadaPiscar, contornoDeLuz, kfsFeixe, mascaraLanterna, type Luz, type OrigemLanterna } from "../luz/luz";
 import { kfsPose, kfsRaiz, kfsVista, svgInstancia } from "../rig/instancia";
 import { personagem, pose } from "../rig/personagens";
 import { PONTA_LANTERNA_MAO } from "../../assets/personagens/caio/rig.svg";
-import type { VistaBase } from "../rig/tipos";
+import type { PoseResolvida, VistaBase } from "../rig/tipos";
 
 export type VistaCena = "frente" | "costas" | "perfil_esq" | "perfil_dir" | "3/4_esq" | "3/4_dir";
 
@@ -25,7 +25,12 @@ export type PersonagemCena = {
 export type CenaSpec = {
   px: string;
   cenario: string;
+  /** luz ambiente do local no início do plano */
   luz: Luz;
+  /** luz depois do evento de luz do plano (troca no meio) */
+  luzFim?: Luz;
+  /** camada de lanterna acesa */
+  lanterna?: boolean;
   personagens: PersonagemCena[];
   /** itens do estado (ex.: lanterna_cabeca liga o acessório do Caio) */
   itens?: string[];
@@ -53,6 +58,27 @@ export const POSE_LANTERNA_MAO = "segurar_lanterna";
  */
 export function extrasDaInstancia(p: { id: string; pose: string }, itens: string[] = []): Record<string, boolean> {
   return { ...extrasDosItens(p.id, itens), ...(p.pose === POSE_LANTERNA_MAO ? { lanterna_mao: true } : {}) };
+}
+
+/**
+ * Origem e direção do feixe da lanterna de mão para uma pose (ângulos, escalas,
+ * corpo_y) e uma posição na cena. Usado no início do plano e, no compose, a
+ * cada amostra durante as ações (o feixe acompanha a mão).
+ */
+export function feixeDaMao(
+  id: string,
+  base: VistaBase,
+  pr: Pick<PoseResolvida, "angulos" | "escalas" | "corpo_y">,
+  pos: { x: number; y: number; escala: number; espelho: boolean },
+): { x: number; y: number; angulo: number } {
+  const { d } = personagem(id);
+  const ponta = d.pontaDaMao!(base, pr as PoseResolvida, "d", PONTA_LANTERNA_MAO);
+  const dir = pos.espelho ? -1 : 1;
+  return {
+    x: pos.x + dir * ponta.x * pos.escala,
+    y: pos.y + ponta.y * pos.escala,
+    angulo: pos.espelho ? 180 - ponta.angulo : ponta.angulo,
+  };
 }
 
 export type InstanciaCena = {
@@ -99,10 +125,10 @@ export function montarCena(spec: CenaSpec): { svg: string; kfs: Keyframe[]; inst
     for (const v of i.vistas) kfs.push(...kfsPose(d, i.inst, v, pose(i.spec.id, v === i.base ? i.spec.pose : "em_pe", v, extras), 0));
   }
 
-  // lanterna: sai da mão de quem está na pose segurar_lanterna; senão da cabeça
-  // de quem tem a lanterna de cabeça; sem ninguém, vem de baixo (ponto de vista)
+  // lanterna (camada): sai da mão de quem está na pose segurar_lanterna; senão
+  // da cabeça de quem tem a lanterna de cabeça; sem ninguém, vem de baixo (ponto de vista)
   let lanterna: OrigemLanterna | undefined;
-  if (spec.luz === "lanterna") {
+  if (spec.lanterna) {
     const naMao = instancias.find((i) => i.spec.pose === POSE_LANTERNA_MAO);
     const dono = naMao ?? instancias.find((i) => extrasDosItens(i.spec.id, spec.itens).lanterna_cabeca);
     if (!dono) {
@@ -113,16 +139,8 @@ export function montarCena(spec: CenaSpec): { svg: string; kfs: Keyframe[]; inst
       const alvo = Object.values(c.ancoras)[0] ?? { x: 540, y: 820 };
       lanterna = { x: dono.pos.x, y: dono.pos.y - (d.alturaCabeca + 88) * dono.pos.escala, angulo: 90, alvo, dono: dono.inst };
     } else if (dono === naMao) {
-      const { d } = personagem(dono.spec.id);
       const pr = pose(dono.spec.id, dono.spec.pose, dono.base, extrasDaInstancia(dono.spec, spec.itens));
-      const ponta = d.pontaDaMao!(dono.base, pr, "d", PONTA_LANTERNA_MAO);
-      const dir = dono.espelho ? -1 : 1;
-      lanterna = {
-        x: dono.pos.x + dir * ponta.x * dono.pos.escala,
-        y: dono.pos.y + ponta.y * dono.pos.escala,
-        angulo: dono.espelho ? 180 - ponta.angulo : ponta.angulo,
-        dono: dono.inst,
-      };
+      lanterna = { ...feixeDaMao(dono.spec.id, dono.base, pr, dono.pos), dono: dono.inst, naMao: true };
     } else {
       const { d } = personagem(dono.spec.id);
       const dir = dono.espelho ? -1 : 1;
@@ -136,6 +154,11 @@ export function montarCena(spec: CenaSpec): { svg: string; kfs: Keyframe[]; inst
     }
   }
 
+  // luz ambiente do local dentro da câmera (a lanterna recorta e soma por cima);
+  // com evento de luz, o compose troca do grupo amb0 para o amb1 no meio do plano
+  const comMascara = !!lanterna;
+  const luzFim = spec.luzFim ?? spec.luz;
+  const temEscuro = spec.luz === "escuro" || luzFim === "escuro";
   const svg =
     `<g id="${spec.px}-cam">` +
     `<g id="${spec.px}-fundo">${c.fundo(spec.px)}</g>` +
@@ -144,16 +167,22 @@ export function montarCena(spec: CenaSpec): { svg: string; kfs: Keyframe[]; inst
       : "") +
     dentro.map(svgDe).join("") +
     (c.frente ? `<g id="${spec.px}-frente">${c.frente(spec.px)}</g>` : "") +
-    // a lanterna fica dentro da câmera (o cone acompanha o zoom) e ganha o contorno de luz por cima
-    (spec.luz === "lanterna" ? camadaLuz(spec.px, spec.luz, lanterna) + contornoDeLuz(spec.px, dentro.map((i) => i.inst)) : "") +
+    (lanterna ? mascaraLanterna(spec.px, lanterna) : "") +
+    camadaAmbiente(spec.px, `${spec.px}-amb0`, spec.luz, comMascara) +
+    (luzFim !== spec.luz ? camadaAmbiente(spec.px, `${spec.px}-amb1`, luzFim, comMascara) : "") +
+    (temEscuro ? contornoDeLuz(spec.px, dentro.map((i) => i.inst), comMascara) : "") +
+    (lanterna ? brilhoLanterna(spec.px, lanterna) : "") +
     `</g>` +
-    (spec.luz === "lanterna" ? "" : camadaLuz(spec.px, spec.luz, lanterna)) +
     camadaPiscar(spec.px);
 
   kfs.push(
     { alvo: `#${spec.px}-cam`, prop: "scale", t: 0, v: 1 },
     { alvo: `#${spec.px}-cam`, prop: "x", t: 0, v: 0 },
     { alvo: `#${spec.px}-cam`, prop: "y", t: 0, v: 0 },
+    { alvo: `#${spec.px}-amb0`, prop: "opacity", t: 0, v: 1 },
   );
+  if (luzFim !== spec.luz) kfs.push({ alvo: `#${spec.px}-amb1`, prop: "opacity", t: 0, v: 0 });
+  if (temEscuro) kfs.push({ alvo: `#${spec.px}-aro-g`, prop: "opacity", t: 0, v: spec.luz === "escuro" ? 1 : 0 });
+  if (lanterna) kfs.push(...kfsFeixe(spec.px, lanterna, 0));
   return { svg, kfs, instancias, lanterna };
 }

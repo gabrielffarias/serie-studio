@@ -116,14 +116,14 @@ describe("lanterna de mão", () => {
   });
 
   it("montarCena: o feixe sai da mão (espelhado para a esquerda) e acompanha a instância", () => {
-    const m = montarCena({ px: "t", cenario: "vagao", luz: "lanterna", itens: ["lanterna_mao"], personagens: [{ id: "caio", vista: "3/4_esq", pose: "segurar_lanterna", x: 0.6 }] });
+    const m = montarCena({ px: "t", cenario: "vagao", luz: "emergencia_vermelha", lanterna: true, itens: ["lanterna_mao"], personagens: [{ id: "caio", vista: "3/4_esq", pose: "segurar_lanterna", x: 0.6 }] });
     expect(m.lanterna!.dono).toBe(m.instancias[0].inst);
     expect(m.lanterna!.x).toBeLessThan(0.6 * 1080 - 150);
     expect(Math.abs(m.lanterna!.angulo - 180)).toBeLessThan(20);
   });
 
   it("sem ninguém segurando, o feixe vem de baixo (ponto de vista)", () => {
-    const m = montarCena({ px: "t", cenario: "tunel", luz: "lanterna", itens: ["lanterna_mao"], personagens: [{ id: "socorro", vista: "3/4_dir", pose: "em_pe", x: 0.5 }] });
+    const m = montarCena({ px: "t", cenario: "tunel", luz: "escuro", lanterna: true, itens: ["lanterna_mao"], personagens: [{ id: "socorro", vista: "3/4_dir", pose: "em_pe", x: 0.5 }] });
     expect(m.lanterna).toMatchObject({ x: 540, angulo: -90 });
   });
 });

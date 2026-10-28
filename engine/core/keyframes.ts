@@ -63,3 +63,30 @@ export function valoresFinais(kfs: Keyframe[]): Map<string, Valor> {
 export function deslocar(kfs: Keyframe[], dt: number): Keyframe[] {
   return kfs.map((k) => ({ ...k, t: k.t + dt }));
 }
+
+/**
+ * Valor numérico de (alvo, prop) no tempo t, seguindo a mesma ordem do
+ * `compilar` (cada keyframe anima do valor anterior até o seu, linear como
+ * aproximação). Serve para o Node saber onde algo está no meio de uma ação.
+ */
+export function amostrador(kfs: Keyframe[]): (alvo: string, prop: string, t: number, padrao?: number) => number {
+  const trilhas = new Map<string, Keyframe[]>();
+  for (const k of kfs) {
+    const chave = `${k.alvo}|${k.prop}`;
+    if (!trilhas.has(chave)) trilhas.set(chave, []);
+    trilhas.get(chave)!.push(k);
+  }
+  for (const [c, l] of trilhas) trilhas.set(c, l.map((k, i) => ({ k, i })).sort((a, b) => a.k.t - b.k.t || a.i - b.i).map((x) => x.k));
+  return (alvo, prop, t, padrao = 0) => {
+    const l = trilhas.get(`${alvo}|${prop}`);
+    if (!l) return padrao;
+    let v = Number(l[0].v);
+    for (const k of l) {
+      if (k.t > t) break;
+      const dur = k.dur ?? 0;
+      const alvoV = Number(k.v);
+      v = dur > 0 && t < k.t + dur ? v + (alvoV - v) * ((t - k.t) / dur) : alvoV;
+    }
+    return v;
+  };
+}

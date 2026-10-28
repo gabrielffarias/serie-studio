@@ -41,8 +41,10 @@ async function main() {
 
   // itens do estado antes do episódio (o demo do motor usa a lanterna de cabeça)
   const demo = path.resolve(arquivo) === path.join(RAIZ, "engine/compose/fixtures/demo.json");
-  const itens = demo ? ["lanterna_cabeca"] : lerEstado(ep.serie).itens;
-  const proj = montarProjeto(ep, dir, { itens, apenas });
+  const estado = demo ? undefined : lerEstado(ep.serie);
+  const itens = estado?.itens ?? ["lanterna_cabeca"];
+  const luzAmbiente = estado?.luz_ambiente ?? { vagao: "emergencia_vermelha", tunel: "escuro", plataforma_1959: "escuro", porta_1959: "escuro" };
+  const proj = montarProjeto(ep, dir, { itens, luzAmbiente, apenas });
   console.log(`▶ itens do estado: ${itens.join(", ") || "nenhum"}`);
   console.log(`▶ projeto ${path.relative(RAIZ, dir)}: ${proj.planos.map((p) => `${p.id} ${p.dur}s`).join(", ")} = ${proj.duracao}s`);
 

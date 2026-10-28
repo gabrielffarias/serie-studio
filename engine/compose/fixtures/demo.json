@@ -22,7 +22,7 @@
       "narracao": { "tts": "O trem parou. E tinha alguém do lado de fora da janela.", "legenda": "O trem parou. E tinha alguém do lado de fora da janela." }
     },
     {
-      "id": "p03", "tipo": "cena", "duracao_s": 5, "cenario": "tunel", "luz": "lanterna",
+      "id": "p03", "tipo": "cena", "duracao_s": 5, "cenario": "tunel", "luz": "escuro", "lanterna": true,
       "camera": { "mov": "shake", "intensidade": 0.6 },
       "personagens": [
         { "id": "valdir", "vista": "perfil_dir", "pose": "andar", "x": 0.1, "escala": 0.85, "acao": { "tipo": "andar", "para_x": 0.3 } },
