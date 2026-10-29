@@ -1,0 +1,45 @@
+{
+  "serie": "estacao-fantasma",
+  "no": "ep00_demo",
+  "numero": 1,
+  "titulo": "Demonstração do motor",
+  "duracao_alvo_s": 24,
+  "resultado_anterior": { "opcao": "A", "pct_a": 64, "pct_b": 36, "frase": "Vocês escolheram abrir a porta." },
+  "hud": { "selo": "NOITE 1 · 18:47", "medidor": { "nome": "BATERIA", "valor": 82 } },
+  "planos": [
+    { "id": "p01", "tipo": "resultado", "duracao_s": 5, "narracao": { "tts": "Sessenta e quatro por cento escolheram abrir a porta.", "legenda": "64% escolheram abrir a porta." } },
+    {
+      "id": "p02", "tipo": "cena", "duracao_s": 6, "cenario": "vagao", "luz": "emergencia_vermelha",
+      "camera": { "mov": "push_in", "de": 1, "para": 1.2, "foco": "janela_dir" },
+      "personagens": [
+        { "id": "criatura_vulto", "vista": "perfil_esq", "pose": "andar", "x": 0.92, "y": 0.47, "escala": 0.9, "acao": { "tipo": "andar", "para_x": 0.7 } },
+        { "id": "socorro", "vista": "3/4_esq", "pose": "sentado", "x": 0.8, "y": 0.71, "escala": 0.9 },
+        { "id": "valdir", "vista": "3/4_dir", "pose": "em_pe", "x": 0.55, "escala": 0.95, "acao": { "tipo": "olhar", "em_s": 2.5 } },
+        { "id": "caio", "vista": "3/4_dir", "pose": "em_pe", "x": 0.28, "acao": { "tipo": "apontar", "em_s": 3.2 } }
+      ],
+      "efeitos": ["piscar_luz"],
+      "cartao": { "texto": "Tem alguém lá fora", "destaque": ["lá fora"], "cor": "vermelho" },
+      "narracao": { "tts": "O trem parou. E tinha alguém do lado de fora da janela.", "legenda": "O trem parou. E tinha alguém do lado de fora da janela." }
+    },
+    {
+      "id": "p03", "tipo": "cena", "duracao_s": 5, "cenario": "tunel", "luz": "escuro", "lanterna": true,
+      "camera": { "mov": "shake", "intensidade": 0.6 },
+      "personagens": [
+        { "id": "valdir", "vista": "perfil_dir", "pose": "andar", "x": 0.1, "escala": 0.85, "acao": { "tipo": "andar", "para_x": 0.3 } },
+        { "id": "socorro", "vista": "perfil_dir", "pose": "abracando_isopor", "x": 0.22, "escala": 0.9 },
+        { "id": "caio", "vista": "perfil_dir", "pose": "andar", "x": 0.38, "acao": { "tipo": "andar", "para_x": 0.6 } }
+      ],
+      "narracao": { "tts": "No túnel, a lanterna do Caio era a única luz.", "legenda": "No túnel, a lanterna do Caio era a única luz." }
+    },
+    {
+      "id": "p04", "tipo": "votacao", "duracao_s": 7,
+      "opcao_a": { "rotulo": "Abrir a porta", "acao_narrada": "abrir a porta" },
+      "opcao_b": { "rotulo": "Trancar e esperar", "acao_narrada": "trancar e esperar" },
+      "narracao": { "tts": "Comenta A ou B.", "legenda": "Comenta A ou B." }
+    }
+  ],
+  "palavras_destaque": ["lá fora", "lanterna", "porta"],
+  "ultima_frase_falada": "Comenta A ou B.",
+  "votacao": { "tem": true, "pergunta": "E agora?", "a": "Abrir a porta", "b": "Trancar e esperar" },
+  "estado_final": { "bateria": 82 }
+}

@@ -1,0 +1,33 @@
+{
+  "segurar_lanterna": {
+    "expressao": "determinado",
+    "angulos": {
+      "tronco": -2,
+      "braco_d": -70,
+      "antebraco_d": -10,
+      "braco_e": -6,
+      "antebraco_e": -10
+    },
+    "acessorios": {
+      "lanterna_mao": true
+    },
+    "por_vista": {
+      "frente": {
+        "angulos": {
+          "braco_d": 14,
+          "antebraco_d": -34,
+          "braco_e": -8,
+          "antebraco_e": -4
+        }
+      },
+      "costas": {
+        "angulos": {
+          "braco_d": -14,
+          "antebraco_d": 34,
+          "braco_e": 8,
+          "antebraco_e": 4
+        }
+      }
+    }
+  }
+}

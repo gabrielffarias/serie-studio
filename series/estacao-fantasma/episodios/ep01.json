@@ -1,0 +1,830 @@
+{
+  "serie": "estacao-fantasma",
+  "no": "ep01",
+  "numero": 1,
+  "titulo": "18:04",
+  "duracao_alvo_s": 75,
+  "resultado_anterior": null,
+  "hud": {
+    "selo": "NOITE 1 · 18:04",
+    "medidor": {
+      "nome": "BATERIA",
+      "valor": 100
+    }
+  },
+  "planos": [
+    {
+      "id": "p01",
+      "duracao_s": 5,
+      "narracao": {
+        "tts": "Dezoito e quatro. Túnel sentido cento e oito Sul. O trem freia.",
+        "legenda": "18:04. TÚNEL SENTIDO 108 SUL. O TREM FREIA."
+      },
+      "fala": null,
+      "som": [
+        "freio_metal",
+        "rangido_trilho"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "normal",
+      "lanterna": false,
+      "camera": {
+        "mov": "shake",
+        "foco": "chao",
+        "intensidade": 0.6
+      },
+      "personagens": [
+        {
+          "id": "caio",
+          "vista": "3/4_dir",
+          "pose": "em_pe",
+          "x": 0.3,
+          "acao": {
+            "tipo": "tremer",
+            "intensidade": 0.5,
+            "em_s": 0.2
+          }
+        },
+        {
+          "id": "socorro",
+          "vista": "3/4_esq",
+          "pose": "sentado",
+          "x": 0.62,
+          "y": 0.71,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "tremer",
+            "intensidade": 0.4,
+            "em_s": 0.2
+          }
+        },
+        {
+          "id": "valdir",
+          "vista": "3/4_esq",
+          "pose": "segurando_pasta",
+          "x": 0.82,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "tremer",
+            "intensidade": 0.2,
+            "em_s": 0.3
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [],
+      "cartao": null,
+      "estado_antes": {
+        "local_atual": "vagao",
+        "hora": "18:04"
+      },
+      "estado_depois": {}
+    },
+    {
+      "id": "p02",
+      "duracao_s": 5,
+      "narracao": {
+        "tts": "A luz principal morre. Só a vermelha de emergência acende.",
+        "legenda": "A LUZ PRINCIPAL MORRE. SÓ A VERMELHA DE EMERGÊNCIA ACENDE."
+      },
+      "fala": null,
+      "som": [
+        "zumbido_corta",
+        "clique_rele"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "normal",
+      "lanterna": false,
+      "camera": {
+        "mov": "push_in",
+        "de": 1,
+        "para": 1.12,
+        "foco": "teto"
+      },
+      "personagens": [
+        {
+          "id": "caio",
+          "vista": "3/4_dir",
+          "pose": "em_pe",
+          "x": 0.3,
+          "acao": {
+            "tipo": "olhar",
+            "em_s": 2.4,
+            "pose": "olhar_tras"
+          }
+        },
+        {
+          "id": "socorro",
+          "vista": "3/4_esq",
+          "pose": "assustado",
+          "x": 0.62,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "levantar",
+            "em_s": 2.6
+          }
+        },
+        {
+          "id": "valdir",
+          "vista": "3/4_esq",
+          "pose": "segurando_pasta",
+          "x": 0.82,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "respirar",
+            "em_s": 2.5
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [
+        "apagao"
+      ],
+      "cartao": null,
+      "estado_antes": {
+        "luz_ambiente": {
+          "vagao": "normal"
+        }
+      },
+      "estado_depois": {
+        "luz_ambiente": {
+          "vagao": "emergencia_vermelha"
+        }
+      }
+    },
+    {
+      "id": "p03",
+      "duracao_s": 5.5,
+      "narracao": {
+        "tts": "Celular sem sinal. O relógio do vagão trava em dezoito e quatro.",
+        "legenda": "CELULAR SEM SINAL. O RELÓGIO DO VAGÃO TRAVA EM 18:04."
+      },
+      "fala": null,
+      "som": [
+        "gritos_abafados",
+        "chiado_radio"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": false,
+      "camera": {
+        "mov": "shake",
+        "foco": "socorro",
+        "intensidade": 0.4
+      },
+      "personagens": [
+        {
+          "id": "socorro",
+          "vista": "frente",
+          "pose": "maos_na_cabeca",
+          "x": 0.4,
+          "acao": {
+            "tipo": "tremer",
+            "intensidade": 0.6,
+            "em_s": 0.3
+          }
+        },
+        {
+          "id": "valdir",
+          "vista": "3/4_esq",
+          "pose": "segurando_pasta",
+          "x": 0.78,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "virar",
+            "em_s": 2.8,
+            "vista": "perfil_esq"
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [
+        "piscar_luz"
+      ],
+      "cartao": null,
+      "estado_antes": {},
+      "estado_depois": {}
+    },
+    {
+      "id": "p04",
+      "duracao_s": 6,
+      "narracao": {
+        "tts": "Caio ergue as mãos.",
+        "legenda": "CAIO ERGUE AS MÃOS."
+      },
+      "fala": {
+        "personagem": "caio",
+        "tts": "Calma, gente. Eu trabalho aqui. Ninguém sai do vagão.",
+        "legenda": "CALMA, GENTE. EU TRABALHO AQUI. NINGUÉM SAI DO VAGÃO."
+      },
+      "som": [
+        "murmurio_vagao"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": false,
+      "camera": {
+        "mov": "push_in",
+        "de": 1,
+        "para": 1.15,
+        "foco": "caio"
+      },
+      "personagens": [
+        {
+          "id": "caio",
+          "vista": "perfil_dir",
+          "pose": "braco_estendido",
+          "x": 0.25,
+          "acao": {
+            "tipo": "andar",
+            "para_x": 0.48,
+            "em_s": 0.3
+          }
+        },
+        {
+          "id": "socorro",
+          "vista": "3/4_esq",
+          "pose": "assustado",
+          "x": 0.72,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "respirar",
+            "em_s": 0.5
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [],
+      "cartao": null,
+      "estado_antes": {},
+      "estado_depois": {}
+    },
+    {
+      "id": "p05",
+      "duracao_s": 4.5,
+      "narracao": {
+        "tts": "Por dentro, Caio conta: um, dois, três. Ele tem medo do escuro.",
+        "legenda": "POR DENTRO, CAIO CONTA: 1, 2, 3. ELE TEM MEDO DO ESCURO."
+      },
+      "fala": null,
+      "som": [
+        "coracao_batendo"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": false,
+      "camera": {
+        "mov": "push_in",
+        "de": 1.1,
+        "para": 1.3,
+        "foco": "caio"
+      },
+      "personagens": [
+        {
+          "id": "caio",
+          "vista": "frente",
+          "pose": "em_pe",
+          "x": 0.5,
+          "acao": {
+            "tipo": "respirar",
+            "em_s": 0.2
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [],
+      "cartao": null,
+      "estado_antes": {},
+      "estado_depois": {}
+    },
+    {
+      "id": "p06",
+      "duracao_s": 6,
+      "narracao": {
+        "tts": "Dona Socorro abre o isopor.",
+        "legenda": "DONA SOCORRO ABRE O ISOPOR."
+      },
+      "fala": {
+        "personagem": "socorro",
+        "tts": "Meu filho, ninguém pensa direito com fome.",
+        "legenda": "MEU FILHO, NINGUÉM PENSA DIREITO COM FOME."
+      },
+      "som": [
+        "tampa_isopor"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": false,
+      "camera": {
+        "mov": "fixo",
+        "foco": "socorro"
+      },
+      "personagens": [
+        {
+          "id": "socorro",
+          "vista": "3/4_dir",
+          "pose": "abracando_isopor",
+          "x": 0.4,
+          "acao": {
+            "tipo": "pegar",
+            "em_s": 1,
+            "pose": "braco_estendido"
+          }
+        },
+        {
+          "id": "caio",
+          "vista": "3/4_esq",
+          "pose": "em_pe",
+          "x": 0.75,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "virar",
+            "em_s": 2.5,
+            "vista": "perfil_esq"
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [],
+      "cartao": null,
+      "estado_antes": {
+        "comida_dias": 1
+      },
+      "estado_depois": {}
+    },
+    {
+      "id": "p07",
+      "duracao_s": 4,
+      "narracao": {
+        "tts": "Ela passa pão de queijo de banco em banco.",
+        "legenda": "ELA PASSA PÃO DE QUEIJO DE BANCO EM BANCO."
+      },
+      "fala": null,
+      "som": [
+        "passos_leves"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": false,
+      "camera": {
+        "mov": "pan_dir",
+        "foco": "banco"
+      },
+      "personagens": [
+        {
+          "id": "socorro",
+          "vista": "perfil_dir",
+          "pose": "andar",
+          "x": 0.2,
+          "acao": {
+            "tipo": "andar",
+            "para_x": 0.55,
+            "em_s": 0.2
+          }
+        },
+        {
+          "id": "caio",
+          "vista": "3/4_esq",
+          "pose": "sentado",
+          "x": 0.75,
+          "y": 0.71,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "pegar",
+            "em_s": 2.4,
+            "pose": "sentado"
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [],
+      "cartao": null,
+      "estado_antes": {},
+      "estado_depois": {}
+    },
+    {
+      "id": "p08",
+      "duracao_s": 5.5,
+      "narracao": {
+        "tts": "Só o homem de terno não come. Ele olha o túnel, sem susto nenhum.",
+        "legenda": "SÓ O HOMEM DE TERNO NÃO COME. ELE OLHA O TÚNEL, SEM SUSTO NENHUM."
+      },
+      "fala": null,
+      "som": [
+        "silencio_tenso"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": false,
+      "camera": {
+        "mov": "push_in",
+        "de": 1,
+        "para": 1.2,
+        "foco": "valdir"
+      },
+      "personagens": [
+        {
+          "id": "valdir",
+          "vista": "perfil_esq",
+          "pose": "segurando_pasta",
+          "x": 0.45,
+          "acao": {
+            "tipo": "andar",
+            "para_x": 0.3,
+            "em_s": 0.3
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [],
+      "cartao": null,
+      "estado_antes": {},
+      "estado_depois": {}
+    },
+    {
+      "id": "p09",
+      "duracao_s": 4,
+      "narracao": {
+        "tts": "Ele ajusta os óculos. Como quem já sabia.",
+        "legenda": "ELE AJUSTA OS ÓCULOS. COMO QUEM JÁ SABIA."
+      },
+      "fala": null,
+      "som": [],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": false,
+      "camera": {
+        "mov": "corte_seco",
+        "foco": "valdir"
+      },
+      "personagens": [
+        {
+          "id": "valdir",
+          "vista": "3/4_dir",
+          "pose": "ajustar_oculos",
+          "x": 0.5,
+          "acao": {
+            "tipo": "virar",
+            "em_s": 1.8,
+            "vista": "frente"
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [],
+      "cartao": null,
+      "estado_antes": {},
+      "estado_depois": {}
+    },
+    {
+      "id": "p10",
+      "duracao_s": 4,
+      "narracao": {
+        "tts": "Algo passa rente à janela. Rápido demais.",
+        "legenda": "ALGO PASSA RENTE À JANELA. RÁPIDO DEMAIS."
+      },
+      "fala": null,
+      "som": [
+        "sopro_rapido"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": false,
+      "camera": {
+        "mov": "corte_seco",
+        "foco": "janela_dir"
+      },
+      "personagens": [
+        {
+          "id": "caio",
+          "vista": "3/4_esq",
+          "pose": "em_pe",
+          "x": 0.28,
+          "acao": {
+            "tipo": "virar",
+            "em_s": 1.4,
+            "vista": "3/4_dir"
+          }
+        },
+        {
+          "id": "criatura_vulto",
+          "vista": "perfil_esq",
+          "pose": "correr",
+          "x": 0.88,
+          "y": 0.48,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "correr",
+            "para_x": 0.15,
+            "em_s": 0.6
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [
+        "piscar_luz"
+      ],
+      "cartao": null,
+      "estado_antes": {
+        "pistas": []
+      },
+      "estado_depois": {
+        "pistas": [
+          "vulto_janela"
+        ]
+      }
+    },
+    {
+      "id": "p11",
+      "duracao_s": 5,
+      "narracao": {
+        "tts": "Caio acende a lanterna. Lá fora, só o túnel vazio.",
+        "legenda": "CAIO ACENDE A LANTERNA. LÁ FORA, SÓ O TÚNEL VAZIO."
+      },
+      "fala": null,
+      "som": [
+        "clique_lanterna"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": true,
+      "camera": {
+        "mov": "push_in",
+        "de": 1,
+        "para": 1.18,
+        "foco": "janela_dir"
+      },
+      "personagens": [
+        {
+          "id": "caio",
+          "vista": "3/4_dir",
+          "pose": "segurar_lanterna",
+          "x": 0.35,
+          "acao": {
+            "tipo": "apontar",
+            "em_s": 0.4
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [],
+      "cartao": null,
+      "estado_antes": {
+        "bateria": 100
+      },
+      "estado_depois": {
+        "bateria": 96
+      }
+    },
+    {
+      "id": "p12",
+      "duracao_s": 4.5,
+      "narracao": {
+        "tts": "Então vem o som. Um estalo seco. Depois outro.",
+        "legenda": "ENTÃO VEM O SOM. UM ESTALO SECO. DEPOIS OUTRO."
+      },
+      "fala": null,
+      "som": [
+        "estalo_seco",
+        "estalo_seco"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": false,
+      "camera": {
+        "mov": "pull_out",
+        "de": 1.2,
+        "para": 1,
+        "foco": "porta_emergencia"
+      },
+      "personagens": [
+        {
+          "id": "caio",
+          "vista": "3/4_dir",
+          "pose": "em_pe",
+          "x": 0.3,
+          "acao": {
+            "tipo": "agachar",
+            "em_s": 1.2
+          }
+        },
+        {
+          "id": "socorro",
+          "vista": "3/4_esq",
+          "pose": "abracando_isopor",
+          "x": 0.58,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "agachar",
+            "em_s": 1.4
+          }
+        },
+        {
+          "id": "valdir",
+          "vista": "3/4_esq",
+          "pose": "segurando_pasta",
+          "x": 0.82,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "olhar",
+            "em_s": 1,
+            "pose": "olhar_tras"
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [],
+      "cartao": null,
+      "estado_antes": {},
+      "estado_depois": {}
+    },
+    {
+      "id": "p13",
+      "duracao_s": 4.5,
+      "narracao": {
+        "tts": "Os estalos vêm do fundo do túnel. Cada vez mais perto.",
+        "legenda": "OS ESTALOS VÊM DO FUNDO DO TÚNEL. CADA VEZ MAIS PERTO."
+      },
+      "fala": null,
+      "som": [
+        "estalo_seco",
+        "estalo_seco",
+        "estalo_seco"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": true,
+      "camera": {
+        "mov": "push_in",
+        "de": 1,
+        "para": 1.15,
+        "foco": "janela_esq"
+      },
+      "personagens": [
+        {
+          "id": "caio",
+          "vista": "3/4_esq",
+          "pose": "segurar_lanterna",
+          "x": 0.6,
+          "acao": {
+            "tipo": "tremer",
+            "intensidade": 0.35,
+            "em_s": 0.5
+          }
+        },
+        {
+          "id": "socorro",
+          "vista": "3/4_esq",
+          "pose": "assustado",
+          "x": 0.82,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "tremer",
+            "intensidade": 0.5,
+            "em_s": 0.3
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [],
+      "cartao": null,
+      "estado_antes": {
+        "bateria": 96
+      },
+      "estado_depois": {
+        "bateria": 92
+      }
+    },
+    {
+      "id": "p14",
+      "duracao_s": 6,
+      "narracao": {
+        "tts": "Caio sabe o caminho pelo túnel. E na cabine tem outra lanterna.",
+        "legenda": "CAIO SABE O CAMINHO PELO TÚNEL. E NA CABINE TEM OUTRA LANTERNA."
+      },
+      "fala": null,
+      "som": [
+        "estalo_seco"
+      ],
+      "tipo": "cena",
+      "cenario": "vagao",
+      "luz": "emergencia_vermelha",
+      "lanterna": false,
+      "camera": {
+        "mov": "push_in",
+        "de": 1,
+        "para": 1.2,
+        "foco": "porta_emergencia"
+      },
+      "personagens": [
+        {
+          "id": "caio",
+          "vista": "perfil_dir",
+          "pose": "em_pe",
+          "x": 0.3,
+          "acao": {
+            "tipo": "apontar",
+            "em_s": 1
+          }
+        },
+        {
+          "id": "valdir",
+          "vista": "3/4_esq",
+          "pose": "segurando_pasta",
+          "x": 0.78,
+          "escala": 0.9,
+          "acao": {
+            "tipo": "virar",
+            "em_s": 2.2,
+            "vista": "perfil_esq"
+          }
+        }
+      ],
+      "props": [],
+      "efeitos": [
+        "piscar_luz"
+      ],
+      "cartao": null,
+      "estado_antes": {},
+      "estado_depois": {
+        "hora": "18:12"
+      }
+    },
+    {
+      "id": "p15",
+      "duracao_s": 7.5,
+      "narracao": {
+        "tts": "Vote A para que eles saiam pelo túnel com Caio. Ou vote B para que fiquem trancados no vagão.",
+        "legenda": "VOTE A OU B NOS COMENTÁRIOS"
+      },
+      "tipo": "votacao",
+      "opcao_a": {
+        "rotulo": "SAIR PELO TÚNEL",
+        "acao_narrada": "eles saiam pelo túnel com Caio"
+      },
+      "opcao_b": {
+        "rotulo": "FICAR NO VAGÃO",
+        "acao_narrada": "fiquem trancados no vagão"
+      }
+    }
+  ],
+  "infograficos_disponiveis": [],
+  "palavras_destaque": [
+    "ESCURO",
+    "JANELA",
+    "ESTALO",
+    "TÚNEL"
+  ],
+  "ultima_frase_falada": "Ou vote B para que fiquem trancados no vagão.",
+  "votacao": {
+    "tem": true,
+    "pergunta": "Sair pelo túnel ou ficar trancados no vagão?",
+    "a": "SAIR PELO TÚNEL",
+    "b": "FICAR NO VAGÃO",
+    "no_se_a": "ep02_tunel",
+    "no_se_b": "ep02_vagao"
+  },
+  "estado_final": {
+    "bateria": 92,
+    "comida_dias": 1,
+    "agua_litros": 1.5,
+    "ferimentos": [],
+    "confianca_valdir": 0,
+    "exposicao": 0,
+    "pistas": [
+      "vulto_janela"
+    ],
+    "grupo": [
+      "caio",
+      "socorro",
+      "valdir"
+    ],
+    "itens": [
+      "lanterna_mao"
+    ],
+    "local_atual": "vagao",
+    "luz_ambiente": {
+      "vagao": "emergencia_vermelha",
+      "tunel": "escuro",
+      "plataforma_1959": "escuro",
+      "porta_1959": "escuro"
+    },
+    "noite": 1,
+    "hora": "18:12"
+  },
+  "assets_novos": [],
+  "notas_para_revisao": "Duração total de 77 s (15 planos). Abre com hora e local, sem tela de resultado. A luz é normal no p01 e o evento `apagao` no p02 passa o vagão para emergência vermelha do meio do plano em diante; os planos p03 a p14 usam `emergencia_vermelha`, e o estado_final também. A lanterna aparece só como camada, nos planos p11 e p13 (pose `segurar_lanterna`, que exige `lanterna_mao`, presente nos itens). Por isso a bateria cai de 100 para 92, dentro da faixa de 8 a 15 por episódio. O medo do escuro do Caio e a contagem um-dois-três aparecem já no p05, para o público ligar o medo à escolha A. A ameaça entra só como `criatura_vulto` atrás da janela (y 0,48, escala 0,9) e como estalos; a única pista é `vulto_janela`. São 2 falas: a do Caio acalmando o vagão e o bordão da Socorro. Valdir não fala nada: ajusta os óculos sem precisar mentir, só para plantar a desconfiança. O p14 cita a lanterna da cabine, o que motiva a opção A (que dá `lanterna_cabeca`) sem adiantar o efeito. A opção B tem risco implícito, porque os estalos estão cada vez mais perto. A exposição continua 0: os efeitos de A (+2) e de B (vidro trinca) ficam para o ep02. Não há props aprovados, então o pão de queijo aparece só com a ação `pegar` saindo do isopor, sem asset novo. Conferir: legibilidade do vulto contra o vidro com a luz vermelha, e se a fala do Caio no p04 cabe nos 6 s junto com a narração (cerca de 21 sílabas, mais 0,7 s)."
+}

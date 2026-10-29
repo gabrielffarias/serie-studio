@@ -1,0 +1,29 @@
+{
+  "serie": "estacao-fantasma",
+  "proximo_no": "ep01",
+  "ultimo_no": null,
+  "bateria": 100,
+  "comida_dias": 1,
+  "agua_litros": 1.5,
+  "ferimentos": [],
+  "confianca_valdir": 0,
+  "exposicao": 0,
+  "pistas": [],
+  "grupo": [
+    "caio",
+    "socorro",
+    "valdir"
+  ],
+  "itens": [
+    "lanterna_mao"
+  ],
+  "local_atual": "vagao",
+  "luz_ambiente": {
+    "vagao": "normal",
+    "tunel": "escuro",
+    "plataforma_1959": "escuro",
+    "porta_1959": "escuro"
+  },
+  "noite": 1,
+  "hora": "18:04"
+}

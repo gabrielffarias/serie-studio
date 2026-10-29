@@ -1,0 +1,717 @@
+{
+  "versao": 1,
+  "personagens": [
+    {
+      "id": "caio",
+      "nome": "Caio",
+      "tipo": "humano",
+      "vistas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ],
+      "poses": [
+        "agachar",
+        "andar",
+        "apontar",
+        "assustado",
+        "braco_estendido",
+        "caido",
+        "correr",
+        "em_pe",
+        "empurrar",
+        "maos_na_cabeca",
+        "olhar_tras",
+        "segurar_lanterna",
+        "sentado"
+      ],
+      "acessorios": [
+        "lanterna_cabeca",
+        "lanterna_mao"
+      ],
+      "acoes": [
+        "entrar",
+        "sair",
+        "andar",
+        "correr",
+        "apontar",
+        "empurrar",
+        "agachar",
+        "virar",
+        "tremer",
+        "respirar",
+        "olhar",
+        "cair",
+        "levantar",
+        "pegar",
+        "soltar"
+      ],
+      "notas": [
+        "começa com `lanterna_mao` (item do estado): com `lanterna: true` e pose `segurar_lanterna`, o feixe sai da mão e acompanha o braço",
+        "`lanterna_cabeca` (no boné) só aparece quando o item está no estado; com ela, o feixe sai da cabeça em qualquer pose",
+        "`lanterna: true` sem ninguém segurando a lanterna no plano: o feixe vem de baixo, do ponto de vista de quem a segura fora do quadro"
+      ]
+    },
+    {
+      "id": "socorro",
+      "nome": "Dona Socorro",
+      "tipo": "humano",
+      "vistas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ],
+      "poses": [
+        "abracando_isopor",
+        "agachar",
+        "andar",
+        "apontar",
+        "assustado",
+        "braco_estendido",
+        "caido",
+        "correr",
+        "em_pe",
+        "empurrar",
+        "maos_na_cabeca",
+        "olhar_tras",
+        "sentado"
+      ],
+      "acessorios": [
+        "isopor_colo",
+        "isopor_mao",
+        "isopor_peito"
+      ],
+      "acoes": [
+        "entrar",
+        "sair",
+        "andar",
+        "correr",
+        "apontar",
+        "empurrar",
+        "agachar",
+        "virar",
+        "tremer",
+        "respirar",
+        "olhar",
+        "cair",
+        "levantar",
+        "pegar",
+        "soltar"
+      ],
+      "notas": [
+        "o isopor fica sempre numa mão; os gestos usam a outra",
+        "`abracando_isopor` e `assustado` seguram o isopor no peito"
+      ]
+    },
+    {
+      "id": "valdir",
+      "nome": "Dr. Valdir",
+      "tipo": "humano",
+      "vistas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ],
+      "poses": [
+        "agachar",
+        "ajustar_oculos",
+        "andar",
+        "apontar",
+        "assustado",
+        "braco_estendido",
+        "caido",
+        "correr",
+        "em_pe",
+        "empurrar",
+        "maos_na_cabeca",
+        "olhar_tras",
+        "segurando_pasta",
+        "sentado"
+      ],
+      "acessorios": [
+        "pasta",
+        "pasta_peito"
+      ],
+      "acoes": [
+        "entrar",
+        "sair",
+        "andar",
+        "correr",
+        "apontar",
+        "empurrar",
+        "agachar",
+        "virar",
+        "tremer",
+        "respirar",
+        "olhar",
+        "cair",
+        "levantar",
+        "pegar",
+        "soltar"
+      ],
+      "notas": [
+        "a pasta fica sempre numa mão; os gestos usam a outra",
+        "`ajustar_oculos` antes de mentir (bordão)"
+      ]
+    },
+    {
+      "id": "criatura",
+      "nome": "Os de baixo",
+      "tipo": "criatura",
+      "vistas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ],
+      "poses": [
+        "agachar",
+        "andar",
+        "correr",
+        "em_pe",
+        "espreitar",
+        "ouvindo"
+      ],
+      "acessorios": [],
+      "acoes": [
+        "entrar",
+        "sair",
+        "andar",
+        "correr",
+        "agachar",
+        "virar",
+        "tremer",
+        "respirar",
+        "levantar"
+      ],
+      "notas": []
+    },
+    {
+      "id": "criatura_escura",
+      "nome": "Os de baixo",
+      "tipo": "criatura",
+      "vistas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ],
+      "poses": [
+        "agachar",
+        "andar",
+        "correr",
+        "em_pe",
+        "espreitar",
+        "ouvindo"
+      ],
+      "acessorios": [],
+      "acoes": [
+        "entrar",
+        "sair",
+        "andar",
+        "correr",
+        "agachar",
+        "virar",
+        "tremer",
+        "respirar",
+        "levantar"
+      ],
+      "notas": []
+    },
+    {
+      "id": "criatura_clara",
+      "nome": "Os de baixo",
+      "tipo": "criatura",
+      "vistas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ],
+      "poses": [
+        "agachar",
+        "andar",
+        "correr",
+        "em_pe",
+        "espreitar",
+        "ouvindo"
+      ],
+      "acessorios": [],
+      "acoes": [
+        "entrar",
+        "sair",
+        "andar",
+        "correr",
+        "agachar",
+        "virar",
+        "tremer",
+        "respirar",
+        "levantar"
+      ],
+      "notas": []
+    },
+    {
+      "id": "criatura_vulto",
+      "nome": "Vulto",
+      "tipo": "criatura",
+      "vistas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ],
+      "poses": [
+        "agachar",
+        "andar",
+        "correr",
+        "em_pe",
+        "espreitar",
+        "ouvindo"
+      ],
+      "acessorios": [],
+      "acoes": [
+        "entrar",
+        "sair",
+        "andar",
+        "correr",
+        "agachar",
+        "virar",
+        "tremer",
+        "respirar",
+        "levantar"
+      ],
+      "notas": [
+        "silhueta escura; a única forma dos de baixo antes do EP5"
+      ]
+    }
+  ],
+  "cenarios": [
+    {
+      "id": "vagao",
+      "descricao": "Interior do vagão parado: janelas pretas, bancos azuis, barras amarelas, porta de emergência no meio.",
+      "ancoras": [
+        "janela_esq",
+        "janela_dir",
+        "porta_emergencia",
+        "banco",
+        "teto",
+        "chao"
+      ],
+      "estados": [],
+      "janelas": 4,
+      "assentos": true,
+      "notas": [
+        "vulto: `criatura_vulto` com uma ação de movimento (correr) passa por trás da janela mais perto do x dele, no sentido para onde olha; o motor decide altura e trajeto",
+        "sentado: pose `sentado`, vista 3/4, escala ~0,9; o motor põe no banco mais perto do x (y é do banco)"
+      ]
+    },
+    {
+      "id": "tunel",
+      "descricao": "Túnel escuro do metrô: trilhos até o ponto de fuga, cabos na parede, poças. A luz vem só da lanterna.",
+      "ancoras": [
+        "fundo_tunel",
+        "trilho",
+        "parede_esq",
+        "parede_dir",
+        "poca",
+        "chao"
+      ],
+      "estados": [],
+      "janelas": 0,
+      "assentos": false,
+      "notas": [
+        "luz ambiente `escuro`: quem está fora do feixe da lanterna vira silhueta com contorno"
+      ]
+    },
+    {
+      "id": "plataforma_1959",
+      "descricao": "Plataforma inacabada da Estação 1959: azulejos creme e verde-água com falhas, andaime, sacos de cimento, letreiro 1959 pintado à mão.",
+      "ancoras": [
+        "letreiro",
+        "andaime",
+        "sacos",
+        "borda",
+        "chao"
+      ],
+      "estados": [],
+      "janelas": 0,
+      "assentos": false,
+      "notas": []
+    },
+    {
+      "id": "porta_1959",
+      "descricao": "Porta de aço redonda e selada numa parede de concreto antigo, com a placa COMISSÃO DE OBRAS ESPECIAIS · ACESSO PROIBIDO · 1959.",
+      "ancoras": [
+        "porta",
+        "roda",
+        "placa",
+        "chao"
+      ],
+      "estados": [
+        "fechada",
+        "aberta"
+      ],
+      "janelas": 0,
+      "assentos": false,
+      "notas": []
+    }
+  ],
+  "props": [],
+  "infograficos": [],
+  "acoes": [
+    {
+      "tipo": "entrar",
+      "descricao": "entra pelo lado de trás do olhar e para em `para_x` (ou no x do plano); intensidade > 0,7 entra correndo",
+      "campos": [
+        "para_x",
+        "em_s",
+        "intensidade"
+      ],
+      "vistas_recomendadas": [
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "sair",
+      "descricao": "sai do quadro na direção do olhar (ou até `para_x`); intensidade > 0,7 sai correndo",
+      "campos": [
+        "para_x",
+        "em_s",
+        "intensidade"
+      ],
+      "vistas_recomendadas": [
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "andar",
+      "descricao": "anda até `para_x` (sem destino: 30% do quadro na direção do olhar)",
+      "campos": [
+        "para_x",
+        "em_s"
+      ],
+      "vistas_recomendadas": [
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "correr",
+      "descricao": "corre até `para_x` (sem destino: 30% do quadro na direção do olhar)",
+      "campos": [
+        "para_x",
+        "em_s"
+      ],
+      "vistas_recomendadas": [
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "apontar",
+      "descricao": "aponta com a mão livre em `em_s`",
+      "campos": [
+        "em_s"
+      ],
+      "vistas_recomendadas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "empurrar",
+      "descricao": "recua e empurra (com antecipação) em `em_s`",
+      "campos": [
+        "em_s"
+      ],
+      "vistas_recomendadas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "agachar",
+      "descricao": "agacha em `em_s`",
+      "campos": [
+        "em_s"
+      ],
+      "vistas_recomendadas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "virar",
+      "descricao": "corte seco para outra vista em `em_s` (`vista`: frente, costas, perfil_dir…)",
+      "campos": [
+        "vista",
+        "em_s"
+      ],
+      "vistas_recomendadas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "tremer",
+      "descricao": "tremor do corpo inteiro a partir de `em_s`; intensidade 0–1",
+      "campos": [
+        "intensidade",
+        "em_s"
+      ],
+      "vistas_recomendadas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "respirar",
+      "descricao": "respiração ofegante (o tronco sobe e encaixa a cada 2 s)",
+      "campos": [
+        "em_s"
+      ],
+      "vistas_recomendadas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "olhar",
+      "descricao": "olha para trás em `em_s` (ou para a pose dada em `pose`)",
+      "campos": [
+        "em_s",
+        "pose"
+      ],
+      "vistas_recomendadas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "cair",
+      "descricao": "susto e queda em `em_s`",
+      "campos": [
+        "em_s"
+      ],
+      "vistas_recomendadas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "levantar",
+      "descricao": "agacha e levanta em `em_s`",
+      "campos": [
+        "em_s"
+      ],
+      "vistas_recomendadas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "pegar",
+      "descricao": "estende o braço, segura e volta à pose do plano",
+      "campos": [
+        "em_s",
+        "pose"
+      ],
+      "vistas_recomendadas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    },
+    {
+      "tipo": "soltar",
+      "descricao": "estende o braço, solta e volta à pose do plano",
+      "campos": [
+        "em_s",
+        "pose"
+      ],
+      "vistas_recomendadas": [
+        "frente",
+        "costas",
+        "perfil_esq",
+        "perfil_dir",
+        "3/4_esq",
+        "3/4_dir"
+      ]
+    }
+  ],
+  "camera": [
+    {
+      "mov": "fixo",
+      "descricao": "câmera parada"
+    },
+    {
+      "mov": "push_in",
+      "descricao": "aproxima devagar até `para` (padrão 1,25) no `foco`"
+    },
+    {
+      "mov": "pull_out",
+      "descricao": "afasta devagar de `de` (padrão 1,25) para 1"
+    },
+    {
+      "mov": "pan_esq",
+      "descricao": "desliza para a esquerda (zoom 1,18)"
+    },
+    {
+      "mov": "pan_dir",
+      "descricao": "desliza para a direita (zoom 1,18)"
+    },
+    {
+      "mov": "tilt_cima",
+      "descricao": "sobe (zoom 1,18)"
+    },
+    {
+      "mov": "tilt_baixo",
+      "descricao": "desce (zoom 1,18)"
+    },
+    {
+      "mov": "shake",
+      "descricao": "tremor curto (até 0,6 s) com zoom 1,05; `intensidade` 0–1"
+    },
+    {
+      "mov": "corte_seco",
+      "descricao": "corte seco para este plano, câmera parada"
+    }
+  ],
+  "luzes": [
+    "normal",
+    "emergencia_vermelha",
+    "escuro"
+  ],
+  "efeitos": [
+    "piscar_luz",
+    "apagao",
+    "luz_emergencia_falha",
+    "luz_volta"
+  ],
+  "eventos_luz": {
+    "apagao": {
+      "de": [
+        "normal"
+      ],
+      "para": "emergencia_vermelha",
+      "descricao": "a luz principal cai; a de emergência vermelha acende"
+    },
+    "luz_emergencia_falha": {
+      "de": [
+        "emergencia_vermelha"
+      ],
+      "para": "escuro",
+      "descricao": "a luz de emergência falha; fica escuro"
+    },
+    "luz_volta": {
+      "de": [
+        "emergencia_vermelha",
+        "escuro"
+      ],
+      "para": "normal",
+      "descricao": "a luz principal volta"
+    }
+  },
+  "sons": [],
+  "musicas": [],
+  "itens_visiveis": {
+    "lanterna_mao": "caio",
+    "lanterna_cabeca": "caio"
+  },
+  "exige_item": {
+    "camadas": {
+      "lanterna": [
+        "lanterna_mao",
+        "lanterna_cabeca"
+      ]
+    },
+    "poses": {
+      "segurar_lanterna": [
+        "lanterna_mao"
+      ]
+    },
+    "props": {}
+  },
+  "regras": [
+    "x: 0–1 na largura do quadro; y omitido = pés no chão do cenário; escala 1 = adulto em primeiro plano (0,85–0,95 = um passo atrás)",
+    "arranjo: o motor afasta quem está no mesmo plano de profundidade (mesma escala) até os corpos não se tocarem, e ninguém cobre os pés de quem está atrás; só a camada da frente do cenário (barra) cobre pés de propósito. Espalhe os x (≥ 0,25 de distância entre quem está na mesma escala)",
+    "ações de movimento (entrar, sair, andar, correr) leem melhor em perfil ou 3/4; de frente ou de costas o passo não aparece",
+    "a pose `sentado` só existe em 3/4",
+    "luz é estado: `luz` do plano = estado.luz_ambiente do local; só muda com um evento de `eventos_luz` em `efeitos` (no máximo um por plano), que atualiza estado_final.luz_ambiente",
+    "a lanterna é uma camada (`lanterna: true`) que soma luz ao ambiente quando o Caio aponta para algo; a bateria só cai nos planos com ela acesa",
+    "camada, pose ou prop listados em `exige_item` só valem com o item em estado.itens",
+    "uma ação só vale para quem tem as poses dela (veja `acoes` em cada personagem)",
+    "camera.foco: uma âncora do cenário ou o id de um personagem do plano",
+    "os de baixo: antes do EP5, só `criatura_vulto` (silhueta, sombra); `criatura`, `criatura_clara` e `criatura_escura` só do EP5 em diante",
+    "vulto antes do EP5: nunca fica parado nem aparece inteiro. É uma passagem rápida (~0,5 s) cruzando uma janela, cortada pela moldura (só ombro ou ponta de orelha), com borrão de movimento; precisa de ação `correr` (ou `andar`) e de um cenário com janelas; em_s = quando passa",
+    "props: nenhum aprovado ainda; o que o roteiro precisar vai em `assets_novos`",
+    "infográficos: nenhum implementado ainda (e proibidos no EP1)",
+    "sons: chaves livres em `som` (snake_case); a biblioteca de áudio entra na Fase 2"
+  ]
+}

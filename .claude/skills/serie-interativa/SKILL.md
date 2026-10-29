@@ -62,10 +62,13 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
 - **Cada plano mostra uma ação visível e compreensível** (alguém faz algo), não só personagem parado com narração por cima. Planos de 2 a 6 s.
 - **Um acontecimento real por episódio**: resolva um problema imediato e abra outro. Não repita o conflito do episódio anterior.
 - **Respeite o cronograma de revelação.** Nunca mostre nada antes do episódio permitido. Antes da revelação, a ameaça só aparece como vulto, sombra, som ou rastro.
+- **Vulto antes do EP5: nunca parado, nunca inteiro.** O `criatura_vulto` só faz uma passagem rápida (~0,5 s) cruzando uma janela, cortada pela moldura (só ombro ou ponta de orelha), com um leve borrão de movimento. No roteiro, ele leva uma ação `correr` (ou `andar`) num cenário com janelas; o `em_s` diz quando passa e a vista diz o sentido. O motor escolhe a janela mais perto do `x` e decide altura e trajeto.
+- **Arranjo em cena:** quem está na mesma escala (mesmo plano de profundidade) não encosta em ninguém, e os pés de todo mundo ficam à vista; só a barra em primeiro plano do cenário pode cobrir pés. Espalhe os `x` (≥ 0,25 entre quem está na mesma escala); o motor afasta o que faltar e põe quem está `sentado` no banco mais perto.
 - **Continuidade:** roupas, ferimentos, itens e local vêm do `estado.json`. Se alguém está mancando, aparece mancando.
 - **Atualize o estado.** O medidor de tensão muda em todo episódio.
 - **Narração:** frases curtas, presente, 3ª pessoa, no máximo 12 palavras por frase. Escreva números **por extenso** no campo `tts` e em **dígitos** no campo `legenda`. Nada de palavra cortada no fim.
 - **Falas de personagem:** no máximo 1 ou 2 por episódio, curtas, no campo `fala` (usa a voz do personagem se existir; senão o narrador lê "— disse Socorro").
+  Formato: `"fala": { "personagem": "socorro", "tts": "Meu filho, ninguém pensa direito com fome.", "legenda": "MEU FILHO, NINGUÉM PENSA DIREITO COM FOME." }`. `personagem` é o id do catálogo; `tts` e `legenda` seguem as mesmas regras da narração. Sem fala no plano: `"fala": null`.
 - **Episódio com votação** termina com o cliffhanger e então a **tela VOTE A / VOTE B** (6–8 s). **Episódio sem votação** termina com uma pergunta ou uma imagem inquietante (2–3 s) e o selo "CONTINUA AMANHÃ".
 - **Só use assets do catálogo.** Se a história **precisar** de algo novo, inclua em `assets_novos` com a especificação (MODO 4). Prefira reaproveitar.
 - Palavras de destaque: de 3 a 5 por episódio, pintadas na legenda.
@@ -109,6 +112,7 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
         { "id": "socorro", "vista": "frente", "pose": "abracando_isopor", "x": 0.7 }
       ],
       "props": [{ "id": "vidro_trincado", "x": 0.2, "y": 0.35, "entra_em_s": 2.5, "efeito": "trincar" }],
+      "lanterna": false,
       "efeitos": ["piscar_luz"],
       "cartao": null,
       "narracao": { "tts": "Às dezoito e vinte e um, o primeiro estalo bate no vidro.", "legenda": "18:21. O PRIMEIRO ESTALO BATE NO VIDRO." },
@@ -130,7 +134,7 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
   "palavras_destaque": ["ESTALO", "VIDRO", "SILÊNCIO"],
   "ultima_frase_falada": "fiquem em silêncio no escuro",
   "votacao": { "tem": true, "pergunta": "Abrir a porta ou ficar no escuro?", "a": "ABRIR A PORTA", "b": "FICAR NO ESCURO", "no_se_a": "ep03_a", "no_se_b": "ep03_b" },
-  "estado_final": { "bateria": 85, "exposicao": 3, "pistas": ["vulto_janela", "pegadas"], "local_atual": "plataforma_1959", "noite": 1, "hora": "18:35" },
+  "estado_final": { "bateria": 85, "exposicao": 3, "pistas": ["vulto_janela", "pegadas"], "local_atual": "plataforma_1959", "luz_ambiente": { "vagao": "emergencia_vermelha", "tunel": "escuro", "plataforma_1959": "escuro", "porta_1959": "escuro" }, "noite": 1, "hora": "18:35" },
   "assets_novos": [],
   "notas_para_revisao": "Por que este episódio funciona e o que conferir."
 }
@@ -139,13 +143,21 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
 Tipos de plano: `resultado` | `cena` | `cartao` (tela de texto) | `infografico` | `votacao` | `continua`.
 Ações de personagem (`acao.tipo`): `entrar`, `sair`, `andar`, `correr`, `apontar`, `empurrar`, `agachar`, `virar`, `tremer`, `respirar`, `olhar`, `cair`, `levantar`, `pegar`, `soltar`. Elas viram tweens GSAP no código.
 Movimentos de câmera (`camera.mov`): `fixo`, `push_in`, `pull_out`, `pan_esq`, `pan_dir`, `tilt_cima`, `tilt_baixo`, `shake`, `corte_seco`.
+**Luz é estado, não escolha do plano.** Cada local tem uma luz ambiente em `estado.luz_ambiente` (`normal`, `emergencia_vermelha` ou `escuro`), e o campo `luz` do plano é sempre a luz vigente do local no início do plano.
+Ela só muda com um **evento de luz** em `efeitos`, que vale do meio daquele plano em diante e atualiza `estado_final.luz_ambiente`: `apagao` (`normal` → `emergencia_vermelha`), `luz_emergencia_falha` (`emergencia_vermelha` → `escuro`), `luz_volta` (→ `normal`). `piscar_luz` só pisca e não muda nada. No máximo um evento de luz por plano.
+A **lanterna** é uma camada que soma luz ao ambiente: `"lanterna": true` no plano, quando o Caio aponta a lanterna para algo. Nunca use `lanterna` em `luz` nem em `efeitos`. A bateria só cai nos planos com a lanterna acesa.
+Itens que o desenho exige (vêm de `estado.itens`): `"lanterna": true` exige `lanterna_mao` ou `lanterna_cabeca`; a pose `segurar_lanterna` exige `lanterna_mao` (o feixe sai da mão do Caio); a lanterna de cabeça só aparece com `lanterna_cabeca`. O código recusa luz, pose ou objeto que exija item ausente do estado (veja `exige_item` no catálogo).
 
 ### Autoconferência (obrigatória antes de devolver)
 - [ ] Soma das durações entre 65 e 90 s.
 - [ ] Abre com o resultado (se houve votação) ou com o gancho de hora + local.
 - [ ] Todo plano `cena` tem uma `acao` visível.
 - [ ] Nenhuma revelação antes da hora; ameaça só como vulto, se for o caso.
+- [ ] Antes do EP5, o vulto só passa pela janela (ação `correr`/`andar`, cenário com janelas): nunca parado nem inteiro.
+- [ ] Na mesma escala, ninguém encosta em ninguém; pés à vista.
 - [ ] Todos os `cenario`, `pose`, `props` existem no catálogo, ou estão em `assets_novos`.
+- [ ] `luz` de cada plano = a luz ambiente vigente do local; ela só muda com um evento de luz em `efeitos`, e `estado_final.luz_ambiente` traz o resultado.
+- [ ] Lanterna só como camada (`"lanterna": true`); nenhuma camada, pose ou objeto exige item que não está em `estado.itens`.
 - [ ] `estado_final` coerente com o estado anterior + as consequências.
 - [ ] `ultima_frase_falada` é uma frase completa.
 - [ ] Opções A e B têm o mesmo peso e consequências reais no esqueleto.
