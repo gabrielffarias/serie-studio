@@ -18,8 +18,16 @@ describe("QA", () => {
     expect(falhas({ ...medidas, picoDbtp: -0.6 })).toEqual(["pico"]);
     expect(falhas({ ...medidas, pretos: [{ ini: 3, fim: 3.2 }] })).toEqual([]);
     expect(falhas({ ...medidas, pretos: [{ ini: 3, fim: 3.5 }] })).toEqual(["telas_pretas"]);
-    // o corte do apagão é escuro de propósito
-    expect(falhas({ ...medidas, pretos: [{ ini: 3, fim: 3.5 }] }, { ...esperado, pretosEsperados: [{ ini: 2.9, fim: 3.7, motivo: "apagao p02" }] })).toEqual([]);
+  });
+
+  it("apagão: escuro planejado até 0,6 s dentro do plano com o evento", () => {
+    const comApagao = { ...esperado, planosApagao: [{ id: "p02", ini: 6.2, fim: 11.7 }] };
+    const c = avaliarQa({ ...medidas, pretos: [{ ini: 9.5, fim: 9.93 }] }, comApagao).find((x) => x.id === "telas_pretas")!;
+    expect(c.ok).toBe(true);
+    expect(c.mensagem).toMatch(/escuro planejado: 9\.5–9\.9 s \(apagão p02, 0\.43 s\)/);
+    expect(falhas({ ...medidas, pretos: [{ ini: 9.5, fim: 10.2 }] }, comApagao)).toEqual(["telas_pretas"]);
+    // fora do plano do apagão vale o limite normal
+    expect(falhas({ ...medidas, pretos: [{ ini: 20, fim: 20.5 }] }, comApagao)).toEqual(["telas_pretas"]);
   });
 
   it("última frase cortada bloqueia (Whisper escreve vote-b, a comparação ignora pontuação)", () => {
@@ -31,7 +39,7 @@ describe("QA", () => {
 
   it("sync: maior desvio por palavra acima de 150 ms bloqueia", () => {
     const ouvidas = medidas.ouvidas.map((x, i) => (i === 4 ? { ...x, ini: x.ini + 0.2 } : x));
-    expect(desviosSync(faladas, ouvidas)[4].desvio).toBeCloseTo(0.25);
+    expect(desviosSync(faladas, ouvidas).desvios[4].desvio).toBeCloseTo(0.25);
     const c = avaliarQa({ ...medidas, ouvidas }, esperado).find((x) => x.id === "sync_legenda")!;
     expect(c.ok).toBe(false);
     expect(c.mensagem).toMatch(/máx\. 250 ms \("que"/);
@@ -39,12 +47,32 @@ describe("QA", () => {
 
   it("primeira palavra depois de pausa mede o fim (o Whisper puxa o início para dentro do silêncio)", () => {
     const f = [w("nenhum", 47.76), w("Ele", 49.36), w("ajusta", 49.6)];
-    const o = [w("nenhum", 47.8), { texto: "Ele", ini: 48.12, fim: 49.68 }, w("ajusta", 49.64)];
-    expect(desviosSync(f, o).map((d) => [d.palavra, d.borda, d.desvio])).toEqual([
+    const o = [w("nenhum", 47.8), { texto: "Ele", ini: 49.0, fim: 49.68 }, w("ajusta", 49.64)];
+    expect(desviosSync(f, o).desvios.map((d) => [d.palavra, d.borda, d.desvio])).toEqual([
       ["nenhum", "fim", 0.04],
       ["Ele", "fim", 0.02],
       ["ajusta", "ini", 0.04],
     ]);
+  });
+
+  it("palavra sem confiança do Whisper fica fora do sync (caso real do EP1: \"ajusta\" em 49,6 s)", () => {
+    // o Whisper deu 0,01 ao "Ele" e esticou "ajusta" por 2 s sobre o silêncio do corte p08→p09
+    const f = [w("nenhum", 47.76), { texto: "Ele", ini: 49.36, fim: 49.6 }, { texto: "ajusta", ini: 49.6, fim: 50.41 }, w("os", 50.41)];
+    const o = [
+      { ...w("nenhum.", 47.8), prob: 0.98 },
+      { texto: "Ele", ini: 48.12, fim: 48.36, prob: 0.01 },
+      { texto: "ajusta", ini: 48.36, fim: 50.38, prob: 0.96 },
+      { ...w("os", 50.38), prob: 0.98 },
+    ];
+    const { desvios, ignoradas } = desviosSync(f, o);
+    expect(desvios.map((d) => d.palavra)).toEqual(["nenhum", "os"]);
+    expect(ignoradas.map((x) => [x.palavra, x.motivo])).toEqual([
+      ["Ele", "probabilidade 0.01"],
+      ["ajusta", "duração 2.02 s ouvida × 0.81 s falada"],
+    ]);
+    const c = avaliarQa({ ...medidas, ouvidas: o }, { ...esperado, faladas: f }).find((x) => x.id === "sync_legenda")!;
+    expect(c.ok).toBe(true);
+    expect(c.mensagem).toMatch(/fora \(Whisper sem confiança\): "Ele" 48\.1 s/);
   });
 
   it("fallback e som sem arquivo são avisos", () => {

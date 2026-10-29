@@ -7,7 +7,6 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { lerSons, mixar, planejarSfx, DIR_AUDIO } from "../engine/audio/mix";
-import { instanteEventoLuz } from "../engine/compose/plano";
 import { montarProjeto } from "../engine/compose/projeto";
 import type { TempoPalavra } from "../engine/hud/legenda";
 import { avaliarQa, medirAudioVideo, ouvir } from "../engine/qa/qa";
@@ -112,7 +111,7 @@ async function main() {
   const sons = lerSons();
   const durArquivo = (a: string) => Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path.join(DIR_AUDIO, a)]).toString());
   const luzes = Object.fromEntries(percorrerLuz(ep.planos, estado.luz_ambiente).planos.map((l) => [l.id, l]));
-  const { colocados, semArquivo } = planejarSfx(
+  const { colocados, silencios, semArquivo } = planejarSfx(
     planosVoz.map((pv) => {
       const p = ep.planos.find((x) => x.id === pv.id)!;
       return { id: pv.id, ini: pv.ini, dur: pv.dur, som: p.tipo === "cena" ? (p.som ?? []) : [], eventoLuz: !!luzes[pv.id]?.evento };
@@ -122,20 +121,18 @@ async function main() {
   );
   const wav = path.join(dirVoz, "master.wav");
   const musica = Object.values(sons.musica)[0]?.arquivo;
-  await mixar({ duracao, vozes: registros.map((r) => ({ wav: path.join(dirVoz, `${r.plano}-${r.tipo}.wav`), t: r.em! })), sfx: colocados, musica }, wav);
+  await mixar({ duracao, vozes: registros.map((r) => ({ wav: path.join(dirVoz, `${r.plano}-${r.tipo}.wav`), t: r.em! })), sfx: colocados, musica, silencios }, wav);
   rmSync(final, { force: true });
   await rodar("ffmpeg", ["-v", "error", "-y", "-i", video, "-i", wav, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-t", String(duracao), final], RAIZ, false);
-  console.log(`⏱  mixagem: ${seg(t1)}s (${colocados.length} efeitos${musica ? `, música ${musica}` : ""})`);
+  console.log(`⏱  mixagem: ${seg(t1)}s (${colocados.length} efeitos${musica ? `, música ${musica}` : ""}${silencios.length ? `, silêncio em ${silencios.map((x) => `${x.ini}–${x.fim}s`).join(", ")}` : ""})`);
 
   // 5. QA
   const t2 = Date.now();
   const medidas = { ...(await medirAudioVideo(final)), ouvidas: await ouvir(final) };
   const fallback = registros.filter((r) => r.provedor !== primeiro).map((r) => `${r.plano} ${r.tipo} (${r.provedor})`);
-  // o evento de luz corta para quase preto por ~0,6 s (engine/compose/plano.ts)
-  const pretosEsperados = planosVoz
-    .filter((pv) => luzes[pv.id]?.evento)
-    .map((pv) => ({ ini: pv.ini + instanteEventoLuz(pv.dur) - 0.1, fim: pv.ini + instanteEventoLuz(pv.dur) + 0.8, motivo: `${luzes[pv.id].evento} ${pv.id}` }));
-  const qa = avaliarQa(medidas, { faladas, ultimaFrase: ep.ultima_frase_falada, fallback, sonsSemArquivo: semArquivo, pretosEsperados });
+  // apagão: o corte para quase preto é planejado (até LIMITES.escuroApagaoMaxS)
+  const planosApagao = planosVoz.filter((pv) => luzes[pv.id]?.evento === "apagao").map((pv) => ({ id: pv.id, ini: pv.ini, fim: pv.ini + pv.dur }));
+  const qa = avaliarQa(medidas, { faladas, ultimaFrase: ep.ultima_frase_falada, fallback, sonsSemArquivo: semArquivo, planosApagao });
   console.log(`⏱  QA: ${seg(t2)}s`);
   writeFileSync(
     path.join(RAIZ, `data/renders/${ep.no}-qa.json`),
