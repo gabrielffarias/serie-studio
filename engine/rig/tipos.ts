@@ -114,5 +114,7 @@ export type Figurino = {
     atras?: boolean;
     /** pendurado pela alça: fica sempre na vertical, apesar do braço */
     pendurado?: boolean;
+    /** caixa do desenho nas coordenadas da junta (pendurado: na vertical); usada para ver se cobre os pés */
+    caixa?(v: VistaBase): { x: number; y: number; w: number; h: number };
   }>;
 };

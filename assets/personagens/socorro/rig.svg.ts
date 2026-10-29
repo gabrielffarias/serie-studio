@@ -180,10 +180,24 @@ export const socorro: Figurino = {
       padrao: true,
       atras: true,
       pendurado: true,
+      caixa: (v) => {
+        const w = v === "perfil" ? 112 : v === "3/4" ? 150 : 168;
+        return { x: -w / 2, y: 12, w, h: 170 };
+      },
       desenhar: (v) => {
         const w = v === "perfil" ? 112 : v === "3/4" ? 150 : 168;
         const m = w / 2 - 18;
         return caixa(-w / 2, 62, w, 120) + alca(-m, m, 70, 12);
+      },
+    },
+    // isopor no colo, sentada: apoiado nas coxas, deixa canelas e pés à vista
+    isopor_colo: {
+      junta: "tronco",
+      padrao: false,
+      desenhar: (v) => {
+        const x = v === "perfil" ? -6 : v === "3/4" ? -24 : -80;
+        const w = v === "perfil" ? 120 : v === "3/4" ? 140 : 160;
+        return caixa(x, -118, w, 100) + alca(x + 22, x + w - 22, -112, -146);
       },
     },
     // isopor abraçado contra o peito

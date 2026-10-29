@@ -109,6 +109,90 @@ export function pontaDaMao(f: Figurino, v: VistaBase, pose: PoseResolvida, lado:
   return { x, y, angulo: (Math.atan2(e.y, e.x) * 180) / Math.PI };
 }
 
+/** Pivô do pé (tornozelo) nas coordenadas da instância: quadril → coxa → canela. */
+export function pontaDoPe(f: Figurino, v: VistaBase, pose: PoseResolvida, lado: Lado): Ponto {
+  const p = f.prop;
+  const a = pose.angulos;
+  const em = layout(v, f).pernas[lado];
+  let x = em.x;
+  let y = -p.quadril + pose.corpo_y + em.y;
+  let g = 0;
+  for (const [ang, L] of [[a[`coxa_${lado}`], p.coxa * pose.escalas[`coxa_${lado}`]], [a[`canela_${lado}`], p.canela * pose.escalas[`canela_${lado}`]]] as [number, number][]) {
+    g += ang;
+    const e = eixo(g);
+    x += e.x * L;
+    y += e.y * L;
+  }
+  return { x, y };
+}
+
+/** Ponto do tronco (coordenadas a partir do quadril) girado pela pose, nas coordenadas da instância. */
+function noTronco(f: Figurino, pose: PoseResolvida, pt: Ponto): Ponto {
+  const rt = (pose.angulos.tronco * Math.PI) / 180;
+  return { x: pt.x * Math.cos(rt) - pt.y * Math.sin(rt), y: -f.prop.quadril + pose.corpo_y + pt.x * Math.sin(rt) + pt.y * Math.cos(rt) };
+}
+
+/** Ponto mais alto do corpo: topo da cabeça (girada com tronco e pescoço) ou dos ombros. */
+export function topoDoCorpo(f: Figurino, v: VistaBase, pose: PoseResolvida): number {
+  const p = f.prop;
+  const L = layout(v, f);
+  const pescoco = noTronco(f, pose, L.pescoco);
+  const g = ((pose.angulos.tronco + pose.angulos.cabeca) * Math.PI) / 180;
+  const d = -(p.cabeca - p.ombro - 8);
+  const centro = { x: pescoco.x - d * Math.sin(g), y: pescoco.y + d * Math.cos(g) };
+  const ombros = Object.values(L.ombros).map((o) => noTronco(f, pose, o).y - p.larguraBraco / 2);
+  return Math.min(centro.y - p.cabecaR, ...ombros);
+}
+
+/** comprimento do pé para a frente e meia largura (peBasico) */
+const PE = { frente: 34, costas: 34, perfil: 54, "3/4": 40 } as const;
+
+/**
+ * Espaço que o personagem ocupa numa pose (escala 1, olhando à direita, origem
+ * no chão): extensão horizontal do corpo (tronco, cabeça e pernas), topo da
+ * cabeça, os pés (cada um como faixa horizontal) e o que ele mesmo cobre dos
+ * próprios pés (acessório com `caixa` desenhado por cima das pernas).
+ */
+export type Pegada = {
+  esq: number;
+  dir: number;
+  topo: number;
+  pes: { x0: number; x1: number; y0: number; y1: number }[];
+  /** acessórios ligados que cobrem um pé */
+  cobrePes: string[];
+};
+
+export function pegada(f: Figurino, v: VistaBase, pose: PoseResolvida): Pegada {
+  const p = f.prop;
+  const L = layout(v, f);
+  const kx = f.escalaTronco?.x ?? 1;
+  const meia = Math.max(...Object.values(L.ombros).map((o) => Math.abs(o.x) * kx + p.larguraBraco / 2), p.cabecaR);
+  const pes = (["d", "e"] as Lado[]).map((l) => {
+    const pt = pontaDoPe(f, v, pose, l);
+    const tras = v === "frente" || v === "costas" ? PE[v] : 24;
+    return { x0: pt.x - tras, x1: pt.x + PE[v], y0: pt.y - 4, y1: pt.y + 22 };
+  });
+  const cobrePes: string[] = [];
+  for (const [nome, a] of Object.entries(f.acessorios ?? {})) {
+    if (!pose.acessorios[nome] || !a.caixa) continue;
+    // só os desenhados por cima das pernas: pendurados na mão do lado da câmera
+    const lado = a.junta.startsWith("mao_") ? (a.junta.slice(-1) as Lado) : null;
+    if (!lado || !L.bracosFrente.includes(lado)) continue;
+    const m = pontaDaMao(f, v, pose, lado);
+    const c = a.caixa(v);
+    const x0 = m.x + c.x, x1 = x0 + c.w, y0 = m.y + c.y, y1 = y0 + c.h;
+    // cobre de verdade: mais de 10 px na vertical e 16 px na horizontal
+    if (pes.some((pe) => Math.min(pe.y1, y1) - Math.max(pe.y0, y0) > 10 && Math.min(pe.x1, x1) - Math.max(pe.x0, x0) > 16)) cobrePes.push(nome);
+  }
+  return {
+    esq: Math.min(-meia, ...pes.map((pe) => pe.x0)),
+    dir: Math.max(meia, ...pes.map((pe) => pe.x1)),
+    topo: topoDoCorpo(f, v, pose),
+    pes,
+    cobrePes,
+  };
+}
+
 function acessoriosDa(px: string, f: Figurino, v: VistaBase, j: Junta, atras: boolean): string {
   return Object.entries(f.acessorios ?? {})
     .filter(([, a]) => a.junta === j && !!a.atras === atras)

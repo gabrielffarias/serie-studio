@@ -92,8 +92,8 @@
       "tronco": -16,
       "braco_e": -80,
       "antebraco_e": -18,
-      "braco_d": 16,
-      "antebraco_d": -10,
+      "braco_d": 44,
+      "antebraco_d": 4,
       "coxa_d": -22,
       "canela_d": 12,
       "coxa_e": 22,
@@ -199,6 +199,104 @@
           "antebraco_e": 9
         }
       }
+    }
+  },
+  "sentado": {
+    "expressao": "neutro",
+    "corpo_y": 85,
+    "angulos": {
+      "coxa_d": -88,
+      "canela_d": 88,
+      "coxa_e": -92,
+      "canela_e": 92,
+      "braco_d": -14,
+      "antebraco_d": -48,
+      "braco_e": -10,
+      "antebraco_e": -50
+    },
+    "por_vista": {
+      "frente": {
+        "corpo_y": 82,
+        "escalas": {
+          "coxa_d": 0.25,
+          "coxa_e": 0.25
+        },
+        "angulos": {
+          "braco_d": 10,
+          "antebraco_d": -38,
+          "braco_e": -10,
+          "antebraco_e": 38
+        }
+      },
+      "costas": {
+        "corpo_y": 82,
+        "escalas": {
+          "coxa_d": 0.25,
+          "coxa_e": 0.25
+        },
+        "angulos": {
+          "braco_d": -10,
+          "antebraco_d": 38,
+          "braco_e": 10,
+          "antebraco_e": -38
+        }
+      }
+    },
+    "acessorios": {
+      "isopor_mao": false,
+      "isopor_colo": true
+    }
+  },
+  "agachar": {
+    "expressao": "medo",
+    "corpo_y": 92,
+    "angulos": {
+      "tronco": -22,
+      "cabeca": 8,
+      "coxa_d": -80,
+      "canela_d": 110,
+      "coxa_e": -62,
+      "canela_e": 100,
+      "braco_d": -32,
+      "antebraco_d": -40,
+      "braco_e": -22,
+      "antebraco_e": -40
+    },
+    "por_vista": {
+      "frente": {
+        "corpo_y": 80,
+        "escalas": {
+          "coxa_d": 0.45,
+          "coxa_e": 0.45
+        },
+        "angulos": {
+          "coxa_d": 18,
+          "coxa_e": -18,
+          "canela_d": -12,
+          "canela_e": 12,
+          "braco_d": 22,
+          "antebraco_d": -30,
+          "braco_e": -22,
+          "antebraco_e": 30
+        }
+      },
+      "costas": {
+        "corpo_y": 80,
+        "escalas": {
+          "coxa_d": 0.45,
+          "coxa_e": 0.45
+        },
+        "angulos": {
+          "coxa_d": -18,
+          "coxa_e": 18,
+          "canela_d": 12,
+          "canela_e": -12
+        }
+      }
+    },
+    "acessorios": {
+      "isopor_mao": false,
+      "isopor_peito": true
     }
   }
 }
