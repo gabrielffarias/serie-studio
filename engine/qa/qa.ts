@@ -76,7 +76,10 @@ export type Ignorada = { palavra: string; t: number; motivo: string };
  *   Whisper grudou nela o silêncio de um corte e o tempo dela não vale.
  * Mede o início; mas o Whisper gruda o silêncio na primeira palavra depois de
  * uma pausa (começo do plano, ponto final) e marca o início dela cedo demais.
- * Nessas, mede o fim, que ele acerta.
+ * Nessas, mede o fim, que ele acerta. O mesmo vale logo depois de um número
+ * que o Whisper agrupou em algarismos ("cento e oito" → "108", que não casa
+ * com as palavras faladas): ele puxa o início da palavra seguinte para dentro
+ * do número.
  */
 export function desviosSync(faladas: PalavraFalada[], ouvidas: PalavraOuvida[], L = LIMITES): { desvios: Desvio[]; ignoradas: Ignorada[] } {
   const ignoradas: Ignorada[] = [];
@@ -88,7 +91,10 @@ export function desviosSync(faladas: PalavraFalada[], ouvidas: PalavraOuvida[], 
   const a = faladas.map((w) => normalizar(w.texto));
   const b = confiaveis.map((w) => normalizar(w.texto));
   const desvios: Desvio[] = [];
-  for (const [i, j] of lcs(a, b)) {
+  const pares = lcs(a, b);
+  const casadas = new Set(pares.map(([, j]) => j));
+  const depoisDeNumero = (j: number) => j > 0 && !casadas.has(j - 1) && /\d/.test(confiaveis[j - 1].texto);
+  for (const [i, j] of pares) {
     const f = faladas[i];
     const o = confiaveis[j];
     const durF = f.fim - f.ini;
@@ -97,7 +103,7 @@ export function desviosSync(faladas: PalavraFalada[], ouvidas: PalavraOuvida[], 
       ignoradas.push({ palavra: o.texto, t: o.ini, motivo: `duração ${durO.toFixed(2)} s ouvida × ${durF.toFixed(2)} s falada` });
       continue;
     }
-    const borda = i === 0 || f.ini - faladas[i - 1].fim >= L.pausaS ? "fim" : "ini";
+    const borda = i === 0 || f.ini - faladas[i - 1].fim >= L.pausaS || depoisDeNumero(j) ? "fim" : "ini";
     desvios.push({ palavra: f.texto, t: f.ini, desvio: Math.round(Math.abs(f[borda] - o[borda]) * 1000) / 1000, borda });
   }
   return { desvios, ignoradas };

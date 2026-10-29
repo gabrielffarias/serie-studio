@@ -55,6 +55,17 @@ describe("QA", () => {
     ]);
   });
 
+  it("depois de número agrupado pelo Whisper mede o fim (caso real do EP1: \"Sul\" em 3,9 s)", () => {
+    // "cento e oito" virou "108" (3,08–3,64) e o Whisper pôs o início de "sul," em 3,64; a voz começa em 3,865
+    const f = [w("sentido", 2.6), { texto: "cento", ini: 3.08, fim: 3.37 }, { texto: "e", ini: 3.37, fim: 3.45 }, { texto: "oito", ini: 3.45, fim: 3.865 }, { texto: "Sul.", ini: 3.865, fim: 4.3 }];
+    const o = [{ ...w("sentido", 2.62), prob: 0.95 }, { texto: "108", ini: 3.08, fim: 3.64, prob: 0.9 }, { texto: "sul,", ini: 3.64, fim: 4.215, prob: 0.69 }];
+    const d = desviosSync(f, o).desvios.find((x) => x.palavra === "Sul.")!;
+    expect([d.borda, d.desvio]).toEqual(["fim", 0.085]);
+    // número escrito por extenso e casado: segue medindo o início
+    const o2 = [{ ...w("sentido", 2.62), prob: 0.95 }, { texto: "oito", ini: 3.45, fim: 3.86, prob: 0.9 }, { texto: "sul,", ini: 3.88, fim: 4.3, prob: 0.9 }];
+    expect(desviosSync(f, o2).desvios.find((x) => x.palavra === "Sul.")!.borda).toBe("ini");
+  });
+
   it("palavra sem confiança do Whisper fica fora do sync (caso real do EP1: \"ajusta\" em 49,6 s)", () => {
     // o Whisper deu 0,01 ao "Ele" e esticou "ajusta" por 2 s sobre o silêncio do corte p08→p09
     const f = [w("nenhum", 47.76), { texto: "Ele", ini: 49.36, fim: 49.6 }, { texto: "ajusta", ini: 49.6, fim: 50.41 }, w("os", 50.41)];
