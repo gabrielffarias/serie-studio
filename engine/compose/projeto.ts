@@ -7,6 +7,7 @@ import { compilar, type Keyframe } from "../core/keyframes";
 import { CSS_CARTAO } from "../hud/cartao";
 import { camadaHudEpisodio, CSS_HUD, partesSelo, passosHud } from "../hud/hud";
 import { percorrerLuz } from "../../src/lib/luz";
+import { EP_REVELACAO_CRIATURAS } from "../../src/lib/episodio-checagens";
 import { blocos, camadaLegenda, CSS_LEGENDA, temposPorSilaba, type TempoPalavra } from "../hud/legenda";
 import { CSS_TELAS } from "../hud/telas";
 import { copiarVendor } from "../vendor";
@@ -26,7 +27,13 @@ export type OpcoesProjeto = {
   apenas?: string[];
 };
 
-export type Projeto = { dir: string; duracao: number; planos: { id: string; ini: number; dur: number }[] };
+export type Projeto = {
+  dir: string;
+  duracao: number;
+  planos: { id: string; ini: number; dur: number }[];
+  /** ajustes de arranjo e problemas que o compose achou */
+  avisos: string[];
+};
 
 /** fontes locais (o render não busca nada na rede); cada subcomposição declara as suas */
 const CSS_FONTES = `
@@ -114,10 +121,12 @@ export function montarProjeto(ep: Episodio, dir: string, op: OpcoesProjeto = {})
   const hud = camadaHudEpisodio("r", ep.hud.selo, ep.hud.medidor.nome, passos, total);
   kfsRaiz.push(...hud.kfs, { alvo: "#r-hud", prop: "opacity", t: 0, v: 1 });
 
+  const avisos: string[] = [];
   planos.forEach((pl, k) => {
     const i = indices[k];
     const p = ep.planos[i];
-    const c = comporPlano(ep, i, { px: pl.id, dur: pl.dur, itens: op.itens ?? [], semente: `${ep.no}-${pl.id}`, luzes }, todas);
+    const c = comporPlano(ep, i, { px: pl.id, dur: pl.dur, itens: op.itens ?? [], semente: `${ep.no}-${pl.id}`, luzes, passagemVulto: ep.numero < EP_REVELACAO_CRIATURAS }, todas);
+    avisos.push(...(c.avisos ?? []));
     writeFileSync(path.join(dir, `compositions/${pl.id}.html`), htmlPlano(pl.id, pl.dur, c));
     hosts.push(
       `<div id="${pl.id}" data-composition-id="${pl.id}" data-composition-src="compositions/${pl.id}.html" data-start="${pl.ini}" data-duration="${pl.dur}" data-track-index="1" data-width="1080" data-height="1920"></div>`,
@@ -190,5 +199,5 @@ ${hosts.join("\n")}
 </html>
 `;
   writeFileSync(path.join(dir, "index.html"), index);
-  return { dir, duracao: total, planos };
+  return { dir, duracao: total, planos, avisos };
 }

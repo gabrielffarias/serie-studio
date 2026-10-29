@@ -12,6 +12,7 @@ import { telaContinua, telaResultado, telaVotacao } from "../hud/telas";
 import type { PoseResolvida, VistaBase } from "../rig/tipos";
 import type { LuzDoPlano } from "../../src/lib/luz";
 import type { Episodio, Plano } from "../../src/lib/episodio-schema";
+import { kfsPassagem, PASSAGEM } from "./vulto";
 import { extrasDaInstancia, feixeDaMao, montarCena, parseVista, type CenaSpec, type InstanciaCena } from "./cena";
 
 export type PlanoCena = Extract<Plano, { tipo: "cena" }>;
@@ -24,6 +25,8 @@ export type PlanoComposto = {
   kfs: Keyframe[];
   /** fundo sólido quando não há cena (resultado) */
   fundo?: string;
+  /** o que o compose ajustou ou não conseguiu resolver (arranjo, pés) */
+  avisos?: string[];
 };
 
 export type ContextoPlano = {
@@ -33,6 +36,8 @@ export type ContextoPlano = {
   semente: string;
   /** luz ambiente de cada plano de cena (percorrerLuz a partir do estado) */
   luzes?: Record<string, LuzDoPlano>;
+  /** antes do EP5: o vulto só passa rápido por uma janela (engine/compose/vulto.ts) */
+  passagemVulto?: boolean;
 };
 
 /** passo da amostragem do feixe durante as ações (s) */
@@ -118,8 +123,13 @@ export function comporCena(p: PlanoCena, ctx: ContextoPlano): PlanoComposto {
     luzFim: luz.fim,
     lanterna: p.lanterna,
     itens: ctx.itens,
-    personagens: p.personagens.map((pc) => ({ id: pc.id, vista: pc.vista, pose: pc.pose, x: pc.x, y: pc.y, escala: pc.escala })),
+    personagens: p.personagens.map((pc) => ({
+      id: pc.id, vista: pc.vista, pose: pc.pose, x: pc.x, y: pc.y, escala: pc.escala,
+      // quem entra de fora do quadro não entra no arranjo
+      livre: pc.acao?.tipo === "entrar" || pc.x < 0 || pc.x > 1,
+    })),
     vistasExtras: vistasExtras(p),
+    passagemVulto: ctx.passagemVulto,
   };
   const m = montarCena(spec);
   const kfs = [...m.kfs];
@@ -127,6 +137,12 @@ export function comporCena(p: PlanoCena, ctx: ContextoPlano): PlanoComposto {
   // ações
   m.instancias.forEach((inst, i) => {
     const acao = p.personagens[i].acao;
+    if (inst.passagem) {
+      // a travessia substitui a ação do roteiro; começa no em_s dela
+      const t0 = Math.min(acao?.em_s ?? 0.3, Math.max(0, ctx.dur - PASSAGEM.dur - 0.1));
+      kfs.push(...kfsPassagem(inst.inst, inst.passagem, t0));
+      return;
+    }
     if (!acao) return;
     kfs.push(
       ...kfsAcao(acao as never, {
@@ -163,7 +179,7 @@ export function comporCena(p: PlanoCena, ctx: ContextoPlano): PlanoComposto {
     html += c.html;
     kfs.push(...c.kfs);
   }
-  return { svg: m.svg, html, kfs };
+  return { svg: m.svg, html, kfs, avisos: m.avisos.map((a) => `${p.id}: ${a}`) };
 }
 
 /** Último quadro de uma cena como keyframes estáticos em t=0 (fundo da votação). */

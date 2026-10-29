@@ -46,6 +46,7 @@ async function main() {
   const luzAmbiente = estado?.luz_ambiente ?? { vagao: "emergencia_vermelha", tunel: "escuro", plataforma_1959: "escuro", porta_1959: "escuro" };
   const proj = montarProjeto(ep, dir, { itens, luzAmbiente, apenas });
   console.log(`▶ itens do estado: ${itens.join(", ") || "nenhum"}`);
+  for (const a of proj.avisos) console.log(`⚠️  ${a}`);
   console.log(`▶ projeto ${path.relative(RAIZ, dir)}: ${proj.planos.map((p) => `${p.id} ${p.dur}s`).join(", ")} = ${proj.duracao}s`);
 
   await rodar(HF, ["lint"], dir);

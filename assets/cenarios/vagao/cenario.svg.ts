@@ -1,6 +1,6 @@
 // Interior do vagão: bancos azuis, barras amarelas, janelas escuras (bíblia, seção 5).
 // Sem logo, marca ou nome do Metrô-DF.
-import type { Cenario } from "../../../engine/cenario/tipos";
+import type { Cenario, Retangulo } from "../../../engine/cenario/tipos";
 
 const C = {
   teto: "#B9BCBE",
@@ -21,6 +21,14 @@ const C = {
   pisoLinha: "#4C4F54",
   contorno: "#2A2420",
 };
+
+/** o lado de fora visível em cada janela (por dentro do vidro escuro da borda) */
+const JANELAS: Retangulo[] = [
+  { x: 88, y: 538, w: 244, h: 344, rx: 16 },
+  { x: 748, y: 538, w: 244, h: 344, rx: 16 },
+  { x: 432, y: 532, w: 76, h: 276, rx: 10 },
+  { x: 572, y: 532, w: 76, h: 276, rx: 10 },
+];
 
 function janela(x: number): string {
   return (
@@ -44,7 +52,10 @@ export const vagao: Cenario = {
     chao: { x: 540, y: 1470 },
   },
   // as duas janelas grandes e as duas da porta
-  recorteExterno: "M70 520 h280 v380 h-280 Z M730 520 h280 v380 h-280 Z M420 520 h100 v300 h-100 Z M560 520 h100 v300 h-100 Z",
+  recorteExterno: JANELAS.map((j) => `M${j.x} ${j.y} h${j.w} v${j.h} h${-j.w} Z`).join(" "),
+  janelas: JANELAS,
+  // os dois bancos (o do meio é a porta)
+  assentos: [{ x0: 40, x1: 380, y: 1363 }, { x0: 700, x1: 1040, y: 1363 }],
   fundo: () =>
     // teto e luminárias apagadas
     `<rect width="1080" height="380" fill="${C.teto}"/>` +
