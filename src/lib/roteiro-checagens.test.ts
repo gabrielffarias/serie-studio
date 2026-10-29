@@ -5,6 +5,7 @@ import { checarRoteiro, duracaoComVoz, falhasBloqueantes, tempoDeFala, CONTEXTO_
 import { validarEpisodio, type Episodio } from "./episodio-schema";
 import { estadoInicial } from "./estado";
 import { BIBLIA, ep1Json } from "./fixtures/roteiro";
+import { tempoDeLeitura } from "../../engine/voz/tempos";
 
 const catalogo = gerarCatalogo();
 const nos = esqueleto(BIBLIA);
@@ -298,6 +299,15 @@ describe("tempo de fala", () => {
     );
     // o mesmo texto demora mais na voz mais lenta
     expect(tempoDeFala("Ninguém vai vir buscar a gente.", vozes.narrador.ritmo)).toBeGreaterThan(tempoDeFala("Ninguém vai vir buscar a gente.", vozes.personagens.caio.ritmo));
+  });
+
+  it("narrador único: a fala do personagem conta o tempo de leitura na tela", () => {
+    const base = { id: "p01", tipo: "cartao", cartao: { texto: "x" }, duracao_s: 1 } as const;
+    const p = { ...base, narracao: { tts: "Caio ergue as mãos.", legenda: "X" }, fala: { personagem: "caio", tts: "Calma, gente.", legenda: "Y" } } as never;
+    const narr = tempoDeFala("Caio ergue as mãos.", vozes.narrador.ritmo);
+    // 4 sílabas ÷ 4/s + 1 vírgula × 0,2 = 1,2 s → mínimo de 1,5 s na tela
+    expect(tempoDeLeitura("Calma, gente.")).toBe(1.5);
+    expect(duracaoComVoz(p, { ...vozes, falas: "tela" })).toBe(Math.ceil((0.2 + narr + 0.25 + 1.5 + 0.35) * 10) / 10);
   });
 
   it("a voz só estica o plano, nunca encurta", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alinharLegenda, deslocar, ENTRE_FALAS_S, estimarPalavras, INICIO_VOZ_S, lcs, posicionarFalas } from "./tempos";
+import { alinharLegenda, deslocar, ENTRE_FALAS_S, estimarPalavras, falaNaTela, fimFalado, INICIO_VOZ_S, lcs, LEITURA_MIN_S, posicionarFalas, tempoDeLeitura } from "./tempos";
 
 const audio = (duracao: number) => ({ duracao, palavras: [] });
 
@@ -85,5 +85,18 @@ describe("estimarPalavras", () => {
     expect(p.map((w) => w.texto)).toEqual(["Fale", "baixo,", "rapaz."]);
     expect(p[0].ini).toBeGreaterThan(0);
     expect(p.at(-1)!.fim).toBeLessThanOrEqual(1.6);
+  });
+});
+
+describe("falaNaTela", () => {
+  it("fala sem voz: dura o tempo de leitura (mínimo 1,5 s) e espalha as palavras por ele", () => {
+    expect(tempoDeLeitura("Oi.")).toBe(LEITURA_MIN_S);
+    // 13 sílabas ÷ 4/s + 1 vírgula × 0,2
+    expect(tempoDeLeitura("Meu filho, ninguém pensa direito com fome.")).toBeCloseTo(13 / 4 + 0.2, 2);
+    const a = falaNaTela("Ninguém vai vir buscar a gente.");
+    expect(a.palavras.map((w) => w.texto)).toEqual(["Ninguém", "vai", "vir", "buscar", "a", "gente."]);
+    expect(a.palavras[0].ini).toBe(0);
+    expect(a.palavras.at(-1)!.fim).toBeCloseTo(a.duracao, 2);
+    expect(fimFalado(a)).toBe(a.duracao);
   });
 });

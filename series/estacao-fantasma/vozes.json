@@ -1,21 +1,16 @@
 {
-  "nota": "Escolhidas pelo usuário em 2026-10-29 (amostras da Fase 2). rate em %, pitch em Hz (edge-tts e Azure usam as mesmas vozes neurais). kokoro: fallback local, speed calibrado para o ritmo do edge (duração das falas do EP1 sem silêncio, kokoro ÷ edge). cor: etiqueta e palavra dita na legenda das falas.",
+  "nota": "Escolhidas pelo usuário em 2026-10-29 (amostras da Fase 2). rate em %, pitch em Hz (edge-tts e Azure usam as mesmas vozes neurais). kokoro: fallback local, speed calibrado para o ritmo do edge (duração das falas do EP1 sem silêncio, kokoro ÷ edge). cor: etiqueta e palavra dita na legenda das falas. 2026-10-29 (Parada 2): narrador único, sem ajuste de rate/pitch; as falas de personagem ficam só na tela (falas: \"tela\"), as vozes dos personagens ficam guardadas para quando voltarem a falar. kokoro da narradora recalibrado à mão (0,74 ÷ 0,88) até medir de novo.",
+  "falas": "tela",
   "narrador": {
     "nome": "Narradora",
     "edge": {
       "voz": "pt-BR-ThalitaMultilingualNeural",
-      "rate": "-12%",
-      "pitch": "-9Hz"
+      "rate": "+0%",
+      "pitch": "+0Hz"
     },
     "kokoro": {
       "voz": "pf_dora",
-      "speed": 0.74
-    },
-    "ritmo": {
-      "silabas_por_s": 4.59,
-      "pausa_s": 0.35,
-      "inicio_s": 0.06,
-      "trechos": 15
+      "speed": 0.84
     }
   },
   "personagens": {

@@ -15,6 +15,11 @@ export const ENTRE_FALAS_S = 0.25;
 /** respiro depois da última fala, antes do corte */
 export const FOLGA_FIM_S = 0.35;
 
+/** fala de personagem só na tela (narrador único): ritmo de leitura e tempo mínimo na tela */
+export const LEITURA_SILABAS_S = 4;
+export const LEITURA_PAUSA_S = 0.2;
+export const LEITURA_MIN_S = 1.5;
+
 export type Audio = { duracao: number; palavras: PalavraFalada[] };
 export type FalasDoPlano = { narracao?: Audio; fala?: Audio };
 
@@ -76,6 +81,20 @@ export const deslocar = (ps: PalavraFalada[], em: number): PalavraFalada[] => ps
 /** Sem tempo do provedor (Kokoro): estima pelas sílabas dentro do áudio (sem as bordas de silêncio). */
 export function estimarPalavras(texto: string, duracao: number): PalavraFalada[] {
   return temposPorSilaba(texto, Math.min(0.08, duracao / 4), Math.max(0.1, duracao - 0.12)).map((w) => ({ texto: w.palavra, ini: w.ini, fim: w.fim }));
+}
+
+/** Tempo de leitura de uma fala que só aparece na tela (sem voz). */
+export function tempoDeLeitura(texto: string): number {
+  const toks = texto.split(/\s+/).filter(Boolean);
+  const pausas = toks.slice(0, -1).filter((t) => /[.,;:!?…]$/.test(t)).length;
+  const t = toks.reduce((n, x) => n + silabas(x), 0) / LEITURA_SILABAS_S + pausas * LEITURA_PAUSA_S;
+  return arred(Math.max(LEITURA_MIN_S, t), 2);
+}
+
+/** Fala só na tela: um "áudio" mudo do tamanho da leitura, com as palavras espalhadas pelas sílabas. */
+export function falaNaTela(texto: string): Audio {
+  const duracao = tempoDeLeitura(texto);
+  return { duracao, palavras: temposPorSilaba(texto, 0, duracao).map((w) => ({ texto: w.palavra, ini: w.ini, fim: w.fim })) };
 }
 
 /** Pares (i em a, j em b) da maior subsequência comum. */

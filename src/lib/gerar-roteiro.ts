@@ -8,7 +8,8 @@ import { extrairJson } from "./claude-cli";
 import { checarRoteiro, falhasBloqueantes, CONTEXTO_PADRAO, RITMO_PADRAO, type Checagem, type ContextoRoteiro } from "./episodio-checagens";
 import { validarEpisodio, type Episodio } from "./episodio-schema";
 import type { Estado } from "./estado";
-import type { Vozes } from "./vozes";
+import { falasComVoz, type Vozes } from "./vozes";
+import { LEITURA_MIN_S, LEITURA_SILABAS_S } from "../../engine/voz/tempos";
 
 export type ResultadoVotacao = { opcao: "A" | "B"; pct_a: number; pct_b: number; total_votos: number };
 
@@ -58,6 +59,8 @@ export function contextoDoPedido(p: PedidoRoteiro): ContextoRoteiro {
 
 function ritmos(v: Vozes | undefined): string {
   if (!v) return `${RITMO_PADRAO.silabas_por_s} sílabas/s`;
+  if (!falasComVoz(v))
+    return `narração ${v.narrador.ritmo?.silabas_por_s ?? RITMO_PADRAO.silabas_por_s} sílabas/s; narrador único: a fala do personagem não tem voz, fica na tela no tempo de leitura, ${LEITURA_SILABAS_S} sílabas/s, mínimo ${LEITURA_MIN_S} s`;
   const um = (nome: string, r: { silabas_por_s: number } | undefined) => `${nome} ${r?.silabas_por_s ?? RITMO_PADRAO.silabas_por_s}`;
   return `sílabas/s: ${[um("narração", v.narrador.ritmo), ...Object.entries(v.personagens).map(([id, c]) => um(id, c.ritmo))].join(", ")}`;
 }

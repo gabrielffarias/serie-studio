@@ -58,7 +58,7 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
 
 ### Regras de roteiro
 - **Duração total: 65 a 90 s** (alvo de 75 s). Abaixo de 65 s, o episódio não monetiza. Some as durações dos planos e confira.
-  - **A voz manda na duração.** No render, cada plano dura no mínimo 0,2 s + narração + 0,25 s + fala + 0,35 s; se a voz não couber, o plano estica e o episódio cresce. O código estima a fala no **ritmo medido de cada voz** (`ritmo` em `series/<serie>/vozes.json`: sílabas por segundo, ~0,35 s por vírgula ou ponto). A narradora fala ~4,6 sílabas/s, Valdir ~4,4, Socorro ~5,3 e Caio ~5,6. Uma frase de 12 palavras da narradora leva ~5 s.
+  - **A voz manda na duração.** No render, cada plano dura no mínimo 0,2 s + narração + 0,25 s + fala + 0,35 s; se a voz não couber, o plano estica e o episódio cresce. O código estima a fala no **ritmo medido de cada voz** (`ritmo` em `series/<serie>/vozes.json`: sílabas por segundo, ~0,35 s por vírgula ou ponto). Com `"falas": "tela"` no vozes.json (**narrador único**, o modo atual), só a narração tem voz: a fala do personagem aparece na legenda com a etiqueta do nome e conta o **tempo de leitura** (4 sílabas/s, +0,2 s por vírgula ou ponto, mínimo 1,5 s). Uma frase de 12 palavras da narradora leva ~4–5 s.
 - **0–2 s: gancho.** Se houve votação, o episódio **abre com a tela de resultado** (padrão abaixo), e o placar é o gancho. Se não houve, abre com uma imagem forte + a hora e o local na narração ("18:47. Túnel sentido 108 Sul.").
 - **Cada plano mostra uma ação visível e compreensível** (alguém faz algo), não só personagem parado com narração por cima. Planos de 2 a 6 s.
 - **Um acontecimento real por episódio**: resolva um problema imediato e abra outro. Não repita o conflito do episódio anterior.
@@ -68,7 +68,7 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
 - **Continuidade:** roupas, ferimentos, itens e local vêm do `estado.json`. Se alguém está mancando, aparece mancando.
 - **Atualize o estado.** O medidor de tensão muda em todo episódio.
 - **Narração:** frases curtas, presente, 3ª pessoa, no máximo 12 palavras por frase. Escreva números **por extenso** no campo `tts` e em **dígitos** no campo `legenda`. Nada de palavra cortada no fim.
-- **Falas de personagem:** a narração conduz (~70% do texto); os personagens falam com voz própria (~30%) nos **momentos de emoção**. De **3 a 5 falas por episódio**, cada uma com **até 8 palavras**, no campo `fala` (a voz de cada personagem está em `series/<serie>/vozes.json`).
+- **Falas de personagem:** a narração conduz (~70% do texto); os personagens falam (~30%) nos **momentos de emoção**. De **3 a 5 falas por episódio**, cada uma com **até 8 palavras**, no campo `fala`. No modo narrador único (`"falas": "tela"` em `series/<serie>/vozes.json`) a fala não é dita: aparece na tela com a etiqueta do nome, então escreva para ser **lida** (curta, sem depender de entonação). O `tts` da fala continua obrigatório (vale quando os personagens voltarem a ter voz).
   - **Criaturas nunca falam.**
   - **Falas contidas:** TTS não grita bem. Nada de "!" nem caixa alta no `tts`; o pânico fica com a narração e o som. Medo, cansaço, ironia e firmeza em voz baixa funcionam.
   - A legenda mostra quem fala (nome e cor do personagem); não escreva "disse Caio" na narração.

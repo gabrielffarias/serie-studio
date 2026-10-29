@@ -2,13 +2,13 @@
 // checarEpisodio: estrutura (duração, resultado, votação, ações, destaques, última frase).
 // checarRoteiro: tudo isso + catálogo, cronograma de pistas, nó do esqueleto e estilo.
 import { silabas } from "../../engine/hud/legenda";
-import { ENTRE_FALAS_S, FOLGA_FIM_S, INICIO_VOZ_S } from "../../engine/voz/tempos";
+import { ENTRE_FALAS_S, FOLGA_FIM_S, INICIO_VOZ_S, tempoDeLeitura } from "../../engine/voz/tempos";
 import type { NoEsqueleto } from "./biblia";
 import { ehInstrucaoMix, type Catalogo } from "./catalogo";
 import type { Episodio, Plano } from "./episodio-schema";
 import type { Estado } from "./estado";
 import { percorrerLuz } from "./luz";
-import { ritmoDe, type Ritmo, type Vozes } from "./vozes";
+import { falasComVoz, ritmoDe, type Ritmo, type Vozes } from "./vozes";
 
 /** `aviso`: aparece na revisão, mas não bloqueia nem vai para o retry do roteiro. */
 export type Checagem = { id: string; ok: boolean; mensagem: string; aviso?: boolean };
@@ -174,7 +174,8 @@ export function tempoDeFala(texto: string, ritmo: Ritmo = RITMO_PADRAO): number 
 export function duracaoComVoz(p: Plano, vozes?: Vozes): number {
   const trechos = [
     ...(p.narracao ? [tempoDeFala(p.narracao.tts, ritmoDe(vozes, "narrador"))] : []),
-    ...(p.fala ? [tempoDeFala(p.fala.tts, ritmoDe(vozes, p.fala.personagem))] : []),
+    // narrador único: a fala do personagem só aparece na tela, no tempo de leitura
+    ...(p.fala ? [falasComVoz(vozes) ? tempoDeFala(p.fala.tts, ritmoDe(vozes, p.fala.personagem)) : tempoDeLeitura(p.fala.tts)] : []),
   ];
   if (!trechos.length) return p.duracao_s;
   const necessaria = INICIO_VOZ_S + trechos.reduce((a, b) => a + b, 0) + ENTRE_FALAS_S * (trechos.length - 1) + FOLGA_FIM_S;
