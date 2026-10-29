@@ -181,7 +181,8 @@
         "correr",
         "em_pe",
         "espreitar",
-        "ouvindo"
+        "ouvindo",
+        "passar"
       ],
       "acessorios": [],
       "acoes": [
@@ -215,7 +216,8 @@
         "correr",
         "em_pe",
         "espreitar",
-        "ouvindo"
+        "ouvindo",
+        "passar"
       ],
       "acessorios": [],
       "acoes": [
@@ -249,7 +251,8 @@
         "correr",
         "em_pe",
         "espreitar",
-        "ouvindo"
+        "ouvindo",
+        "passar"
       ],
       "acessorios": [],
       "acoes": [
@@ -283,7 +286,8 @@
         "correr",
         "em_pe",
         "espreitar",
-        "ouvindo"
+        "ouvindo",
+        "passar"
       ],
       "acessorios": [],
       "acoes": [
@@ -678,8 +682,16 @@
       "descricao": "a luz principal volta"
     }
   },
-  "sons": [],
-  "musicas": [],
+  "sons": [
+    "estalo_seco",
+    "passos",
+    "passos_leves",
+    "vidro",
+    "zumbido_corta"
+  ],
+  "musicas": [
+    "drone_suspense"
+  ],
   "itens_visiveis": {
     "lanterna_mao": "caio",
     "lanterna_cabeca": "caio"
@@ -712,6 +724,6 @@
     "vulto antes do EP5: nunca fica parado nem aparece inteiro. É uma passagem rápida (~0,5 s) cruzando uma janela, cortada pela moldura (só ombro ou ponta de orelha), com borrão de movimento; precisa de ação `correr` (ou `andar`) e de um cenário com janelas; em_s = quando passa",
     "props: nenhum aprovado ainda; o que o roteiro precisar vai em `assets_novos`",
     "infográficos: nenhum implementado ainda (e proibidos no EP1)",
-    "sons: chaves livres em `som` (snake_case); a biblioteca de áudio entra na Fase 2"
+    "sons: use os ids de `sons` em `som`; id fora da biblioteca fica mudo (aviso na revisão)"
   ]
 }

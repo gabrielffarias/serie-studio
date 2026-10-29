@@ -90,8 +90,11 @@ function kfsFeixeSeguindo(px: string, dono: InstanciaCena, o0: OrigemLanterna, k
  * Evento de luz no meio do plano: corte para quase preto, troca a camada
  * ambiente (amb0 → amb1) e a nova luz acende.
  */
+/** Instante (s, dentro do plano) em que o evento de luz corta; o som do apagão morre aqui. */
+export const instanteEventoLuz = (dur: number) => Math.round(Math.min(dur * 0.5, dur - 0.6) * 100) / 100;
+
 function kfsEventoLuz(px: string, luz: LuzDoPlano, dur: number, temPiscar: boolean): Keyframe[] {
-  const tm = Math.round(Math.min(dur * 0.5, dur - 0.6) * 100) / 100;
+  const tm = instanteEventoLuz(dur);
   const kfs: Keyframe[] = [
     { alvo: `#${px}-amb0`, prop: "opacity", t: tm, v: 0 },
     { alvo: `#${px}-amb1`, prop: "opacity", t: tm, v: 1 },

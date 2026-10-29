@@ -1,7 +1,7 @@
 // Gera assets/catalogo.json a partir dos registros do motor: personagens e
 // poses, cenários e âncoras, ações, câmera, luzes e a biblioteca de áudio.
 // É o que o roteirista (skill serie-interativa) lê para saber o que existe.
-import { readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { POSES_DA_ACAO } from "./acoes/acoes";
 import { CENARIOS } from "./cenario/cenarios";
@@ -73,12 +73,10 @@ const NOTAS_PERSONAGEM: Record<string, string[]> = {
   criatura_vulto: ["silhueta escura; a única forma dos de baixo antes do EP5"],
 };
 
-function arquivosAudio(pasta: string): string[] {
+/** ids da biblioteca de áudio (assets/audio/sons.json → sfx ou musica) */
+function idsDeSom(grupo: "sfx" | "musica"): string[] {
   try {
-    return readdirSync(path.join(RAIZ, "assets/audio", pasta))
-      .filter((f) => /\.(mp3|wav|ogg)$/i.test(f))
-      .map((f) => f.replace(/\.[^.]+$/, ""))
-      .sort();
+    return Object.keys(JSON.parse(readFileSync(path.join(RAIZ, "assets/audio/sons.json"), "utf8"))[grupo]).sort();
   } catch {
     return [];
   }
@@ -131,8 +129,8 @@ export function gerarCatalogo(): Catalogo {
     luzes: [...LUZES],
     efeitos: [...EFEITOS_LUZ],
     eventos_luz: Object.fromEntries(Object.entries(TRANSICOES_LUZ).map(([k, t]) => [k, { de: [...t.de], para: t.para, descricao: t.descricao }])),
-    sons: arquivosAudio("sfx"),
-    musicas: arquivosAudio("musica"),
+    sons: idsDeSom("sfx"),
+    musicas: idsDeSom("musica"),
     itens_visiveis: { lanterna_mao: "caio", lanterna_cabeca: "caio" },
     exige_item: EXIGE_ITEM,
     regras: [
@@ -149,7 +147,7 @@ export function gerarCatalogo(): Catalogo {
       "vulto antes do EP5: nunca fica parado nem aparece inteiro. É uma passagem rápida (~0,5 s) cruzando uma janela, cortada pela moldura (só ombro ou ponta de orelha), com borrão de movimento; precisa de ação `correr` (ou `andar`) e de um cenário com janelas; em_s = quando passa",
       "props: nenhum aprovado ainda; o que o roteiro precisar vai em `assets_novos`",
       "infográficos: nenhum implementado ainda (e proibidos no EP1)",
-      "sons: chaves livres em `som` (snake_case); a biblioteca de áudio entra na Fase 2",
+      "sons: use os ids de `sons` em `som`; id fora da biblioteca fica mudo (aviso na revisão)",
     ],
   };
 }

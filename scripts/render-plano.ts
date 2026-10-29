@@ -2,29 +2,13 @@
 // Uso: npm run render:plano -- [arquivo.json] [p02 p03…]   (sem ids = episódio inteiro)
 // RENDER_QUALIDADE=draft|looks|delivery (padrão draft), RENDER_WORKERS (padrão 2).
 // Saída: data/renders/<no>[-<ids>].mp4 e um quadro por plano em data/stills/.
-import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import path from "node:path";
 import { montarProjeto } from "../engine/compose/projeto";
+import { QUALIDADE, RAIZ, renderizar, rodar, WORKERS } from "../engine/render";
 import { validarEpisodio } from "../src/lib/episodio-schema";
 import { lerEstado } from "../src/lib/estado";
 import { falantesDe, lerVozes } from "../src/lib/vozes";
-
-const RAIZ = path.resolve(import.meta.dirname, "..");
-const HF = path.join(RAIZ, "node_modules/.bin/hyperframes");
-const env = { ...process.env, HYPERFRAMES_NO_TELEMETRY: "1", HYPERFRAMES_SKIP_SKILLS: "1" };
-const QUALIDADE = process.env.RENDER_QUALIDADE ?? "draft";
-
-function rodar(cmd: string, args: string[], cwd = RAIZ, eco = true): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const p = spawn(cmd, args, { cwd, env, stdio: ["ignore", "pipe", "pipe"] });
-    let saida = "";
-    p.stdout.on("data", (d) => { saida += d; if (eco) process.stdout.write(d); });
-    p.stderr.on("data", (d) => { saida += d; if (eco) process.stderr.write(d); });
-    p.on("error", reject);
-    p.on("close", (code) => (code === 0 ? resolve(saida) : reject(new Error(`${path.basename(cmd)} ${args[0]} saiu com código ${code}`))));
-  });
-}
 
 async function main() {
   const args = process.argv.slice(2);
@@ -51,10 +35,7 @@ async function main() {
   for (const a of proj.avisos) console.log(`⚠️  ${a}`);
   console.log(`▶ projeto ${path.relative(RAIZ, dir)}: ${proj.planos.map((p) => `${p.id} ${p.dur}s`).join(", ")} = ${proj.duracao}s`);
 
-  await rodar(HF, ["lint"], dir);
-  const t0 = Date.now();
-  await rodar(HF, ["render", "--quality", QUALIDADE, "--workers", process.env.RENDER_WORKERS ?? "2", "--output", saida], dir);
-  const seg = (Date.now() - t0) / 1000;
+  const seg = await renderizar(dir, saida);
   if (!existsSync(saida) || statSync(saida).size === 0) throw new Error("MP4 não foi gerado");
 
   const probe = JSON.parse(await rodar("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height,r_frame_rate:format=duration", "-of", "json", saida], RAIZ, false));
@@ -73,7 +54,7 @@ async function main() {
   ];
   console.log("\n— resultado —");
   for (const c of checagens) console.log(`${c.ok ? "✅" : "❌"} ${c.msg}`);
-  console.log(`⏱  render: ${seg.toFixed(1)}s para ${proj.duracao}s de vídeo (${(seg / proj.duracao).toFixed(2)}× tempo real, ${process.env.RENDER_WORKERS ?? "2"} workers, qualidade ${QUALIDADE})`);
+  console.log(`⏱  render: ${seg.toFixed(1)}s para ${proj.duracao}s de vídeo (${(seg / proj.duracao).toFixed(2)}× tempo real, ${WORKERS} workers, qualidade ${QUALIDADE})`);
   console.log(`📼 ${path.relative(RAIZ, saida)} (${(statSync(saida).size / 1024).toFixed(0)} KB)`);
   for (const s of stills) console.log(`🖼  ${path.relative(RAIZ, s)}`);
   if (checagens.some((c) => !c.ok)) process.exit(1);

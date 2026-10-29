@@ -39,10 +39,18 @@ if ! command -v whisper >/dev/null; then
   pip install --break-system-packages -U openai-whisper
 fi
 
-# edge-tts (voz padrão, Fase 2)
-if ! command -v edge-tts >/dev/null; then
-  pip install --break-system-packages -U edge-tts
+# TTS (Fase 2): edge-tts e Kokoro (fallback local, Apache-2.0) em .pydeps,
+# dentro do /workspace para sobreviver à recriação do container.
+# engine/voz/tts.py põe .pydeps no sys.path.
+if [ ! -d "$DIR/.pydeps/edge_tts" ] || [ ! -d "$DIR/.pydeps/kokoro_onnx" ]; then
+  pip install --break-system-packages --target "$DIR/.pydeps" -U edge-tts kokoro-onnx soundfile
 fi
+KOKORO="$DIR/data/modelos/kokoro"
+KOKORO_URL="https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0"
+mkdir -p "$KOKORO"
+for f in kokoro-v1.0.onnx voices-v1.0.bin; do
+  [ -s "$KOKORO/$f" ] || curl -fL -o "$KOKORO/$f" "$KOKORO_URL/$f"
+done
 
 # HyperFrames fixo no package.json + o Chrome Headless Shell dele
 cd "$DIR"

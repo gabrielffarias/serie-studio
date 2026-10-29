@@ -21,3 +21,6 @@ next-env.d.ts
 # HyperFrames: artefatos e renders dos projetos do motor
 .hyperframes/
 engine/**/renders/
+
+# dependências Python locais (TTS), instaladas por scripts/instalar-dependencias.sh
+/.pydeps/
