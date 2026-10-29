@@ -58,6 +58,7 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
 
 ### Regras de roteiro
 - **Duração total: 65 a 90 s** (alvo de 75 s). Abaixo de 65 s, o episódio não monetiza. Some as durações dos planos e confira.
+  - **A voz manda na duração.** No render, cada plano dura no mínimo 0,2 s + narração + 0,25 s + fala + 0,35 s; se a voz não couber, o plano estica e o episódio cresce. O código estima a fala no **ritmo medido de cada voz** (`ritmo` em `series/<serie>/vozes.json`: sílabas por segundo, ~0,35 s por vírgula ou ponto). A narradora fala ~4,6 sílabas/s, Valdir ~4,4, Socorro ~5,3 e Caio ~5,6. Uma frase de 12 palavras da narradora leva ~5 s.
 - **0–2 s: gancho.** Se houve votação, o episódio **abre com a tela de resultado** (padrão abaixo), e o placar é o gancho. Se não houve, abre com uma imagem forte + a hora e o local na narração ("18:47. Túnel sentido 108 Sul.").
 - **Cada plano mostra uma ação visível e compreensível** (alguém faz algo), não só personagem parado com narração por cima. Planos de 2 a 6 s.
 - **Um acontecimento real por episódio**: resolva um problema imediato e abra outro. Não repita o conflito do episódio anterior.
@@ -71,8 +72,10 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
   - **Criaturas nunca falam.**
   - **Falas contidas:** TTS não grita bem. Nada de "!" nem caixa alta no `tts`; o pânico fica com a narração e o som. Medo, cansaço, ironia e firmeza em voz baixa funcionam.
   - A legenda mostra quem fala (nome e cor do personagem); não escreva "disse Caio" na narração.
+  - **Sem narração redundante.** No plano com fala, a narração não descreve o que a imagem ou a fala já mostram ("Caio ergue as mãos." antes de "Calma, gente."). Corte a narração e deixe a fala sozinha; só narre o que a cena não conta sozinha (o que alguém sente ou esconde, uma mudança de estado).
   Formato: `"fala": { "personagem": "socorro", "tts": "Meu filho, ninguém pensa direito com fome.", "legenda": "MEU FILHO, NINGUÉM PENSA DIREITO COM FOME." }`. `personagem` é o id do catálogo; `tts` e `legenda` seguem as mesmas regras da narração. Sem fala no plano: `"fala": null`.
 - **Episódio com votação** termina com o cliffhanger e então a **tela VOTE A / VOTE B** (6–8 s). **Episódio sem votação** termina com uma pergunta ou uma imagem inquietante (2–3 s) e o selo "CONTINUA AMANHÃ".
+- **Sons:** em `som`, só ids de `sons` do catálogo (o que cada um é está em `sons_descricao`) ou uma instrução de mixagem de `sons_mix`: `silencio_<nome>` (ex.: `silencio_tenso`) não toca nada e baixa a música no plano, para o silêncio pesar. Id fora disso **bloqueia** o roteiro. Som que a cena precisar e não existir vai em `assets_novos` (tipo `som`) e sai do `som` até ser aprovado.
 - **Só use assets do catálogo.** Se a história **precisar** de algo novo, inclua em `assets_novos` com a especificação (MODO 4). Prefira reaproveitar.
 - Palavras de destaque: de 3 a 5 por episódio, pintadas na legenda.
 - Sem violência gráfica, sem sangue, sem marcas reais.
@@ -120,7 +123,7 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
       "cartao": null,
       "narracao": { "tts": "Às dezoito e vinte e um, o primeiro estalo bate no vidro.", "legenda": "18:21. O PRIMEIRO ESTALO BATE NO VIDRO." },
       "fala": null,
-      "som": ["estalo_seco", "vidro_trinca"],
+      "som": ["estalo_seco", "vidro"],
       "estado_antes": { "local_atual": "vagao" },
       "estado_depois": { "exposicao": 3 }
     },
@@ -152,13 +155,15 @@ A **lanterna** é uma camada que soma luz ao ambiente: `"lanterna": true` no pla
 Itens que o desenho exige (vêm de `estado.itens`): `"lanterna": true` exige `lanterna_mao` ou `lanterna_cabeca`; a pose `segurar_lanterna` exige `lanterna_mao` (o feixe sai da mão do Caio); a lanterna de cabeça só aparece com `lanterna_cabeca`. O código recusa luz, pose ou objeto que exija item ausente do estado (veja `exige_item` no catálogo).
 
 ### Autoconferência (obrigatória antes de devolver)
-- [ ] Soma das durações entre 65 e 90 s.
+- [ ] Soma das durações entre 65 e 90 s, contando o tempo da voz (cada plano ≥ 0,2 + narração + 0,25 + fala + 0,35 s no ritmo de cada voz).
 - [ ] Abre com o resultado (se houve votação) ou com o gancho de hora + local.
 - [ ] Todo plano `cena` tem uma `acao` visível.
 - [ ] Nenhuma revelação antes da hora; ameaça só como vulto, se for o caso.
 - [ ] Antes do EP5, o vulto só passa pela janela (ação `correr`/`andar`, cenário com janelas): nunca parado nem inteiro.
 - [ ] Na mesma escala, ninguém encosta em ninguém; pés à vista.
 - [ ] Todos os `cenario`, `pose`, `props` existem no catálogo, ou estão em `assets_novos`.
+- [ ] Todo id em `som` está em `sons` do catálogo ou é `silencio_*`.
+- [ ] Nenhuma narração repete o que a fala ou a imagem do plano já mostram.
 - [ ] `luz` de cada plano = a luz ambiente vigente do local; ela só muda com um evento de luz em `efeitos`, e `estado_final.luz_ambiente` traz o resultado.
 - [ ] Lanterna só como camada (`"lanterna": true`); nenhuma camada, pose ou objeto exige item que não está em `estado.itens`.
 - [ ] `estado_final` coerente com o estado anterior + as consequências.
@@ -192,7 +197,7 @@ Quando um episódio precisa de algo que o catálogo não tem, especifique para o
 ```json
 {
   "id": "vidro_trincado",
-  "tipo": "prop | cenario | pose | personagem | infografico",
+  "tipo": "prop | cenario | pose | personagem | infografico | som",
   "descricao_visual": "formas, cores HEX, proporção em relação ao personagem padrão (cabeça = 1 unidade)",
   "estilo": "vetor chapado, contorno #2A2420 de 5–7px, sem gradiente complexo, sem textura",
   "estados_animaveis": ["inteiro", "trincado"],

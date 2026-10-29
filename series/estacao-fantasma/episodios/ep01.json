@@ -210,11 +210,8 @@
     },
     {
       "id": "p04",
-      "duracao_s": 6,
-      "narracao": {
-        "tts": "Caio ergue as mãos.",
-        "legenda": "CAIO ERGUE AS MÃOS."
-      },
+      "duracao_s": 3.8,
+      "narracao": null,
       "fala": {
         "personagem": "caio",
         "tts": "Calma, gente. Eu trabalho aqui.",
@@ -304,19 +301,14 @@
     },
     {
       "id": "p06",
-      "duracao_s": 6,
-      "narracao": {
-        "tts": "Dona Socorro abre o isopor.",
-        "legenda": "DONA SOCORRO ABRE O ISOPOR."
-      },
+      "duracao_s": 3.5,
+      "narracao": null,
       "fala": {
         "personagem": "socorro",
         "tts": "Meu filho, ninguém pensa direito com fome.",
         "legenda": "MEU FILHO, NINGUÉM PENSA DIREITO COM FOME."
       },
-      "som": [
-        "tampa_isopor"
-      ],
+      "som": [],
       "tipo": "cena",
       "cenario": "vagao",
       "luz": "emergencia_vermelha",
