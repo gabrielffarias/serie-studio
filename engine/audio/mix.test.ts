@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { instanteEventoLuz } from "../compose/plano";
-import { ganhoMusicaExpr, grafoMix, planejarSfx, GANHO_SFX_DB, type Sons } from "./mix";
+import { ganhoMusicaExpr, grafoMix, planejarSfx, trechosDuck, DUCK_RAMPA_S, GANHO_SFX_DB, type Sons } from "./mix";
 
 const sons: Sons = {
   sfx: {
@@ -66,21 +66,35 @@ describe("ganhoMusicaExpr", () => {
   });
 });
 
+describe("trechosDuck", () => {
+  it("rampa antes da voz, segura depois e junta falas próximas", () => {
+    const d = trechosDuck([{ t: 5, fim: 6 }, { t: 0.2, fim: 2 }, { t: 2.5, fim: 3 }]);
+    expect(d).toEqual([
+      { id: "duck", ini: 0.05, fim: 3.35, db: -8 },
+      { id: "duck", ini: 4.85, fim: 6.35, db: -8 },
+    ]);
+    expect(d[0].ini).toBeCloseTo(0.2 - DUCK_RAMPA_S);
+  });
+});
+
 describe("grafoMix", () => {
   it("vozes, efeitos e música com ducking pela voz", () => {
-    const g = grafoMix({ duracao: 10, vozes: [{ wav: "a.wav", t: 0.2 }, { wav: "b.wav", t: 3 }], sfx: [{ id: "x", arquivo: "sfx/e1.ogg", t: 1, ganhoDb: -4 }], musica: "musica/d.ogg" });
+    const g = grafoMix({ duracao: 10, vozes: [{ wav: "a.wav", t: 0.2, fim: 2 }, { wav: "b.wav", t: 3, fim: 4 }], sfx: [{ id: "x", arquivo: "sfx/e1.ogg", t: 1, ganhoDb: -4 }], musica: "musica/d.ogg" });
     expect(g.entradas.map((e) => e.at(-1))).toEqual(["a.wav", "b.wav", expect.stringMatching(/sfx\/e1\.ogg$/), expect.stringMatching(/musica\/d\.ogg$/)]);
     expect(g.entradas[3]).toContain("-stream_loop");
     expect(g.filtro).toContain("adelay=3000:all=1");
-    expect(g.filtro).toContain("[mus0][sc]sidechaincompress");
+    expect(g.filtro).not.toContain("sidechaincompress");
+    expect(g.filtro).toContain("highpass=f=90");
+    expect(g.filtro).toContain("equalizer=f=4000");
+    expect(g.filtro).toContain("aecho=");
     expect(g.filtro).toMatch(/\[voz\]\[sfx\]\[mus\]amix=inputs=3/);
-    expect(g.filtro).not.toContain("eval=frame");
-    const comSilencio = grafoMix({ duracao: 10, vozes: [{ wav: "a.wav", t: 0.2 }], sfx: [], musica: "musica/d.ogg", silencios: [{ id: "silencio_tenso", ini: 2, fim: 6, db: -12 }] });
-    expect(comSilencio.filtro).toMatch(/volume='\(1-0\.7488\*clip\(.*\)\)':eval=frame,afade/);
+    // ducking de -8 dB (ganho 0,3981) nas vozes, juntas num trecho só (buraco de 1 s < 0,8 s depois das rampas)
+    expect(g.filtro).toMatch(/volume='\(1-0\.6019\*clip\(min\(\(t-0\.05\)\/0\.15,\(4\.35-t\)\/0\.15\),0,1\)\)':eval=frame,afade/);
+    const comSilencio = grafoMix({ duracao: 10, vozes: [{ wav: "a.wav", t: 0.2, fim: 1 }], sfx: [], musica: "musica/d.ogg", silencios: [{ id: "silencio_tenso", ini: 2, fim: 6, db: -12 }] });
+    expect(comSilencio.filtro).toMatch(/volume='\(1-0\.7488\*clip\(.*\)\)':eval=frame,volume='\(1-0\.6019/);
   });
-  it("sem música, o sidechain vai para o ralo", () => {
-    const g = grafoMix({ duracao: 5, vozes: [{ wav: "a.wav", t: 0.2 }], sfx: [] });
-    expect(g.filtro).toContain("[sc]anullsink");
+  it("sem música, só a voz", () => {
+    const g = grafoMix({ duracao: 5, vozes: [{ wav: "a.wav", t: 0.2, fim: 1 }], sfx: [] });
     expect(g.filtro).toMatch(/\[voz\]amix=inputs=1/);
   });
 });
