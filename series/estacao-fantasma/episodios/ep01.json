@@ -217,8 +217,8 @@
       },
       "fala": {
         "personagem": "caio",
-        "tts": "Calma, gente. Eu trabalho aqui. Ninguém sai do vagão.",
-        "legenda": "CALMA, GENTE. EU TRABALHO AQUI. NINGUÉM SAI DO VAGÃO."
+        "tts": "Calma, gente. Eu trabalho aqui.",
+        "legenda": "CALMA, GENTE. EU TRABALHO AQUI."
       },
       "som": [
         "murmurio_vagao"
@@ -451,12 +451,16 @@
     },
     {
       "id": "p09",
-      "duracao_s": 4,
+      "duracao_s": 6,
       "narracao": {
         "tts": "Ele ajusta os óculos. Como quem já sabia.",
         "legenda": "ELE AJUSTA OS ÓCULOS. COMO QUEM JÁ SABIA."
       },
-      "fala": null,
+      "fala": {
+        "personagem": "valdir",
+        "tts": "Ninguém vai vir buscar a gente.",
+        "legenda": "NINGUÉM VAI VIR BUSCAR A GENTE."
+      },
       "som": [],
       "tipo": "cena",
       "cenario": "vagao",
@@ -548,10 +552,14 @@
       "id": "p11",
       "duracao_s": 5,
       "narracao": {
-        "tts": "Caio acende a lanterna. Lá fora, só o túnel vazio.",
-        "legenda": "CAIO ACENDE A LANTERNA. LÁ FORA, SÓ O TÚNEL VAZIO."
+        "tts": "Caio acende a lanterna.",
+        "legenda": "CAIO ACENDE A LANTERNA."
       },
-      "fala": null,
+      "fala": {
+        "personagem": "caio",
+        "tts": "Não tem nada lá fora.",
+        "legenda": "NÃO TEM NADA LÁ FORA."
+      },
       "som": [
         "clique_lanterna"
       ],
@@ -652,12 +660,16 @@
     },
     {
       "id": "p13",
-      "duracao_s": 4.5,
+      "duracao_s": 6,
       "narracao": {
         "tts": "Os estalos vêm do fundo do túnel. Cada vez mais perto.",
         "legenda": "OS ESTALOS VÊM DO FUNDO DO TÚNEL. CADA VEZ MAIS PERTO."
       },
-      "fala": null,
+      "fala": {
+        "personagem": "valdir",
+        "tts": "Fale baixo, rapaz.",
+        "legenda": "FALE BAIXO, RAPAZ."
+      },
       "som": [
         "estalo_seco",
         "estalo_seco",
