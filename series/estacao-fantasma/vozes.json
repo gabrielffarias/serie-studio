@@ -10,6 +10,12 @@
     "kokoro": {
       "voz": "pf_dora",
       "speed": 0.74
+    },
+    "ritmo": {
+      "silabas_por_s": 4.59,
+      "pausa_s": 0.35,
+      "inicio_s": 0.06,
+      "trechos": 15
     }
   },
   "personagens": {
@@ -24,6 +30,12 @@
       "kokoro": {
         "voz": "pm_alex",
         "speed": 0.79
+      },
+      "ritmo": {
+        "silabas_por_s": 5.6,
+        "pausa_s": 0.36,
+        "inicio_s": 0.1,
+        "trechos": 2
       }
     },
     "socorro": {
@@ -37,6 +49,12 @@
       "kokoro": {
         "voz": "pf_dora",
         "speed": 1.02
+      },
+      "ritmo": {
+        "silabas_por_s": 5.34,
+        "pausa_s": 0.36,
+        "inicio_s": 0.1,
+        "trechos": 1
       }
     },
     "valdir": {
@@ -50,7 +68,14 @@
       "kokoro": {
         "voz": "pm_santa",
         "speed": 0.89
+      },
+      "ritmo": {
+        "silabas_por_s": 4.36,
+        "pausa_s": 0.36,
+        "inicio_s": 0.12,
+        "trechos": 2
       }
     }
-  }
+  },
+  "nota_ritmo": "ritmo: medido por scripts/medir-ritmo.ts nas falas sintetizadas (edge, voz e ajustes atuais). silabas_por_s conta só o tempo falando; pausa_s é o silêncio depois de vírgula/ponto dentro do trecho; inicio_s, o silêncio antes da primeira palavra. As checagens do roteiro estimam a duração com isso."
 }

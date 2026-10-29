@@ -5,9 +5,10 @@
 import type { NoEsqueleto } from "./biblia";
 import type { Catalogo } from "./catalogo";
 import { extrairJson } from "./claude-cli";
-import { checarRoteiro, falhasBloqueantes, CONTEXTO_PADRAO, FOLGA_FALA_S, SILABAS_POR_SEGUNDO, type Checagem, type ContextoRoteiro } from "./episodio-checagens";
+import { checarRoteiro, falhasBloqueantes, CONTEXTO_PADRAO, RITMO_PADRAO, type Checagem, type ContextoRoteiro } from "./episodio-checagens";
 import { validarEpisodio, type Episodio } from "./episodio-schema";
 import type { Estado } from "./estado";
+import type { Vozes } from "./vozes";
 
 export type ResultadoVotacao = { opcao: "A" | "B"; pct_a: number; pct_b: number; total_votos: number };
 
@@ -16,6 +17,8 @@ export type PedidoRoteiro = {
   no: NoEsqueleto;
   estado: Estado;
   catalogo: Catalogo;
+  /** vozes da série (o ritmo medido de cada voz estima a duração) */
+  vozes?: Vozes;
   /** pista → primeiro EP permitido */
   cronograma: Record<string, number>;
   resultado?: ResultadoVotacao | null;
@@ -46,10 +49,17 @@ export function contextoDoPedido(p: PedidoRoteiro): ContextoRoteiro {
     houveVotacaoAnterior: !!p.resultado,
     noTemVotacao: p.no.temVotacao,
     catalogo: p.catalogo,
+    vozes: p.vozes,
     cronograma: p.cronograma,
     no: p.no,
     estadoAntes: p.estado,
   };
+}
+
+function ritmos(v: Vozes | undefined): string {
+  if (!v) return `${RITMO_PADRAO.silabas_por_s} sílabas/s`;
+  const um = (nome: string, r: { silabas_por_s: number } | undefined) => `${nome} ${r?.silabas_por_s ?? RITMO_PADRAO.silabas_por_s}`;
+  return `sílabas/s: ${[um("narração", v.narrador.ritmo), ...Object.entries(v.personagens).map(([id, c]) => um(id, c.ritmo))].join(", ")}`;
 }
 
 export function promptRoteiro(p: PedidoRoteiro): string {
@@ -76,7 +86,7 @@ export function promptRoteiro(p: PedidoRoteiro): string {
     `Pistas permitidas até aqui: ${pistas.join(", ") || "nenhuma"}. Nada de pista de episódio posterior.`,
     "Use só o que está no catálogo: ids de personagens, as poses e as `acoes` de cada personagem, cenários, âncoras do cenário (ou o id de um personagem do plano) em camera.foco. Siga as `regras` e as `notas` do catálogo. O que faltar vai em assets_novos.",
     no.numero === 1 ? "Não use infográfico neste episódio." : "",
-    `Duração total entre ${min} e ${max} s (alvo 75). Com voz, cada plano dura pelo menos o tempo da fala + ${FOLGA_FALA_S} s (cerca de ${SILABAS_POR_SEGUNDO} sílabas por segundo); dimensione as durações para a narração caber.`,
+    `Duração total entre ${min} e ${max} s (alvo 75). Com voz, cada plano dura pelo menos 0,2 s + narração + 0,25 s + fala + 0,35 s; o código estima a fala no ritmo medido de cada voz (${ritmos(p.vozes)}, mais ~0,35 s por vírgula ou ponto). Dimensione as durações para a voz caber; plano que estica alonga o episódio.`,
     p.comentario ? `A versão anterior foi rejeitada na revisão com este comentário; corrija isto: ${p.comentario}` : "",
     "Devolva SÓ o JSON do episódio, sem texto em volta e sem cerca de código.",
   ];

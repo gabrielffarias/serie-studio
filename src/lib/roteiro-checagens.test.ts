@@ -278,14 +278,56 @@ describe("falas de personagem", () => {
 });
 
 describe("tempo de fala", () => {
-  it("estima pelas sílabas com pausa na pontuação", () => {
-    // 2 + 3 sílabas + pausa (1,2) = 6,2 sílabas a 5/s
-    expect(tempoDeFala("Meu filho, ninguém")).toBeCloseTo((1 + 2 + 1.2 + 2) / 5, 2);
+  const ritmo = { silabas_por_s: 5, pausa_s: 0.3, inicio_s: 0.1 };
+  const vozes = {
+    narrador: { nome: "Narradora", edge: { voz: "x", rate: "+0%", pitch: "+0Hz" }, ritmo: { silabas_por_s: 4, pausa_s: 0.4, inicio_s: 0.06 } },
+    personagens: { caio: { nome: "CAIO", cor: "#E8752A", edge: { voz: "y", rate: "+0%", pitch: "+0Hz" }, ritmo: { silabas_por_s: 6, pausa_s: 0.3, inicio_s: 0.1 } } },
+  };
+
+  it("estima no ritmo da voz: início + sílabas ÷ ritmo + pausa por pontuação no meio + cauda", () => {
+    // 1 + 2 + 2 sílabas; uma vírgula no meio (o ponto final não conta)
+    expect(tempoDeFala("Meu filho, ninguém.", ritmo)).toBeCloseTo(0.1 + 5 / 5 + 0.3 + 0.05, 2);
+  });
+
+  it("cada voz no seu ritmo, com a conta do render (0,2 + narração + 0,25 + fala + 0,35)", () => {
+    const base = { id: "p01", tipo: "cartao", cartao: { texto: "x" }, duracao_s: 1 } as const;
+    const narr = tempoDeFala("Caio ergue as mãos.", vozes.narrador.ritmo);
+    const fala = tempoDeFala("Calma, gente.", vozes.personagens.caio.ritmo);
+    expect(duracaoComVoz({ ...base, narracao: { tts: "Caio ergue as mãos.", legenda: "X" }, fala: { personagem: "caio", tts: "Calma, gente.", legenda: "Y" } } as never, vozes)).toBe(
+      Math.ceil((0.2 + narr + 0.25 + fala + 0.35) * 10) / 10,
+    );
+    // o mesmo texto demora mais na voz mais lenta
+    expect(tempoDeFala("Ninguém vai vir buscar a gente.", vozes.narrador.ritmo)).toBeGreaterThan(tempoDeFala("Ninguém vai vir buscar a gente.", vozes.personagens.caio.ritmo));
   });
 
   it("a voz só estica o plano, nunca encurta", () => {
     const base = { id: "p01", tipo: "cartao", cartao: { texto: "x" } } as const;
     expect(duracaoComVoz({ ...base, duracao_s: 6, narracao: { tts: "Oi.", legenda: "OI." } })).toBe(6);
     expect(duracaoComVoz({ ...base, duracao_s: 1, narracao: { tts: "Uma frase bem comprida que não cabe em um segundo.", legenda: "X" } })).toBeGreaterThan(2);
+  });
+
+  it("a checagem diz de onde veio o ritmo", () => {
+    expect(checarRoteiro(ep1(), ctx).find((c) => c.id === "duracao_com_voz")!.mensagem).toMatch(/ritmo padrão; sem vozes\.json/);
+    expect(checarRoteiro(ep1(), { ...ctx, vozes }).find((c) => c.id === "duracao_com_voz")!.mensagem).toMatch(/ritmo medido das vozes/);
+  });
+});
+
+describe("sons", () => {
+  const comSom = (som: string[]) => {
+    const ep = ep1();
+    (ep.planos.find((p) => p.tipo === "cena") as Extract<Episodio["planos"][number], { tipo: "cena" }>).som = som;
+    return ep;
+  };
+
+  it("os ids do sons.json estão no catálogo, com descrição, e silencio_* é instrução de mixagem", () => {
+    expect(catalogo.sons).toEqual(expect.arrayContaining(["freio_metal", "rangido_trilho", "chiado_radio", "murmurio_vagao", "coracao_batendo", "clique_rele"]));
+    expect(catalogo.sons_descricao.freio_metal).toMatch(/freando/);
+    expect(Object.keys(catalogo.sons_mix)).toEqual(["silencio_*"]);
+  });
+
+  it("id fora da biblioteca bloqueia; silencio_* passa", () => {
+    expect(bloqueios(comSom(["freio_metal", "silencio_tenso"]))).toEqual([]);
+    expect(bloqueios(comSom(["tampa_isopor"]))).toEqual(["sons"]);
+    expect(checarRoteiro(comSom(["tampa_isopor"]), ctx).find((c) => c.id === "sons")!.mensagem).toMatch(/p\d+: tampa_isopor$/);
   });
 });

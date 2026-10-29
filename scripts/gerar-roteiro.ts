@@ -9,6 +9,7 @@ import { cronogramaPistas, esqueleto } from "../src/lib/biblia";
 import { CAMINHO_CATALOGO } from "../src/lib/catalogo";
 import { chamarClaude, RAIZ_REPO } from "../src/lib/claude-cli";
 import { lerEstado } from "../src/lib/estado";
+import { lerVozes } from "../src/lib/vozes";
 import { gerarRoteiro } from "../src/lib/gerar-roteiro";
 
 const SERIE = process.env.SERIE ?? "estacao-fantasma";
@@ -37,7 +38,7 @@ async function main() {
 
   const t0 = Date.now();
   const r = await gerarRoteiro(
-    { serie: SERIE, no, estado, catalogo, cronograma: cronogramaPistas(biblia), anteriores, comentario },
+    { serie: SERIE, no, estado, catalogo, vozes: lerVozes(SERIE), cronograma: cronogramaPistas(biblia), anteriores, comentario },
     {
       chamar: (p) => chamarClaude(p, { timeoutMs: Number(process.env.CLAUDE_ROTEIRO_TIMEOUT_MS) || 12 * 60 * 1000, onLog: log }),
       salvarTentativa: (n, bruto) => {

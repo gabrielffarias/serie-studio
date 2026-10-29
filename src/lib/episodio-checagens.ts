@@ -2,11 +2,13 @@
 // checarEpisodio: estrutura (duração, resultado, votação, ações, destaques, última frase).
 // checarRoteiro: tudo isso + catálogo, cronograma de pistas, nó do esqueleto e estilo.
 import { silabas } from "../../engine/hud/legenda";
+import { ENTRE_FALAS_S, FOLGA_FIM_S, INICIO_VOZ_S } from "../../engine/voz/tempos";
 import type { NoEsqueleto } from "./biblia";
-import type { Catalogo } from "./catalogo";
+import { ehInstrucaoMix, type Catalogo } from "./catalogo";
 import type { Episodio, Plano } from "./episodio-schema";
 import type { Estado } from "./estado";
 import { percorrerLuz } from "./luz";
+import { ritmoDe, type Ritmo, type Vozes } from "./vozes";
 
 /** `aviso`: aparece na revisão, mas não bloqueia nem vai para o retry do roteiro. */
 export type Checagem = { id: string; ok: boolean; mensagem: string; aviso?: boolean };
@@ -18,6 +20,8 @@ export type ContextoChecagem = {
   houveVotacaoAnterior: boolean;
   /** o nó do esqueleto termina com votação */
   noTemVotacao: boolean;
+  /** vozes da série: o ritmo medido de cada voz estima o tempo de fala */
+  vozes?: Vozes;
 };
 
 export const CONTEXTO_PADRAO: ContextoChecagem = {
@@ -141,26 +145,40 @@ export type ContextoRoteiro = ContextoChecagem & {
 
 /** EP a partir do qual os de baixo podem aparecer nítidos (antes disso, só vulto). */
 export const EP_REVELACAO_CRIATURAS = 5;
-/** sílabas por segundo da narração (voz calma); estimativa até a voz real da Fase 2 */
-export const SILABAS_POR_SEGUNDO = 5;
-/** folga depois da última palavra (mesma da Fase 2) */
-export const FOLGA_FALA_S = 0.35;
+/** ritmo de quem não tem `ritmo` no vozes.json (o da narradora medido na Fase 2) */
+export const RITMO_PADRAO: Ritmo = { silabas_por_s: 4.6, pausa_s: 0.35, inicio_s: 0.08 };
+/** o fim falado vai 0,05 s além da última palavra (engine/voz/tempos.ts, fimFalado) */
+const CAUDA_FALA_S = 0.05;
 
 type PlanoCena = Extract<Plano, { tipo: "cena" }>;
 const cenas = (ep: Episodio) => ep.planos.filter((p): p is PlanoCena => p.tipo === "cena");
 const lista = (xs: string[]) => [...new Set(xs)].join(", ");
+const r2 = (n: number) => Math.round(n * 100) / 100;
 
-/** Segundos estimados para falar o texto (sílabas + pausas de pontuação). */
-export function tempoDeFala(texto: string): number {
+/**
+ * Segundos estimados do trecho falado no ritmo real da voz: silêncio inicial +
+ * sílabas ÷ sílabas por segundo + uma pausa por pontuação no meio do texto.
+ */
+export function tempoDeFala(texto: string, ritmo: Ritmo = RITMO_PADRAO): number {
   const palavras = texto.split(/\s+/).filter(Boolean);
-  const sil = palavras.reduce((s, p) => s + silabas(p) + (/[.,;:!?…]$/.test(p) ? 1.2 : 0), 0);
-  return Math.round((sil / SILABAS_POR_SEGUNDO) * 100) / 100;
+  const sil = palavras.reduce((s, p) => s + silabas(p), 0);
+  const pausas = palavras.slice(0, -1).filter((p) => /[.,;:!?…]$/.test(p)).length;
+  return r2(ritmo.inicio_s + sil / ritmo.silabas_por_s + pausas * ritmo.pausa_s + CAUDA_FALA_S);
 }
 
-/** Duração do plano depois da voz: max(planejada, fala + folga). */
-export function duracaoComVoz(p: Plano): number {
-  const texto = [p.narracao?.tts, p.fala?.tts].filter(Boolean).join(" ");
-  return texto ? Math.max(p.duracao_s, Math.round((tempoDeFala(texto) + FOLGA_FALA_S) * 10) / 10) : p.duracao_s;
+/**
+ * Duração do plano depois da voz, com a mesma conta do render
+ * (engine/voz/tempos.ts, posicionarFalas): max(planejada, início + narração +
+ * respiro + fala + folga), para cima em 0,1 s.
+ */
+export function duracaoComVoz(p: Plano, vozes?: Vozes): number {
+  const trechos = [
+    ...(p.narracao ? [tempoDeFala(p.narracao.tts, ritmoDe(vozes, "narrador"))] : []),
+    ...(p.fala ? [tempoDeFala(p.fala.tts, ritmoDe(vozes, p.fala.personagem))] : []),
+  ];
+  if (!trechos.length) return p.duracao_s;
+  const necessaria = INICIO_VOZ_S + trechos.reduce((a, b) => a + b, 0) + ENTRE_FALAS_S * (trechos.length - 1) + FOLGA_FIM_S;
+  return Math.max(p.duracao_s, Math.ceil(r2(necessaria * 10)) / 10);
 }
 
 export function checarCatalogo(ep: Episodio, cat: Catalogo): Checagem[] {
@@ -227,12 +245,13 @@ export function checarCatalogo(ep: Episodio, cat: Catalogo): Checagem[] {
       ? `luz ou efeito fora do catálogo (luzes: ${cat.luzes.join(", ")}; efeitos: ${cat.efeitos.join(", ")}): ${lista(luzEfeitos)}`
       : "luz e efeitos do catálogo",
   });
-  const sons = cat.sons.length ? ep.planos.flatMap((p) => p.som ?? []).filter((s) => !cat.sons.includes(s)) : [];
+  const sons = ep.planos.flatMap((p) => (p.som ?? []).filter((s) => !cat.sons.includes(s) && !ehInstrucaoMix(cat, s)).map((s) => `${p.id}: ${s}`));
   out.push({
     id: "sons",
     ok: sons.length === 0,
-    aviso: true,
-    mensagem: sons.length ? `sons fora da biblioteca: ${lista(sons)}` : cat.sons.length ? "sons da biblioteca" : "biblioteca de sons vazia (Fase 2)",
+    mensagem: sons.length
+      ? `som fora da biblioteca (sons: ${cat.sons.join(", ") || "nenhum"}; mixagem: ${Object.keys(cat.sons_mix ?? {}).join(", ") || "nenhuma"}): ${lista(sons)}`
+      : "sons da biblioteca",
   });
   return out;
 }
@@ -355,15 +374,17 @@ export function checarEstilo(ep: Episodio, ctx: ContextoChecagem, antes?: Estado
   const longas = textos.filter((t) => t.tts.split(/[.!?…]+/).some((f) => f.trim().split(/\s+/).filter(Boolean).length > 12)).map((t) => t.id);
   out.push({ id: "frases_curtas", ok: !longas.length, aviso: true, mensagem: longas.length ? `frases com mais de 12 palavras: ${lista(longas)}` : "frases de até 12 palavras" });
 
-  const apertados = ep.planos.filter((p) => duracaoComVoz(p) > p.duracao_s).map((p) => `${p.id} ${p.duracao_s}→${duracaoComVoz(p)}s`);
-  out.push({ id: "fala_cabe", ok: !apertados.length, aviso: true, mensagem: apertados.length ? `a voz deve esticar: ${apertados.join(", ")}` : "a fala estimada cabe em todo plano" });
+  const comVoz = (p: Plano) => duracaoComVoz(p, ctx.vozes);
+  const ritmo = ctx.vozes ? "ritmo medido das vozes" : "ritmo padrão; sem vozes.json";
+  const apertados = ep.planos.filter((p) => comVoz(p) > p.duracao_s).map((p) => `${p.id} ${p.duracao_s}→${comVoz(p)}s`);
+  out.push({ id: "fala_cabe", ok: !apertados.length, aviso: true, mensagem: apertados.length ? `a voz deve esticar (${ritmo}): ${apertados.join(", ")}` : `a fala estimada cabe em todo plano (${ritmo})` });
 
-  const total = Math.round(ep.planos.reduce((s, p) => s + duracaoComVoz(p), 0) * 10) / 10;
+  const total = Math.round(ep.planos.reduce((s, p) => s + comVoz(p), 0) * 10) / 10;
   out.push({
     id: "duracao_com_voz",
     ok: total >= ctx.duracaoMinS && total <= ctx.duracaoMaxS,
     aviso: true,
-    mensagem: `duração estimada com voz ${total}s (${ctx.duracaoMinS}–${ctx.duracaoMaxS}s)`,
+    mensagem: `duração estimada com voz ${total}s (${ctx.duracaoMinS}–${ctx.duracaoMaxS}s; ${ritmo})`,
   });
 
   const longosCena = cenas(ep).filter((p) => p.duracao_s < 2 || p.duracao_s > 6).map((p) => `${p.id} ${p.duracao_s}s`);

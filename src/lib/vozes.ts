@@ -7,11 +7,15 @@ import type { Falantes } from "../../engine/hud/legenda";
 
 const vozEdge = z.object({ voz: z.string(), rate: z.string().regex(/^[+-]\d+%$/), pitch: z.string().regex(/^[+-]\d+Hz$/) });
 const vozKokoro = z.object({ voz: z.string(), speed: z.number().positive() });
-const voz = z.object({ nome: z.string(), edge: vozEdge, kokoro: vozKokoro.optional() });
+/** ritmo real medido nas falas sintetizadas (scripts/medir-ritmo.ts) */
+const ritmo = z.object({ silabas_por_s: z.number().positive(), pausa_s: z.number().nonnegative(), inicio_s: z.number().nonnegative(), trechos: z.number().int().optional() });
+export type Ritmo = z.infer<typeof ritmo>;
+const voz = z.object({ nome: z.string(), edge: vozEdge, kokoro: vozKokoro.optional(), ritmo: ritmo.optional() });
 
 export const vozesSchema = z.object({
   provisorio: z.boolean().optional(),
   nota: z.string().optional(),
+  nota_ritmo: z.string().optional(),
   narrador: voz,
   personagens: z.record(z.string(), voz.extend({ cor: z.string().regex(/^#[0-9A-Fa-f]{6}$/) })),
 });
@@ -27,3 +31,6 @@ export function lerVozes(serie: string): Vozes | undefined {
 /** nome e cor de cada personagem, para a etiqueta da legenda */
 export const falantesDe = (v: Vozes | undefined): Falantes =>
   Object.fromEntries(Object.entries(v?.personagens ?? {}).map(([id, p]) => [id, { nome: p.nome, cor: p.cor }]));
+
+/** ritmo da voz de um papel ("narrador" ou id do personagem), se medido */
+export const ritmoDe = (v: Vozes | undefined, papel: string): Ritmo | undefined => (papel === "narrador" ? v?.narrador : v?.personagens[papel])?.ritmo;

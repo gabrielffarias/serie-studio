@@ -20,7 +20,8 @@
     "estado:inicial": "tsx scripts/estado-inicial.ts",
     "roteiro": "tsx scripts/gerar-roteiro.ts",
     "render:ep": "tsx scripts/render-ep.ts",
-    "sons": "bash scripts/sintetizar-sons.sh"
+    "sons": "bash scripts/sintetizar-sons.sh",
+    "vozes:ritmo": "tsx scripts/medir-ritmo.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
