@@ -1,29 +1,56 @@
 {
-  "provisorio": true,
-  "nota": "Combinação provável (2026-10-29), aguardando a escolha nas amostras da Fase 2. rate em %, pitch em Hz (edge-tts e Azure usam as mesmas vozes neurais). cor: palavra atual e etiqueta na legenda das falas.",
+  "nota": "Escolhidas pelo usuário em 2026-10-29 (amostras da Fase 2). rate em %, pitch em Hz (edge-tts e Azure usam as mesmas vozes neurais). kokoro: fallback local, speed calibrado para o ritmo do edge (duração das falas do EP1 sem silêncio, kokoro ÷ edge). cor: etiqueta e palavra dita na legenda das falas.",
   "narrador": {
     "nome": "Narradora",
-    "edge": { "voz": "pt-BR-ThalitaMultilingualNeural", "rate": "-8%", "pitch": "-5Hz" },
-    "kokoro": { "voz": "pf_dora", "speed": 0.95 }
+    "edge": {
+      "voz": "pt-BR-ThalitaMultilingualNeural",
+      "rate": "-12%",
+      "pitch": "-9Hz"
+    },
+    "kokoro": {
+      "voz": "pf_dora",
+      "speed": 0.74
+    }
   },
   "personagens": {
     "caio": {
       "nome": "CAIO",
       "cor": "#E8752A",
-      "edge": { "voz": "pt-BR-AntonioNeural", "rate": "+5%", "pitch": "+4Hz" },
-      "kokoro": { "voz": "pm_alex", "speed": 1.05 }
+      "edge": {
+        "voz": "pt-BR-AntonioNeural",
+        "rate": "+5%",
+        "pitch": "+4Hz"
+      },
+      "kokoro": {
+        "voz": "pm_alex",
+        "speed": 0.79
+      }
     },
     "socorro": {
       "nome": "SOCORRO",
       "cor": "#7FB3D5",
-      "edge": { "voz": "pt-BR-FranciscaNeural", "rate": "-5%", "pitch": "-6Hz" },
-      "kokoro": { "voz": "pf_dora", "speed": 0.95 }
+      "edge": {
+        "voz": "pt-BR-FranciscaNeural",
+        "rate": "-5%",
+        "pitch": "-6Hz"
+      },
+      "kokoro": {
+        "voz": "pf_dora",
+        "speed": 1.02
+      }
     },
     "valdir": {
       "nome": "VALDIR",
       "cor": "#D9596B",
-      "edge": { "voz": "pt-BR-AntonioNeural", "rate": "-12%", "pitch": "-8Hz" },
-      "kokoro": { "voz": "pm_santa", "speed": 0.9 }
+      "edge": {
+        "voz": "en-US-AndrewMultilingualNeural",
+        "rate": "-10%",
+        "pitch": "-3Hz"
+      },
+      "kokoro": {
+        "voz": "pm_santa",
+        "speed": 0.89
+      }
     }
   }
 }
