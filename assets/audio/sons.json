@@ -1,0 +1,13 @@
+{
+  "nota": "Id de som do roteiro (campo som de cada plano) → arquivo(s) em assets/audio. Vários arquivos = variações em rodízio quando o som se repete. Id fora daqui vira aviso no QA. Licenças em LICENCAS.md.",
+  "sfx": {
+    "zumbido_corta": { "arquivos": ["sfx/zumbido_corta.ogg"] },
+    "estalo_seco": { "arquivos": ["sfx/estalo_seco_1.ogg", "sfx/estalo_seco_2.ogg", "sfx/estalo_seco_3.ogg"] },
+    "vidro": { "arquivos": ["sfx/vidro_quebra.ogg", "sfx/vidro_quebra_curto.ogg"] },
+    "passos": { "arquivos": ["sfx/passos_pedra.ogg"] },
+    "passos_leves": { "arquivos": ["sfx/passos_pedra.ogg"], "ganho_db": -8 }
+  },
+  "musica": {
+    "drone_suspense": { "arquivo": "musica/drone_suspense.ogg", "loop": true }
+  }
+}
