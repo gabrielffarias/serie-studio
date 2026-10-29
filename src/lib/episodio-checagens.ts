@@ -384,6 +384,35 @@ export function checarEstilo(ep: Episodio, ctx: ContextoChecagem, antes?: Estado
   return out;
 }
 
+/** ações que fazem o vulto atravessar a janela */
+export const ACOES_PASSAGEM_VULTO = ["correr", "andar"];
+
+/**
+ * Antes do EP5 o vulto nunca fica parado nem aparece inteiro: só passa rápido
+ * por uma janela (o motor corta pela moldura e borra). O roteiro precisa dar a
+ * ele uma ação de movimento num cenário com janelas.
+ */
+export function checarVulto(ep: Episodio, cat: Catalogo): Checagem[] {
+  if (ep.numero >= EP_REVELACAO_CRIATURAS) return [];
+  const janelas = new Map(cat.cenarios.map((c) => [c.id, c.janelas]));
+  const erros: string[] = [];
+  for (const p of cenas(ep)) {
+    for (const pc of p.personagens.filter((x) => x.id === "criatura_vulto")) {
+      if (!janelas.get(p.cenario)) erros.push(`${p.id}: ${p.cenario} não tem janela para o vulto passar`);
+      if (!pc.acao || !ACOES_PASSAGEM_VULTO.includes(pc.acao.tipo)) erros.push(`${p.id}: vulto sem passagem (ação ${pc.acao?.tipo ?? "nenhuma"}; use ${ACOES_PASSAGEM_VULTO.join(" ou ")})`);
+    }
+  }
+  return [
+    {
+      id: "vulto_passagem",
+      ok: erros.length === 0,
+      mensagem: erros.length
+        ? `antes do EP${EP_REVELACAO_CRIATURAS} o vulto nunca fica parado nem aparece inteiro: ${erros.join("; ")}`
+        : `antes do EP${EP_REVELACAO_CRIATURAS}, o vulto só passa pela janela`,
+    },
+  ];
+}
+
 export function checarRoteiro(ep: Episodio, ctx: ContextoRoteiro): Checagem[] {
   return [
     ...checarNo(ep, ctx.no),
@@ -392,6 +421,7 @@ export function checarRoteiro(ep: Episodio, ctx: ContextoRoteiro): Checagem[] {
     ...checarItens(ep, ctx.catalogo, ctx.estadoAntes),
     ...checarLuz(ep, ctx.estadoAntes),
     ...checarCronograma(ep, ctx.cronograma, ctx.estadoAntes),
+    ...checarVulto(ep, ctx.catalogo),
     ...checarEstilo(ep, ctx, ctx.estadoAntes),
   ];
 }

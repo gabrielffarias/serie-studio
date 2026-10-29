@@ -56,8 +56,8 @@ export const EXIGE_ITEM: Catalogo["exige_item"] = {
 /** Notas de uso por cenário que o motor não deduz sozinho. */
 const NOTAS_CENARIO: Record<string, string[]> = {
   vagao: [
-    "vulto lá fora: `criatura_vulto` com y entre 0,40 e 0,55 e escala ~0,9 aparece só através das janelas",
-    "sentado no banco: pose `sentado`, vista 3/4, y ~0,71, escala ~0,9",
+    "vulto: `criatura_vulto` com uma ação de movimento (correr) passa por trás da janela mais perto do x dele, no sentido para onde olha; o motor decide altura e trajeto",
+    "sentado: pose `sentado`, vista 3/4, escala ~0,9; o motor põe no banco mais perto do x (y é do banco)",
   ],
   tunel: ["luz ambiente `escuro`: quem está fora do feixe da lanterna vira silhueta com contorno"],
 };
@@ -108,6 +108,8 @@ export function gerarCatalogo(): Catalogo {
     descricao: c.descricao,
     ancoras: Object.keys(c.ancoras),
     estados: c.estados ?? [],
+    janelas: c.janelas?.length ?? 0,
+    assentos: !!c.assentos?.length,
     notas: NOTAS_CENARIO[c.id] ?? [],
   }));
 
@@ -135,6 +137,7 @@ export function gerarCatalogo(): Catalogo {
     exige_item: EXIGE_ITEM,
     regras: [
       "x: 0–1 na largura do quadro; y omitido = pés no chão do cenário; escala 1 = adulto em primeiro plano (0,85–0,95 = um passo atrás)",
+      "arranjo: o motor afasta quem está no mesmo plano de profundidade (mesma escala) até os corpos não se tocarem, e ninguém cobre os pés de quem está atrás; só a camada da frente do cenário (barra) cobre pés de propósito. Espalhe os x (≥ 0,25 de distância entre quem está na mesma escala)",
       "ações de movimento (entrar, sair, andar, correr) leem melhor em perfil ou 3/4; de frente ou de costas o passo não aparece",
       "a pose `sentado` só existe em 3/4",
       "luz é estado: `luz` do plano = estado.luz_ambiente do local; só muda com um evento de `eventos_luz` em `efeitos` (no máximo um por plano), que atualiza estado_final.luz_ambiente",
@@ -143,6 +146,7 @@ export function gerarCatalogo(): Catalogo {
       "uma ação só vale para quem tem as poses dela (veja `acoes` em cada personagem)",
       "camera.foco: uma âncora do cenário ou o id de um personagem do plano",
       "os de baixo: antes do EP5, só `criatura_vulto` (silhueta, sombra); `criatura`, `criatura_clara` e `criatura_escura` só do EP5 em diante",
+      "vulto antes do EP5: nunca fica parado nem aparece inteiro. É uma passagem rápida (~0,5 s) cruzando uma janela, cortada pela moldura (só ombro ou ponta de orelha), com borrão de movimento; precisa de ação `correr` (ou `andar`) e de um cenário com janelas; em_s = quando passa",
       "props: nenhum aprovado ainda; o que o roteiro precisar vai em `assets_novos`",
       "infográficos: nenhum implementado ainda (e proibidos no EP1)",
       "sons: chaves livres em `som` (snake_case); a biblioteca de áudio entra na Fase 2",

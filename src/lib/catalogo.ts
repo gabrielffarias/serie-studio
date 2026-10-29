@@ -23,6 +23,10 @@ export type ItemCenario = {
   /** focos de câmera e pontos de referência (camera.foco) */
   ancoras: string[];
   estados: string[];
+  /** janelas por onde o vulto pode passar (0 = o vulto não aparece aqui antes do EP5) */
+  janelas: number;
+  /** tem assento para a pose `sentado` */
+  assentos: boolean;
   notas: string[];
 };
 

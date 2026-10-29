@@ -95,13 +95,23 @@ describe("checarRoteiro", () => {
     expect(bloqueios(ep)).toEqual([]);
   });
 
-  it("acusa ação sem pose (vulto apontando), sentado fora de 3/4 e foco inexistente", () => {
+  it("antes do EP5 o vulto só passa por janela: no túnel, sem janela, bloqueia", () => {
+    const ep = ep1();
+    const p = ep.planos[13] as Extract<Episodio["planos"][number], { tipo: "cena" }>;
+    expect(p.personagens[0].id).toBe("criatura_vulto");
+    expect(bloqueios(ep)).toEqual([]);
+    p.cenario = "tunel";
+    p.camera = { mov: "corte_seco", foco: "chao" };
+    expect(checarRoteiro(ep, ctx).find((c) => c.id === "vulto_passagem")?.mensagem).toMatch(/tunel não tem janela/);
+  });
+
+  it("acusa ação sem pose (vulto apontando), vulto parado, sentado fora de 3/4 e foco inexistente", () => {
     const ep = ep1();
     const p = ep.planos[13] as Extract<Episodio["planos"][number], { tipo: "cena" }>;
     p.personagens[0].acao = { tipo: "apontar" };
     p.personagens.push({ id: "socorro", vista: "frente", pose: "sentado", x: 0.5 });
     p.camera = { mov: "push_in", foco: "porta" };
-    expect(bloqueios(ep)).toEqual(["acoes_possiveis", "sentado_3_4", "camera_foco"]);
+    expect(bloqueios(ep)).toEqual(["acoes_possiveis", "sentado_3_4", "camera_foco", "vulto_passagem"]);
   });
 
   it("aceita um personagem do plano como foco", () => {

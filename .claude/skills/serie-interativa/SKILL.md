@@ -62,6 +62,8 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
 - **Cada plano mostra uma ação visível e compreensível** (alguém faz algo), não só personagem parado com narração por cima. Planos de 2 a 6 s.
 - **Um acontecimento real por episódio**: resolva um problema imediato e abra outro. Não repita o conflito do episódio anterior.
 - **Respeite o cronograma de revelação.** Nunca mostre nada antes do episódio permitido. Antes da revelação, a ameaça só aparece como vulto, sombra, som ou rastro.
+- **Vulto antes do EP5: nunca parado, nunca inteiro.** O `criatura_vulto` só faz uma passagem rápida (~0,5 s) cruzando uma janela, cortada pela moldura (só ombro ou ponta de orelha), com um leve borrão de movimento. No roteiro, ele leva uma ação `correr` (ou `andar`) num cenário com janelas; o `em_s` diz quando passa e a vista diz o sentido. O motor escolhe a janela mais perto do `x` e decide altura e trajeto.
+- **Arranjo em cena:** quem está na mesma escala (mesmo plano de profundidade) não encosta em ninguém, e os pés de todo mundo ficam à vista; só a barra em primeiro plano do cenário pode cobrir pés. Espalhe os `x` (≥ 0,25 entre quem está na mesma escala); o motor afasta o que faltar e põe quem está `sentado` no banco mais perto.
 - **Continuidade:** roupas, ferimentos, itens e local vêm do `estado.json`. Se alguém está mancando, aparece mancando.
 - **Atualize o estado.** O medidor de tensão muda em todo episódio.
 - **Narração:** frases curtas, presente, 3ª pessoa, no máximo 12 palavras por frase. Escreva números **por extenso** no campo `tts` e em **dígitos** no campo `legenda`. Nada de palavra cortada no fim.
@@ -151,6 +153,8 @@ Itens que o desenho exige (vêm de `estado.itens`): `"lanterna": true` exige `la
 - [ ] Abre com o resultado (se houve votação) ou com o gancho de hora + local.
 - [ ] Todo plano `cena` tem uma `acao` visível.
 - [ ] Nenhuma revelação antes da hora; ameaça só como vulto, se for o caso.
+- [ ] Antes do EP5, o vulto só passa pela janela (ação `correr`/`andar`, cenário com janelas): nunca parado nem inteiro.
+- [ ] Na mesma escala, ninguém encosta em ninguém; pés à vista.
 - [ ] Todos os `cenario`, `pose`, `props` existem no catálogo, ou estão em `assets_novos`.
 - [ ] `luz` de cada plano = a luz ambiente vigente do local; ela só muda com um evento de luz em `efeitos`, e `estado_final.luz_ambiente` traz o resultado.
 - [ ] Lanterna só como camada (`"lanterna": true`); nenhuma camada, pose ou objeto exige item que não está em `estado.itens`.
