@@ -8,6 +8,7 @@ import path from "node:path";
 import { montarProjeto } from "../engine/compose/projeto";
 import { validarEpisodio } from "../src/lib/episodio-schema";
 import { lerEstado } from "../src/lib/estado";
+import { falantesDe, lerVozes } from "../src/lib/vozes";
 
 const RAIZ = path.resolve(import.meta.dirname, "..");
 const HF = path.join(RAIZ, "node_modules/.bin/hyperframes");
@@ -44,7 +45,8 @@ async function main() {
   const estado = demo ? undefined : lerEstado(ep.serie);
   const itens = estado?.itens ?? ["lanterna_cabeca"];
   const luzAmbiente = estado?.luz_ambiente ?? { vagao: "emergencia_vermelha", tunel: "escuro", plataforma_1959: "escuro", porta_1959: "escuro" };
-  const proj = montarProjeto(ep, dir, { itens, luzAmbiente, apenas });
+  const falantes = falantesDe(lerVozes(ep.serie));
+  const proj = montarProjeto(ep, dir, { itens, luzAmbiente, falantes, apenas });
   console.log(`▶ itens do estado: ${itens.join(", ") || "nenhum"}`);
   for (const a of proj.avisos) console.log(`⚠️  ${a}`);
   console.log(`▶ projeto ${path.relative(RAIZ, dir)}: ${proj.planos.map((p) => `${p.id} ${p.dur}s`).join(", ")} = ${proj.duracao}s`);

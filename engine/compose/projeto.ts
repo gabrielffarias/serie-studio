@@ -8,7 +8,7 @@ import { CSS_CARTAO } from "../hud/cartao";
 import { camadaHudEpisodio, CSS_HUD, partesSelo, passosHud } from "../hud/hud";
 import { percorrerLuz } from "../../src/lib/luz";
 import { EP_REVELACAO_CRIATURAS } from "../../src/lib/episodio-checagens";
-import { blocos, camadaLegenda, CSS_LEGENDA, temposPorSilaba, type TempoPalavra } from "../hud/legenda";
+import { blocos, camadaLegenda, CSS_LEGENDA, temposPorSilaba, type Falantes, type TempoPalavra } from "../hud/legenda";
 import { CSS_TELAS } from "../hud/telas";
 import { copiarVendor } from "../vendor";
 import type { Episodio } from "../../src/lib/episodio-schema";
@@ -23,6 +23,8 @@ export type OpcoesProjeto = {
   luzAmbiente?: Record<string, string>;
   /** tempos das palavras por plano (Whisper); sem isso, estimativa por sílaba */
   palavras?: Record<string, TempoPalavra[]>;
+  /** nome e cor de quem fala, para a etiqueta da legenda (vozes.json) */
+  falantes?: Falantes;
   /** só estes planos (medição de render de um plano isolado) */
   apenas?: string[];
 };
@@ -81,6 +83,13 @@ function temposDoPlano(texto: string, ini: number, dur: number): TempoPalavra[] 
   return temposPorSilaba(texto, ini + 0.2, ini + Math.max(0.6, dur - 0.3));
 }
 
+/** As últimas palavras do plano são da fala (a legenda vem narração e depois fala). */
+function marcarFala(tempos: TempoPalavra[], fala: { personagem: string; legenda: string } | null | undefined): TempoPalavra[] {
+  if (!fala) return tempos;
+  const n = fala.legenda.split(/\s+/).filter(Boolean).length;
+  return tempos.map((w, i) => (i >= tempos.length - n ? { ...w, quem: fala.personagem } : w));
+}
+
 export function montarProjeto(ep: Episodio, dir: string, op: OpcoesProjeto = {}): Projeto {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(path.join(dir, "compositions"), { recursive: true });
@@ -137,8 +146,8 @@ export function montarProjeto(ep: Episodio, dir: string, op: OpcoesProjeto = {})
     // legenda: narração e depois fala, dividindo a janela pelas sílabas
     const textos = [p.narracao?.legenda, p.fala?.legenda].filter((x): x is string => !!x);
     if (!textos.length) return;
-    const tempos = op.palavras?.[pl.id] ?? temposDoPlano(textos.join(" "), pl.ini, pl.dur);
-    const leg = camadaLegenda(`r-${pl.id}`, blocos(tempos), ep.palavras_destaque);
+    const tempos = op.palavras?.[pl.id] ?? marcarFala(temposDoPlano(textos.join(" "), pl.ini, pl.dur), p.fala);
+    const leg = camadaLegenda(`r-${pl.id}`, blocos(tempos), ep.palavras_destaque, op.falantes);
     legendas.push(leg.html);
     kfsRaiz.push(...leg.kfs);
   });

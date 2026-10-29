@@ -33,6 +33,16 @@ describe("legenda", () => {
     expect(ehDestaque("fora", ["lá fora"])).toBe(true);
     expect(ehDestaque("trem", ["porta"])).toBe(false);
   });
+  it("fala de personagem: bloco não mistura narração e fala; etiqueta com nome e palavra dita na cor dele", () => {
+    const t = temposPorSilaba("Ela olha o túnel Fale baixo", 0, 4).map((w, i) => (i >= 4 ? { ...w, quem: "valdir" } : w));
+    const bs = blocos(t);
+    expect(bs.map((b) => [b.palavras.map((w) => w.palavra).join(" "), b.quem])).toEqual([["Ela olha o", undefined], ["túnel", undefined], ["Fale baixo", "valdir"]]);
+    const { html, kfs } = camadaLegenda("x", bs, [], { valdir: { nome: "Valdir", cor: "#D9596B" } });
+    expect(html.match(/class="falante"/g)).toHaveLength(1);
+    expect(html).toContain(">VALDIR<");
+    expect(kfs.filter((k) => k.v === "#D9596B").map((k) => k.alvo)).toEqual(["#x-leg2-0", "#x-leg2-1"]);
+    expect(kfs.filter((k) => k.v === "#FF3B2B")).toHaveLength(4);
+  });
   it("keyframes compilam (toda trilha começa em t=0)", () => {
     const { kfs } = camadaLegenda("x", blocos(temposPorSilaba("abre a porta agora", 1, 3)), ["porta"]);
     expect(() => compilar(kfs)).not.toThrow();

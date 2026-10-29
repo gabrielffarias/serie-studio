@@ -1,13 +1,17 @@
 // Legenda falada (engine/STYLE.md §7): 2 a 3 palavras por vez, Anton 96 px,
 // branca com contorno preto grosso; a palavra sendo dita em vermelho, as
-// palavras de destaque do episódio em amarelo.
+// palavras de destaque do episódio em amarelo. Nas falas de personagem, uma
+// etiqueta com o nome acima do bloco e a palavra sendo dita na cor dele.
 //
 // Sem voz (Fase 1), o tempo de cada palavra é estimado por sílabas dentro da
 // janela do plano. Com voz (Fase 2), os tempos vêm do Whisper.
 import type { Keyframe } from "../core/keyframes";
 
-export type TempoPalavra = { palavra: string; ini: number; fim: number };
-export type Bloco = { palavras: TempoPalavra[]; ini: number; fim: number };
+/** `quem`: id do personagem nas falas (sem isso, é narração) */
+export type TempoPalavra = { palavra: string; ini: number; fim: number; quem?: string };
+/** nome e cor de quem fala (series/<serie>/vozes.json) */
+export type Falantes = Record<string, { nome: string; cor: string }>;
+export type Bloco = { palavras: TempoPalavra[]; ini: number; fim: number; quem?: string };
 
 export const COR = { branco: "#FFFFFF", vermelho: "#FF3B2B", amarelo: "#FFC21A" };
 
@@ -63,12 +67,12 @@ export function blocos(tempos: TempoPalavra[], max = 3): Bloco[] {
   const out: Bloco[] = [];
   let atual: TempoPalavra[] = [];
   const fechar = () => {
-    if (atual.length) out.push({ palavras: atual, ini: atual[0].ini, fim: atual[atual.length - 1].fim });
+    if (atual.length) out.push({ palavras: atual, ini: atual[0].ini, fim: atual[atual.length - 1].fim, ...(atual[0].quem ? { quem: atual[0].quem } : {}) });
     atual = [];
   };
   for (const w of tempos) {
     const tamanho = [...atual, w].map((x) => x.palavra).join(" ").length;
-    if (atual.length && (atual.length >= max || tamanho > MAX_CARACTERES)) fechar();
+    if (atual.length && (atual.length >= max || tamanho > MAX_CARACTERES || atual[0].quem !== w.quem)) fechar();
     atual.push(w);
     if (/[.,;:!?…]$/.test(w.palavra)) fechar();
   }
@@ -96,26 +100,29 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
  * HTML e keyframes da legenda de um trecho. `px` prefixa os ids; os tempos são
  * da timeline onde a camada vai morar.
  */
-export function camadaLegenda(px: string, bs: Bloco[], destaques: string[]): { html: string; kfs: Keyframe[] } {
+export function camadaLegenda(px: string, bs: Bloco[], destaques: string[], falantes: Falantes = {}): { html: string; kfs: Keyframe[] } {
   const kfs: Keyframe[] = [];
   const html = bs
     .map((b, i) => {
       const id = `${px}-leg${i}`;
       kfs.push({ alvo: `#${id}`, prop: "opacity", t: 0, v: 0 }, { alvo: `#${id}`, prop: "opacity", t: b.ini, v: 1 }, { alvo: `#${id}`, prop: "opacity", t: b.fim, v: 0 });
       const texto = b.palavras.map((w) => w.palavra).join(" ").toUpperCase();
+      const falante = b.quem ? falantes[b.quem] : undefined;
+      const dita = falante?.cor ?? COR.vermelho;
       const spans = b.palavras
         .map((w, j) => {
           const wid = `${id}-${j}`;
           const base = ehDestaque(w.palavra, destaques) ? COR.amarelo : COR.branco;
           kfs.push(
             { alvo: `#${wid}`, prop: "color", t: 0, v: base },
-            { alvo: `#${wid}`, prop: "color", t: w.ini, v: COR.vermelho },
+            { alvo: `#${wid}`, prop: "color", t: w.ini, v: dita },
             { alvo: `#${wid}`, prop: "color", t: Math.max(w.ini, w.fim), v: base },
           );
           return `<span id="${wid}" style="color:${base}">${esc(w.palavra.toUpperCase())}</span>`;
         })
         .join(" ");
-      return `<div id="${id}" class="legenda cap" style="opacity:0;font-size:${tamanhoFonte(texto)}px"><div>${spans}</div></div>`;
+      const etiqueta = falante ? `<div class="falante" style="background:${falante.cor}">${esc(falante.nome.toUpperCase())}</div>` : "";
+      return `<div id="${id}" class="legenda cap" style="opacity:0;font-size:${tamanhoFonte(texto)}px">${etiqueta}<div>${spans}</div></div>`;
     })
     .join("");
   return { html, kfs };
@@ -123,4 +130,6 @@ export function camadaLegenda(px: string, bs: Bloco[], destaques: string[]): { h
 
 export const CSS_LEGENDA = `
 .legenda { position: absolute; left: 0; right: 0; top: 1380px; height: 160px; display: flex; align-items: center; justify-content: center;
-  text-align: center; white-space: nowrap; color: #fff; -webkit-text-stroke: 12px #000; paint-order: stroke fill; letter-spacing: 1px; }`;
+  text-align: center; white-space: nowrap; color: #fff; -webkit-text-stroke: 12px #000; paint-order: stroke fill; letter-spacing: 1px; }
+.legenda .falante { position: absolute; top: -70px; left: 50%; transform: translateX(-50%); padding: 6px 22px; border-radius: 10px;
+  font-family: "Inter", sans-serif; font-weight: 900; font-size: 40px; letter-spacing: 3px; color: #0E0F12; -webkit-text-stroke: 0; border: 4px solid #000; }`;

@@ -76,6 +76,7 @@ Derivado de `referencias/cena-exemplo.html` / `.png`. Vale para todo SVG do moto
 - **Anton** (legenda, cartões, telas de votação/resultado), maiúsculas.
 - **Inter 800/900** (HUD).
 - Legenda: 96 px, 2 a 3 palavras por vez, branca; palavra falada `#FF3B2B`; palavras de destaque `#FFC21A`.
+- Fala de personagem: o bloco nunca mistura narração e fala; etiqueta com o nome (Inter 900, 40 px, fundo na cor do personagem, contorno preto) 70 px acima do bloco, sem cobrir acento; a palavra falada ganha a cor do personagem (`series/<serie>/vozes.json`).
 - Cartão: faixa `#0E0F12` 90%, texto 56–104 px, palavra-chave amarela ou vermelha, entrada com encaixe seco (escala 0 → 1,08 → 1 em 0,18 s).
 
 ## 8. Asset novo (MODO 4): o que o SVG precisa ter
