@@ -46,7 +46,11 @@ export type Catalogo = {
   efeitos: string[];
   /** evento → transição da luz ambiente do local */
   eventos_luz: Record<string, { de: string[]; para: string; descricao: string }>;
+  /** ids de efeito (assets/audio/sons.json → sfx) */
   sons: string[];
+  sons_descricao: Record<string, string>;
+  /** instruções de mixagem por prefixo ("silencio_*" → o que faz); não tocam arquivo */
+  sons_mix: Record<string, string>;
   musicas: string[];
   /** itens do estado que mudam o desenho (ex.: lanterna_cabeca no Caio) */
   itens_visiveis: Record<string, string>;
@@ -60,3 +64,7 @@ export const CAMINHO_CATALOGO = path.resolve(import.meta.dirname, "../../assets/
 export function lerCatalogo(caminho = CAMINHO_CATALOGO): Catalogo {
   return JSON.parse(readFileSync(caminho, "utf8")) as Catalogo;
 }
+
+/** o id em `som` é uma instrução de mixagem (casa um prefixo de sons_mix)? */
+export const ehInstrucaoMix = (cat: Pick<Catalogo, "sons_mix">, id: string) =>
+  Object.keys(cat.sons_mix ?? {}).some((p) => id.startsWith(p.replace(/\*$/, "")));

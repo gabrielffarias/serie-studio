@@ -129,7 +129,7 @@ export const planoSchema = z.discriminatedUnion("tipo", [
 
 export const assetNovoSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/, "id em snake_case"),
-  tipo: z.enum(["prop", "cenario", "pose", "personagem", "infografico"]),
+  tipo: z.enum(["prop", "cenario", "pose", "personagem", "infografico", "som"]),
   descricao_visual: z.string().min(1),
   estilo: z.string().min(1),
   estados_animaveis: z.array(z.string()).default([]),

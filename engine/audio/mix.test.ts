@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { instanteEventoLuz } from "../compose/plano";
-import { grafoMix, planejarSfx, GANHO_SFX_DB, type Sons } from "./mix";
+import { ganhoMusicaExpr, grafoMix, planejarSfx, GANHO_SFX_DB, type Sons } from "./mix";
 
 const sons: Sons = {
   sfx: {
@@ -9,6 +9,7 @@ const sons: Sons = {
     passos_leves: { arquivos: ["sfx/p.ogg"], ganho_db: -8 },
   },
   musica: { drone: { arquivo: "musica/d.ogg", loop: true } },
+  mix: { silencio_: { musica_db: -12 } },
 };
 const dur = (a: string) => (a.endsWith("z.ogg") ? 2.6 : 0.3);
 
@@ -44,6 +45,25 @@ describe("planejarSfx", () => {
     expect(colocados[1].ganhoDb).toBe(GANHO_SFX_DB - 8);
     expect(semArquivo).toEqual(["clique_rele"]);
   });
+
+  it("silencio_* não toca arquivo: vira música baixa no plano inteiro", () => {
+    const { colocados, silencios, semArquivo } = planejarSfx([{ id: "p08", ini: 40, dur: 6, som: ["silencio_tenso"], eventoLuz: false }], sons, dur);
+    expect(colocados).toEqual([]);
+    expect(semArquivo).toEqual([]);
+    expect(silencios).toEqual([{ id: "silencio_tenso", ini: 40, fim: 46, db: -12 }]);
+  });
+});
+
+describe("ganhoMusicaExpr", () => {
+  it("1 fora dos silêncios; -12 dB dentro, com rampa", () => {
+    const expr = ganhoMusicaExpr([{ id: "silencio_tenso", ini: 40, fim: 46, db: -12 }]);
+    const clip = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
+    const em = (t: number) => Function("t", "clip", "min", `return ${expr}`)(t, clip, Math.min) as number;
+    expect(em(30)).toBe(1);
+    expect(em(43)).toBeCloseTo(10 ** (-12 / 20), 3);
+    expect(em(40.2)).toBeGreaterThan(em(43));
+    expect(ganhoMusicaExpr([])).toBe("1");
+  });
 });
 
 describe("grafoMix", () => {
@@ -54,6 +74,9 @@ describe("grafoMix", () => {
     expect(g.filtro).toContain("adelay=3000:all=1");
     expect(g.filtro).toContain("[mus0][sc]sidechaincompress");
     expect(g.filtro).toMatch(/\[voz\]\[sfx\]\[mus\]amix=inputs=3/);
+    expect(g.filtro).not.toContain("eval=frame");
+    const comSilencio = grafoMix({ duracao: 10, vozes: [{ wav: "a.wav", t: 0.2 }], sfx: [], musica: "musica/d.ogg", silencios: [{ id: "silencio_tenso", ini: 2, fim: 6, db: -12 }] });
+    expect(comSilencio.filtro).toMatch(/volume='\(1-0\.7488\*clip\(.*\)\)':eval=frame,afade/);
   });
   it("sem música, o sidechain vai para o ralo", () => {
     const g = grafoMix({ duracao: 5, vozes: [{ wav: "a.wav", t: 0.2 }], sfx: [] });

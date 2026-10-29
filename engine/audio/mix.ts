@@ -19,10 +19,16 @@ export const GANHO_MUSICA_DB = -15;
 export type Sons = {
   sfx: Record<string, { arquivos: string[]; ganho_db?: number }>;
   musica: Record<string, { arquivo: string; loop?: boolean }>;
+  /** instruções de mixagem por prefixo do id (ex.: "silencio_" baixa a música no plano) */
+  mix?: Record<string, { musica_db: number }>;
 };
+/** rampa da música ao entrar e sair de um trecho de silêncio */
+export const RAMPA_SILENCIO_S = 0.4;
 export const lerSons = (): Sons => JSON.parse(readFileSync(path.join(DIR_AUDIO, "sons.json"), "utf8"));
 
 export type Colocado = { id: string; arquivo: string; t: number; ganhoDb: number };
+/** trecho em que a música desce `db` (instrução silencio_*) */
+export type Silencio = { id: string; ini: number; fim: number; db: number };
 export type PlanoSom = { id: string; ini: number; dur: number; som: string[]; eventoLuz: boolean };
 
 const arred = (n: number) => Math.round(n * 1000) / 1000;
@@ -31,14 +37,25 @@ const arred = (n: number) => Math.round(n * 1000) / 1000;
  * Onde cada efeito entra. Os sons de um plano se espalham pela duração; o
  * zumbido do apagão termina no instante em que a luz corta. Ids com vários
  * arquivos giram em rodízio pelo episódio (nunca o mesmo duas vezes
- * seguidas). Id sem arquivo volta em `semArquivo` (aviso no QA).
+ * seguidas). Id de instrução de mixagem (silencio_*) vira um trecho de música
+ * baixa no plano inteiro. Id sem arquivo volta em `semArquivo` (aviso no QA).
  */
-export function planejarSfx(planos: PlanoSom[], sons: Sons, duracaoArquivo: (arq: string) => number): { colocados: Colocado[]; semArquivo: string[] } {
+export function planejarSfx(
+  planos: PlanoSom[],
+  sons: Sons,
+  duracaoArquivo: (arq: string) => number,
+): { colocados: Colocado[]; silencios: Silencio[]; semArquivo: string[] } {
   const colocados: Colocado[] = [];
+  const silencios: Silencio[] = [];
   const semArquivo = new Set<string>();
   const giro: Record<string, number> = {};
   for (const p of planos) {
     p.som.forEach((id, i) => {
+      const mix = Object.entries(sons.mix ?? {}).find(([prefixo]) => id.startsWith(prefixo));
+      if (mix) {
+        silencios.push({ id, ini: arred(p.ini), fim: arred(p.ini + p.dur), db: mix[1].musica_db });
+        return;
+      }
       const s = sons.sfx[id];
       if (!s?.arquivos.length) {
         semArquivo.add(id);
@@ -53,7 +70,23 @@ export function planejarSfx(planos: PlanoSom[], sons: Sons, duracaoArquivo: (arq
       colocados.push({ id, arquivo, t: arred(t), ganhoDb: GANHO_SFX_DB + (s.ganho_db ?? 0) });
     });
   }
-  return { colocados, semArquivo: [...semArquivo] };
+  return { colocados, silencios, semArquivo: [...semArquivo] };
+}
+
+/**
+ * Expressão do filtro volume (eval=frame) da música: 1 fora dos silêncios e
+ * 10^(db/20) dentro, com rampa linear de RAMPA_SILENCIO_S nas bordas.
+ */
+export function ganhoMusicaExpr(silencios: Silencio[], r = RAMPA_SILENCIO_S): string {
+  if (!silencios.length) return "1";
+  return silencios
+    .map((x) => {
+      const g = Math.round(10 ** (x.db / 20) * 10000) / 10000;
+      // dentro (0–1): sobe em r a partir de ini, desce em r até fim
+      const dentro = `clip(min((t-${x.ini})/${r},(${x.fim}-t)/${r}),0,1)`;
+      return `(1-${Math.round((1 - g) * 10000) / 10000}*${dentro})`;
+    })
+    .join("*");
 }
 
 export type EntradaMix = {
@@ -61,6 +94,7 @@ export type EntradaMix = {
   vozes: { wav: string; t: number }[];
   sfx: Colocado[];
   musica?: string;
+  silencios?: Silencio[];
 };
 
 /** Grafo do ffmpeg (sem o master). Entradas na ordem: vozes, sfx, música. */
@@ -91,6 +125,7 @@ export function grafoMix(e: EntradaMix): { entradas: string[][]; filtro: string 
     // ducking: a voz comprime a música (~10–12 dB) enquanto alguém fala
     f.push(
       `[${i}:a]aresample=48000,aformat=channel_layouts=mono,atrim=0:${e.duracao},volume=${GANHO_MUSICA_DB}dB,` +
+        (e.silencios?.length ? `volume='${ganhoMusicaExpr(e.silencios)}':eval=frame,` : "") +
         `afade=t=in:d=1.5,afade=t=out:st=${Math.max(0, e.duracao - 2)}:d=2[mus0]`,
       `[mus0][sc]sidechaincompress=threshold=0.02:ratio=8:attack=30:release=450:knee=4[mus]`,
     );

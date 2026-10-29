@@ -1,40 +1,108 @@
 {
-  "nota": "Id de som do roteiro (campo som de cada plano) → arquivo(s) em assets/audio. Vários arquivos = rodízio pelo episódio inteiro, nunca o mesmo arquivo duas vezes seguidas. Id fora daqui vira aviso no QA. Licenças em LICENCAS.md.",
+  "nota": "Id de som do roteiro (campo som de cada plano) → arquivo(s) em assets/audio. Vários arquivos = rodízio pelo episódio inteiro, nunca o mesmo arquivo duas vezes seguidas. Os ids entram no catálogo (sons); id que não está aqui nem em mix bloqueia o roteiro. mix: instruções de mixagem por prefixo (não tocam arquivo). Licenças em LICENCAS.md.",
   "sfx": {
-    "zumbido_corta": {
+    "chiado_radio": {
       "arquivos": [
-        "sfx/zumbido_corta.ogg"
-      ]
+        "sfx/chiado_radio.ogg"
+      ],
+      "descricao": "estática de rádio procurando estação (2,8 s)"
+    },
+    "clique_lanterna": {
+      "arquivos": [
+        "sfx/clique_lanterna.ogg"
+      ],
+      "descricao": "botão da lanterna"
+    },
+    "clique_rele": {
+      "arquivos": [
+        "sfx/clique_rele.ogg"
+      ],
+      "descricao": "relé elétrico armando e soltando (luz que troca, painel)"
+    },
+    "coracao_batendo": {
+      "arquivos": [
+        "sfx/coracao_batendo.ogg"
+      ],
+      "descricao": "coração acelerado, 4 batidas (4,5 s); medo de dentro"
     },
     "estalo_seco": {
       "arquivos": [
         "sfx/estalo_seco_1.ogg",
         "sfx/estalo_seco_2.ogg",
         "sfx/estalo_seco_3.ogg"
-      ]
+      ],
+      "descricao": "estalo seco de madeira/osso, ao longe (3 em rodízio)"
     },
-    "vidro": {
+    "freio_metal": {
       "arquivos": [
-        "sfx/vidro_quebra.ogg",
-        "sfx/vidro_quebra_curto.ogg"
-      ]
+        "sfx/freio_metal.ogg"
+      ],
+      "descricao": "guincho de roda freando no trilho, com o ronco do trem parando (3,2 s)"
+    },
+    "gritos_abafados": {
+      "arquivos": [
+        "sfx/gritos_abafados.ogg"
+      ],
+      "descricao": "gritos abafados vindos de outro vagão (4 s)",
+      "ganho_db": -3
+    },
+    "murmurio_vagao": {
+      "arquivos": [
+        "sfx/murmurio_vagao.ogg"
+      ],
+      "descricao": "murmúrio abafado de passageiros, ninguém se entende (8 s)",
+      "ganho_db": -4
     },
     "passos": {
       "arquivos": [
         "sfx/passos_pedra.ogg"
-      ]
+      ],
+      "descricao": "passos em piso de pedra"
     },
     "passos_leves": {
       "arquivos": [
         "sfx/passos_pedra.ogg"
       ],
-      "ganho_db": -8
+      "ganho_db": -8,
+      "descricao": "passos em pedra, baixos"
+    },
+    "rangido_trilho": {
+      "arquivos": [
+        "sfx/rangido_trilho.ogg"
+      ],
+      "descricao": "rangido lento de metal com metal, trem parado ou balançando (2,4 s)"
+    },
+    "sopro_rapido": {
+      "arquivos": [
+        "sfx/sopro_rapido.ogg"
+      ],
+      "descricao": "algo passa rente, da esquerda para a direita (0,9 s); a passagem do vulto"
+    },
+    "vidro": {
+      "arquivos": [
+        "sfx/vidro_quebra.ogg",
+        "sfx/vidro_quebra_curto.ogg"
+      ],
+      "descricao": "vidro quebrando"
+    },
+    "zumbido_corta": {
+      "arquivos": [
+        "sfx/zumbido_corta.ogg"
+      ],
+      "descricao": "zumbido elétrico morrendo; no plano com apagão, termina no instante em que a luz corta"
     }
   },
   "musica": {
     "drone_suspense": {
       "arquivo": "musica/drone_suspense.ogg",
-      "loop": true
+      "loop": true,
+      "descricao": "drone grave de suspense, em loop sob o episódio inteiro"
+    }
+  },
+  "mix": {
+    "silencio_": {
+      "musica_db": -12,
+      "descricao": "silencio_<qualquer coisa> (ex.: silencio_tenso): não toca arquivo; a música desce 12 dB durante o plano (entra e sai em 0,4 s) para o silêncio pesar"
     }
   }
 }

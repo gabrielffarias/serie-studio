@@ -73,16 +73,19 @@ const NOTAS_PERSONAGEM: Record<string, string[]> = {
   criatura_vulto: ["silhueta escura; a única forma dos de baixo antes do EP5"],
 };
 
-/** ids da biblioteca de áudio (assets/audio/sons.json → sfx ou musica) */
-function idsDeSom(grupo: "sfx" | "musica"): string[] {
+type SonsJson = { sfx: Record<string, { descricao?: string }>; musica: Record<string, { descricao?: string }>; mix?: Record<string, { descricao?: string }> };
+
+/** biblioteca de áudio (assets/audio/sons.json); sem o arquivo, vazia */
+function lerSonsJson(): SonsJson {
   try {
-    return Object.keys(JSON.parse(readFileSync(path.join(RAIZ, "assets/audio/sons.json"), "utf8"))[grupo]).sort();
+    return JSON.parse(readFileSync(path.join(RAIZ, "assets/audio/sons.json"), "utf8"));
   } catch {
-    return [];
+    return { sfx: {}, musica: {} };
   }
 }
 
 export function gerarCatalogo(): Catalogo {
+  const sonsJson = lerSonsJson();
   const personagens = Object.entries(PERSONAGENS).map(([id, p]) => {
     const poses = Object.keys(p.poses).sort();
     const criatura = !p.d.temRosto;
@@ -129,8 +132,10 @@ export function gerarCatalogo(): Catalogo {
     luzes: [...LUZES],
     efeitos: [...EFEITOS_LUZ],
     eventos_luz: Object.fromEntries(Object.entries(TRANSICOES_LUZ).map(([k, t]) => [k, { de: [...t.de], para: t.para, descricao: t.descricao }])),
-    sons: idsDeSom("sfx"),
-    musicas: idsDeSom("musica"),
+    sons: Object.keys(sonsJson.sfx).sort(),
+    sons_descricao: Object.fromEntries(Object.entries(sonsJson.sfx).sort(([a], [b]) => a.localeCompare(b)).map(([id, x]) => [id, x.descricao ?? ""])),
+    sons_mix: Object.fromEntries(Object.entries(sonsJson.mix ?? {}).map(([prefixo, x]) => [`${prefixo}*`, x.descricao ?? ""])),
+    musicas: Object.keys(sonsJson.musica).sort(),
     itens_visiveis: { lanterna_mao: "caio", lanterna_cabeca: "caio" },
     exige_item: EXIGE_ITEM,
     regras: [
@@ -147,7 +152,7 @@ export function gerarCatalogo(): Catalogo {
       "vulto antes do EP5: nunca fica parado nem aparece inteiro. É uma passagem rápida (~0,5 s) cruzando uma janela, cortada pela moldura (só ombro ou ponta de orelha), com borrão de movimento; precisa de ação `correr` (ou `andar`) e de um cenário com janelas; em_s = quando passa",
       "props: nenhum aprovado ainda; o que o roteiro precisar vai em `assets_novos`",
       "infográficos: nenhum implementado ainda (e proibidos no EP1)",
-      "sons: use os ids de `sons` em `som`; id fora da biblioteca fica mudo (aviso na revisão)",
+      "sons: em `som`, só ids de `sons` (veja `sons_descricao`) ou uma instrução de `sons_mix` (ex.: `silencio_tenso` baixa a música no plano); id fora disso bloqueia o roteiro. Som que faltar vai em assets_novos (tipo som) e sai do `som` até existir",
     ],
   };
 }

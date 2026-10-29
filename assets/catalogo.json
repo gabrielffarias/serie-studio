@@ -683,12 +683,40 @@
     }
   },
   "sons": [
+    "chiado_radio",
+    "clique_lanterna",
+    "clique_rele",
+    "coracao_batendo",
     "estalo_seco",
+    "freio_metal",
+    "gritos_abafados",
+    "murmurio_vagao",
     "passos",
     "passos_leves",
+    "rangido_trilho",
+    "sopro_rapido",
     "vidro",
     "zumbido_corta"
   ],
+  "sons_descricao": {
+    "chiado_radio": "estática de rádio procurando estação (2,8 s)",
+    "clique_lanterna": "botão da lanterna",
+    "clique_rele": "relé elétrico armando e soltando (luz que troca, painel)",
+    "coracao_batendo": "coração acelerado, 4 batidas (4,5 s); medo de dentro",
+    "estalo_seco": "estalo seco de madeira/osso, ao longe (3 em rodízio)",
+    "freio_metal": "guincho de roda freando no trilho, com o ronco do trem parando (3,2 s)",
+    "gritos_abafados": "gritos abafados vindos de outro vagão (4 s)",
+    "murmurio_vagao": "murmúrio abafado de passageiros, ninguém se entende (8 s)",
+    "passos": "passos em piso de pedra",
+    "passos_leves": "passos em pedra, baixos",
+    "rangido_trilho": "rangido lento de metal com metal, trem parado ou balançando (2,4 s)",
+    "sopro_rapido": "algo passa rente, da esquerda para a direita (0,9 s); a passagem do vulto",
+    "vidro": "vidro quebrando",
+    "zumbido_corta": "zumbido elétrico morrendo; no plano com apagão, termina no instante em que a luz corta"
+  },
+  "sons_mix": {
+    "silencio_*": "silencio_<qualquer coisa> (ex.: silencio_tenso): não toca arquivo; a música desce 12 dB durante o plano (entra e sai em 0,4 s) para o silêncio pesar"
+  },
   "musicas": [
     "drone_suspense"
   ],
@@ -724,6 +752,6 @@
     "vulto antes do EP5: nunca fica parado nem aparece inteiro. É uma passagem rápida (~0,5 s) cruzando uma janela, cortada pela moldura (só ombro ou ponta de orelha), com borrão de movimento; precisa de ação `correr` (ou `andar`) e de um cenário com janelas; em_s = quando passa",
     "props: nenhum aprovado ainda; o que o roteiro precisar vai em `assets_novos`",
     "infográficos: nenhum implementado ainda (e proibidos no EP1)",
-    "sons: use os ids de `sons` em `som`; id fora da biblioteca fica mudo (aviso na revisão)"
+    "sons: em `som`, só ids de `sons` (veja `sons_descricao`) ou uma instrução de `sons_mix` (ex.: `silencio_tenso` baixa a música no plano); id fora disso bloqueia o roteiro. Som que faltar vai em assets_novos (tipo som) e sai do `som` até existir"
   ]
 }
