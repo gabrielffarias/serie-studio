@@ -14,7 +14,8 @@
 | Duração por episódio | **65 a 90 s** (mínimo de 65 s por causa da monetização do TikTok) |
 | Temporada 1 | 12 episódios, 6 votações |
 | Plataforma principal | TikTok (Reels e Shorts como espelho) |
-| Narração | Voz masculina grave, calma, tensa, em pt-BR. Narrador em 3ª pessoa, no presente |
+| Narração | Conduz o episódio (~70% do texto): 3ª pessoa, no presente, calma e tensa, em pt-BR |
+| Vozes | Personagens humanos falam com voz própria (~30%): 3 a 5 falas curtas e contidas por episódio, nos momentos de emoção. Criaturas nunca falam. Voz do narrador e de cada personagem em `vozes.json` |
 | Tom | Suspense e mistério com respiros de humor (Dona Socorro). Sem violência gráfica e sem sangue explícito |
 | Gancho de público | "O público decide": toda votação muda o rumo e deixa marcas no estado da história |
 
@@ -78,7 +79,7 @@
 - **Selo superior esquerdo:** `● NOITE 1 · 18:47` (o horário avança na história; a "noite" só muda se passar de 6h da manhã).
 - **Medidor de BATERIA da lanterna** (substitui o cronômetro da referência): ícone de pilha + `82%`. Fica amarelo abaixo de 50% e vermelho abaixo de 20%. É a principal barra de tensão.
 - **Cartões de título:** fundo preto 90% de opacidade, fonte condensada, palavra-chave em amarelo `#FFC21A` ou vermelho `#FF3B2B`.
-- **Legenda falada:** palavra por palavra, contorno preto grosso, palavra atual em vermelho.
+- **Legenda falada:** palavra por palavra, contorno preto grosso, palavra atual em vermelho. Nas falas de personagem, o nome de quem fala aparece numa etiqueta acima da legenda e a palavra atual ganha a cor do personagem (`vozes.json`).
 - **Abertura com resultado (todo episódio depois de uma votação), primeiros 4–6 s:**
   - Tela cheia escura com o placar em barras: **A 38%** × **B 62%**, com a barra vencedora crescendo e acendendo.
   - Carimbo grande: **"O MAIS VOTADO FOI B"**.

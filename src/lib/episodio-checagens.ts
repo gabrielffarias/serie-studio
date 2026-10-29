@@ -384,6 +384,48 @@ export function checarEstilo(ep: Episodio, ctx: ContextoChecagem, antes?: Estado
   return out;
 }
 
+/** Falas de personagem por episódio (SKILL.md): a narração conduz, os personagens falam nos momentos de emoção. */
+export const FALAS_MIN = 3;
+export const FALAS_MAX = 5;
+export const PALAVRAS_POR_FALA = 8;
+
+/**
+ * Falas de personagem: de 3 a 5 por episódio, até 8 palavras, só de humanos
+ * (criatura nunca fala). TTS não grita bem: fala com "!" ou em caixa alta
+ * vira aviso (o pânico fica com a narração e o som).
+ */
+export function checarFalas(ep: Episodio, cat: Catalogo): Checagem[] {
+  const falas = ep.planos.flatMap((p) => (p.fala ? [{ id: p.id, ...p.fala }] : []));
+  const criaturas = new Set(cat.personagens.filter((p) => p.tipo === "criatura").map((p) => p.id));
+  const palavras = (t: string) => t.split(/\s+/).filter((w) => /[\p{L}\d]/u.test(w)).length;
+  const longas = falas.filter((f) => palavras(f.tts) > PALAVRAS_POR_FALA).map((f) => `${f.id} (${palavras(f.tts)})`);
+  const deCriatura = falas.filter((f) => criaturas.has(f.personagem) || f.personagem.startsWith("criatura")).map((f) => f.id);
+  const gritadas = falas.filter((f) => /!/.test(f.tts) || /\p{Lu}{4,}/u.test(f.tts)).map((f) => f.id);
+  return [
+    {
+      id: "falas_quantidade",
+      ok: falas.length >= FALAS_MIN && falas.length <= FALAS_MAX,
+      mensagem: `${falas.length} falas de personagem (${FALAS_MIN}–${FALAS_MAX})`,
+    },
+    {
+      id: "falas_curtas",
+      ok: !longas.length,
+      mensagem: longas.length ? `falas com mais de ${PALAVRAS_POR_FALA} palavras: ${longas.join(", ")}` : `falas de até ${PALAVRAS_POR_FALA} palavras`,
+    },
+    {
+      id: "criatura_nao_fala",
+      ok: !deCriatura.length,
+      mensagem: deCriatura.length ? `criatura com fala: ${lista(deCriatura)}` : "criaturas não falam",
+    },
+    {
+      id: "falas_contidas",
+      ok: !gritadas.length,
+      aviso: true,
+      mensagem: gritadas.length ? `fala gritada (TTS não grita bem; pânico fica com narração e som): ${lista(gritadas)}` : "falas contidas",
+    },
+  ];
+}
+
 /** ações que fazem o vulto atravessar a janela */
 export const ACOES_PASSAGEM_VULTO = ["correr", "andar"];
 
@@ -422,6 +464,7 @@ export function checarRoteiro(ep: Episodio, ctx: ContextoRoteiro): Checagem[] {
     ...checarLuz(ep, ctx.estadoAntes),
     ...checarCronograma(ep, ctx.cronograma, ctx.estadoAntes),
     ...checarVulto(ep, ctx.catalogo),
+    ...checarFalas(ep, ctx.catalogo),
     ...checarEstilo(ep, ctx, ctx.estadoAntes),
   ];
 }

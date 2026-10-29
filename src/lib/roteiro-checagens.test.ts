@@ -235,6 +235,48 @@ describe("checarRoteiro", () => {
   });
 });
 
+describe("falas de personagem", () => {
+  const comFalas = (n: number) => {
+    const ep = ep1();
+    ep.planos.forEach((p) => p.tipo === "cena" && (p.fala = null));
+    for (let i = 1; i <= n; i++) {
+      const p = ep.planos[i] as Extract<Episodio["planos"][number], { tipo: "cena" }>;
+      p.fala = { personagem: "caio", tts: "Calma, gente.", legenda: "CALMA, GENTE." };
+    }
+    return ep;
+  };
+  const checagem = (ep: Episodio, id: string) => checarRoteiro(ep, ctx).find((c) => c.id === id)!;
+
+  it("de 3 a 5 por episódio bloqueia fora da faixa", () => {
+    expect(checagem(comFalas(2), "falas_quantidade").ok).toBe(false);
+    expect(checagem(comFalas(3), "falas_quantidade").ok).toBe(true);
+    expect(checagem(comFalas(5), "falas_quantidade").ok).toBe(true);
+    expect(bloqueios(comFalas(6))).toEqual(["falas_quantidade"]);
+  });
+
+  it("até 8 palavras (pontuação não conta como palavra)", () => {
+    const ep = comFalas(3);
+    const p = ep.planos[1] as Extract<Episodio["planos"][number], { tipo: "cena" }>;
+    p.fala!.tts = "Calma, gente. Eu trabalho aqui. Ninguém sai — do vagão.";
+    expect(checagem(ep, "falas_curtas")).toMatchObject({ ok: false, mensagem: expect.stringMatching(/p02 \(9\)/) });
+    p.fala!.tts = "Calma, gente. Eu trabalho aqui. Ninguém sai.";
+    expect(checagem(ep, "falas_curtas").ok).toBe(true);
+  });
+
+  it("criatura nunca fala", () => {
+    const ep = comFalas(3);
+    (ep.planos[2] as Extract<Episodio["planos"][number], { tipo: "cena" }>).fala!.personagem = "criatura_vulto";
+    expect(bloqueios(ep)).toEqual(["criatura_nao_fala"]);
+  });
+
+  it("fala gritada é só aviso", () => {
+    const ep = comFalas(3);
+    (ep.planos[1] as Extract<Episodio["planos"][number], { tipo: "cena" }>).fala!.tts = "Corre!";
+    expect(checagem(ep, "falas_contidas")).toMatchObject({ ok: false, aviso: true });
+    expect(bloqueios(ep)).toEqual([]);
+  });
+});
+
 describe("tempo de fala", () => {
   it("estima pelas sílabas com pausa na pontuação", () => {
     // 2 + 3 sílabas + pausa (1,2) = 6,2 sílabas a 5/s

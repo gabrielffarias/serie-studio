@@ -4,7 +4,13 @@ import path from "node:path";
 
 export const BIBLIA = readFileSync(path.resolve(import.meta.dirname, "../../../series/estacao-fantasma/biblia.md"), "utf8");
 
-/** EP1 mínimo e válido (JSON cru, antes do Zod): 77 s, hora na abertura, apagão no p01 (normal → emergência), vulto na janela, votação no fim. */
+/** EP1 mínimo e válido (JSON cru, antes do Zod): 77 s, hora na abertura, apagão no p01 (normal → emergência), 3 falas de personagem, vulto na janela, votação no fim. */
+const FALAS: Record<number, unknown> = {
+  2: { personagem: "caio", tts: "Calma, gente. Eu trabalho aqui.", legenda: "CALMA, GENTE. EU TRABALHO AQUI." },
+  6: { personagem: "socorro", tts: "Meu filho, ninguém pensa direito com fome.", legenda: "MEU FILHO, NINGUÉM PENSA DIREITO COM FOME." },
+  9: { personagem: "valdir", tts: "Fale baixo, rapaz.", legenda: "FALE BAIXO, RAPAZ." },
+};
+
 export function ep1Json(): Record<string, unknown> {
   const cena = (id: string, extra: Record<string, unknown> = {}) => ({
     id, tipo: "cena", duracao_s: 5, cenario: "vagao", luz: "emergencia_vermelha",
@@ -17,7 +23,7 @@ export function ep1Json(): Record<string, unknown> {
     hud: { selo: "NOITE 1 · 18:04", medidor: { nome: "BATERIA", valor: 100 } },
     planos: [
       cena("p01", { luz: "normal", efeitos: ["apagao"], narracao: { tts: "Dezoito e quatro. Túnel sentido cento e oito Sul.", legenda: "18:04. TÚNEL SENTIDO 108 SUL." } }),
-      ...Array.from({ length: 12 }, (_, i) => cena(`p${String(i + 2).padStart(2, "0")}`)),
+      ...Array.from({ length: 12 }, (_, i) => cena(`p${String(i + 2).padStart(2, "0")}`, FALAS[i] ? { fala: FALAS[i] } : {})),
       cena("p14", {
         personagens: [{ id: "criatura_vulto", vista: "perfil_esq", pose: "andar", x: 0.9, y: 0.47, escala: 0.9, acao: { tipo: "andar", para_x: 0.7 } }],
         camera: { mov: "push_in", foco: "janela_dir" },

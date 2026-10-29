@@ -67,7 +67,10 @@ Pedido típico: "gera o próximo episódio" (vindo do worker, com o resultado da
 - **Continuidade:** roupas, ferimentos, itens e local vêm do `estado.json`. Se alguém está mancando, aparece mancando.
 - **Atualize o estado.** O medidor de tensão muda em todo episódio.
 - **Narração:** frases curtas, presente, 3ª pessoa, no máximo 12 palavras por frase. Escreva números **por extenso** no campo `tts` e em **dígitos** no campo `legenda`. Nada de palavra cortada no fim.
-- **Falas de personagem:** no máximo 1 ou 2 por episódio, curtas, no campo `fala` (usa a voz do personagem se existir; senão o narrador lê "— disse Socorro").
+- **Falas de personagem:** a narração conduz (~70% do texto); os personagens falam com voz própria (~30%) nos **momentos de emoção**. De **3 a 5 falas por episódio**, cada uma com **até 8 palavras**, no campo `fala` (a voz de cada personagem está em `series/<serie>/vozes.json`).
+  - **Criaturas nunca falam.**
+  - **Falas contidas:** TTS não grita bem. Nada de "!" nem caixa alta no `tts`; o pânico fica com a narração e o som. Medo, cansaço, ironia e firmeza em voz baixa funcionam.
+  - A legenda mostra quem fala (nome e cor do personagem); não escreva "disse Caio" na narração.
   Formato: `"fala": { "personagem": "socorro", "tts": "Meu filho, ninguém pensa direito com fome.", "legenda": "MEU FILHO, NINGUÉM PENSA DIREITO COM FOME." }`. `personagem` é o id do catálogo; `tts` e `legenda` seguem as mesmas regras da narração. Sem fala no plano: `"fala": null`.
 - **Episódio com votação** termina com o cliffhanger e então a **tela VOTE A / VOTE B** (6–8 s). **Episódio sem votação** termina com uma pergunta ou uma imagem inquietante (2–3 s) e o selo "CONTINUA AMANHÃ".
 - **Só use assets do catálogo.** Se a história **precisar** de algo novo, inclua em `assets_novos` com a especificação (MODO 4). Prefira reaproveitar.
@@ -159,6 +162,7 @@ Itens que o desenho exige (vêm de `estado.itens`): `"lanterna": true` exige `la
 - [ ] `luz` de cada plano = a luz ambiente vigente do local; ela só muda com um evento de luz em `efeitos`, e `estado_final.luz_ambiente` traz o resultado.
 - [ ] Lanterna só como camada (`"lanterna": true`); nenhuma camada, pose ou objeto exige item que não está em `estado.itens`.
 - [ ] `estado_final` coerente com o estado anterior + as consequências.
+- [ ] De 3 a 5 falas de personagem, cada uma com até 8 palavras, contidas (sem "!"); nenhuma criatura fala.
 - [ ] `ultima_frase_falada` é uma frase completa.
 - [ ] Opções A e B têm o mesmo peso e consequências reais no esqueleto.
 
